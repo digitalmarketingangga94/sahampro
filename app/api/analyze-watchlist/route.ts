@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchWatchlist, fetchMarketDetector, fetchOrderbook, getTopBroker, fetchEmitenInfo } from '@/lib/stockbit';
 import { calculateTargets } from '@/lib/calculations';
