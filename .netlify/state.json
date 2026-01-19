@@ -1,0 +1,20 @@
+{
+	"geolocation": {
+		"data": {
+			"city": "Malang",
+			"country": {
+				"code": "ID",
+				"name": "Indonesia"
+			},
+			"subdivision": {
+				"code": "JI",
+				"name": "East Java"
+			},
+			"timezone": "Asia/Jakarta",
+			"latitude": -7.9826,
+			"longitude": 112.6308,
+			"postalCode": "65163"
+		},
+		"timestamp": 1768411411704
+	}
+}

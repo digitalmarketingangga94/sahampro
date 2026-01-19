@@ -1,0 +1,76 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createAgentStory, getAgentStoriesByEmiten } from '@/lib/supabase';
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const emiten = searchParams.get('emiten')?.toUpperCase();
+
+  if (!emiten) {
+    return NextResponse.json({ error: 'Missing emiten parameter' }, { status: 400 });
+  }
+
+  try {
+    const stories = await getAgentStoriesByEmiten(emiten);
+    
+    if (!stories || stories.length === 0) {
+      return NextResponse.json({ 
+        success: true, 
+        data: null,
+        message: 'No analysis found'
+      });
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      data: stories 
+    });
+  } catch (error) {
+    console.error('Error fetching agent story:', error);
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Failed to fetch analysis' 
+    }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const emiten = body.emiten?.toUpperCase();
+
+    if (!emiten) {
+      return NextResponse.json({ error: 'Missing emiten parameter' }, { status: 400 });
+    }
+
+    // Create pending record
+    const story = await createAgentStory(emiten);
+
+    // Trigger background function
+    const baseUrl = process.env.NETLIFY_FUNCTION_URL || 
+                   process.env.URL || 
+                   'http://localhost:8888';
+    
+    const functionUrl = baseUrl.includes('/.netlify/functions') 
+      ? baseUrl 
+      : `${baseUrl.replace(/\/$/, '')}/.netlify/functions`;
+
+    console.log(`[Agent Story] Triggering background function at: ${functionUrl}/analyze-story-background`);
+
+    // Fire and forget - don't await
+    fetch(`${functionUrl}/analyze-story-background?emiten=${emiten}&id=${story.id}`, {
+      method: 'POST',
+    }).catch(err => console.error('Failed to trigger background function:', err));
+
+    return NextResponse.json({ 
+      success: true, 
+      data: story,
+      message: 'Analysis started'
+    });
+  } catch (error) {
+    console.error('Error starting agent story:', error);
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Failed to start analysis' 
+    }, { status: 500 });
+  }
+}
