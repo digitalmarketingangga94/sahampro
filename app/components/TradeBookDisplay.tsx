@@ -139,12 +139,14 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.buy_lot)}</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.sell_lot)}</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.total_lot)}</td>
-                </tr><tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)'}}> {/* Moved <tr> to this line */}
+                </tr>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)'}}>
                   <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Frequency</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.buy_frequency)}</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.sell_frequency)}</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.total_frequency)}</td>
-                </tr><tr> {/* Moved <tr> to this line */}
+                </tr>
+                <tr>
                   <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Percentage</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookData.buy_percentage}</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookData.sell_percentage}</td>
