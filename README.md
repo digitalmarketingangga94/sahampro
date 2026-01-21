@@ -1,14 +1,14 @@
-# Adimology - Kalkulator Target Saham 📈
+# RSY - Kalkulator Target Saham 📈
 
 > [!CAUTION]
 > **PERINGATAN KEAMANAN**: Jangan pernah membagikan URL aplikasi Netlify Anda secara publik. Aplikasi ini melakukan sinkronisasi token sesi Stockbit Anda ke database. Jika URL bocor, orang lain dapat menyalahgunakan akses tersebut. Gunakan aplikasi ini hanya untuk penggunaan pribadi. 
 
-Adimology adalah aplikasi web yang dirancang untuk membantu investor saham dalam menganalisis target harga saham berdasarkan data transaksi broker (bandarmologi) dari Stockbit.
+RSY adalah aplikasi web yang dirancang untuk membantu investor saham dalam menganalisis target harga saham berdasarkan data transaksi broker (bandarmologi) dari Stockbit.
 
 Aplikasi ini tidak hanya menghitung target harga, tetapi juga melacak performa analisis secara otomatis dan menyediakan data tentang akumulasi broker.
 
-![Adimology Preview 1](public/adimology01.PNG)
-![Adimology Preview 2](public/adimology02.PNG)
+![RSY Preview 1](public/adimology01.PNG)
+![RSY Preview 2](public/adimology02.PNG)
 
 ---
 💡 **Credit Rumus**: Algoritma dan rumus analisis dalam aplikasi ini didasarkan pada metodologi dari **[Adi Sucipto](https://www.instagram.com/adisuciipto/)**.
@@ -35,12 +35,12 @@ Aplikasi ini tidak hanya menghitung target harga, tetapi juga melacak performa a
 
 ## ⚙️ Instalasi Lokal
 
-Ikuti langkah-langkah berikut untuk menjalankan Adimology di mesin lokal Anda:
+Ikuti langkah-langkah berikut untuk menjalankan RSY di mesin lokal Anda:
 
 1. **Clone Repository**:
    ```bash
-   git clone https://github.com/username/adimology.git
-   cd adimology
+   git clone https://github.com/username/rsy.git
+   cd rsy
    ```
 
 2. **Install Dependensi**:

@@ -1,10 +1,10 @@
-# AI Rules & Tech Stack Guidelines for Adimology
+# AI Rules & Tech Stack Guidelines for RSY
 
-This document outlines the core technologies used in the Adimology application and provides clear guidelines for library usage to maintain consistency and best practices.
+This document outlines the core technologies used in the RSY application and provides clear guidelines for library usage to maintain consistency and best practices.
 
 ## 🚀 Tech Stack Overview
 
-Adimology is built with a modern, full-stack JavaScript ecosystem, leveraging the following key technologies:
+RSY is built with a modern, full-stack JavaScript ecosystem, leveraging the following key technologies:
 
 *   **Frontend Framework:** Next.js 15 (App Router) with React 19 for building user interfaces.
 *   **Language:** TypeScript for type safety and improved code quality across the entire codebase.

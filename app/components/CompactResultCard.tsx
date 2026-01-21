@@ -51,7 +51,7 @@ export default function CompactResultCard({
             marginBottom: '4px',
             opacity: 0.8
           }}>
-            Adimology
+            RSY
           </div>
           <div className="compact-date">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.7 }}>
@@ -141,7 +141,7 @@ export default function CompactResultCard({
             <span className="compact-value">{formatNumber(calculated.a)}</span>
           </div>
           <div className="compact-cell">
-            <span className="compact-label">p (Barang/Avg)</span>
+            <span className="compact-label">p (Brg/Avg)</span>
             <span className="compact-value">{formatNumber(calculated.p)}</span>
           </div>
         </div>

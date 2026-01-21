@@ -23,7 +23,7 @@ const Navbar = () => {
             </svg>
           </div>
           <div className="navbar-content">
-            <h1 className="navbar-title" style={{ fontSize: '1.5rem', marginBottom: '0' }}>Adimology Calculator</h1>
+            <h1 className="navbar-title" style={{ fontSize: '1.5rem', marginBottom: '0' }}>RSY Calculator</h1>
             <p className="navbar-subtitle" style={{ fontSize: '0.75rem' }}>Analyze stock targets based on broker summary</p>
           </div>
         </div>

@@ -28,7 +28,7 @@ function formatResultForCopy(result: StockAnalysisResult): string {
   };
 
   const lines = [
-    `ADIMOLGY: ${input.emiten.toUpperCase()}`,
+    `RSY: ${input.emiten.toUpperCase()}`,
     `${input.fromDate} s/d ${input.toDate}`,
     ``,
     `TOP BROKER`,

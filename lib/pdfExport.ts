@@ -25,7 +25,7 @@ export const exportHistoryToPDF = (data: AnalysisRecord[], filters: any) => {
   // Title
   doc.setFontSize(18);
   doc.setTextColor(40);
-  doc.text('Adimology Watchlist', 14, 22);
+  doc.text('RSY Watchlist', 14, 22);
 
   // Filters info
   doc.setFontSize(10);
