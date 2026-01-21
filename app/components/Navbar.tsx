@@ -52,7 +52,7 @@ const Navbar = () => {
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
             <JobStatusIndicator />
-            <TokenStatusIndicator />
+            {/* <TokenStatusIndicator /> -- Removed as requested */}
           </div>
         </div>
       </div>
