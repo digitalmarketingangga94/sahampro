@@ -12,16 +12,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div className="navbar-logo-icon" style={{ background: 'transparent', display: 'flex', alignItems: 'center' }}>
-            <svg width="42" height="42" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="49" y="10" width="2" height="80" fill="currentColor" />
-              <rect x="44" y="32" width="12" height="38" fill="currentColor" />
-              <path d="M22 30C40 18 60 22 80 32" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-              <path d="M22 30C18 30 16 38 22 42C24 44 28 42 28 38" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5" />
-              <line stroke="currentColor" strokeWidth="1.5" x1="22" x2="44" y1="30" y2="70" />
-              <line stroke="currentColor" strokeWidth="1.5" x1="80" x2="56" y1="32" y2="70" />
-            </svg>
-          </div>
+          {/* Removed the SVG icon */}
           <div className="navbar-content">
             <h1 className="navbar-title" style={{ fontSize: '1.5rem', marginBottom: '0' }}>RSY Calculator</h1>
             <p className="navbar-subtitle" style={{ fontSize: '0.75rem' }}>Analyze stock targets based on broker summary</p>
