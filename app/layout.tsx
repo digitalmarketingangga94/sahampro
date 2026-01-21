@@ -15,7 +15,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans bg-primary text-text-primary min-h-screen overflow-x-hidden antialiased">
+      <body
+        className={`antialiased`}
+      >
         <Navbar />
         {children}
       </body>
