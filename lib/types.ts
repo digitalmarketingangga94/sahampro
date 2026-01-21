@@ -396,11 +396,25 @@ export interface TradeBookTotal {
   total_lot: string;
 }
 
+export interface TradeBookListItem {
+  time: string;
+  price: number;
+  buy_lot: string;
+  sell_lot: string;
+  net_lot: string;
+  buy_frequency: string;
+  sell_frequency: string;
+  net_frequency: string;
+  buy_value: string;
+  sell_value: string;
+  net_value: string;
+}
+
 export interface TradeBookResponse {
   message: string;
   data: {
     book_total: TradeBookTotal;
-    // other fields like trade_book_list, etc.
+    trade_book_list: TradeBookListItem[]; // Added trade_book_list
   };
 }
 
@@ -414,6 +428,7 @@ export interface TradeBookMarketData {
 export interface TradeBookCombinedData {
   tradeBookTotal: TradeBookTotal;
   marketData: TradeBookMarketData;
+  tradeBookList: TradeBookListItem[]; // Added tradeBookList
 }
 
 export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency';

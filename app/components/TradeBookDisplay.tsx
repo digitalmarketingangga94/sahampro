@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation'; // Import useSearchParams
-import type { TradeBookTotal, TradeBookCombinedData } from '@/lib/types';
+import type { TradeBookTotal, TradeBookCombinedData, TradeBookListItem } from '@/lib/types';
 
 // Helper to format large numbers (e.g., 1234567890 -> 1.23B)
 const formatCompactNumber = (num: number | string | null | undefined): string => {
@@ -215,6 +215,49 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
               </tbody>
             </table>
           </div>
+
+          {/* New: Trade Book List Table */}
+          {tradeBookCombinedData.tradeBookList && tradeBookCombinedData.tradeBookList.length > 0 && (
+            <div style={{ marginTop: '2rem', overflowX: 'auto' }}>
+              <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+                Trade Book Details
+              </h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Time</th>
+                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Price</th>
+                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Buy Lot</th>
+                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Sell Lot</th>
+                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Net Lot</th>
+                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Buy Freq</th>
+                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Sell Freq</th>
+                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Net Freq</th>
+                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Buy Value</th>
+                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Sell Value</th>
+                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Net Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tradeBookCombinedData.tradeBookList.map((item: TradeBookListItem, index: number) => (
+                    <tr key={index} style={{ borderBottom: index < tradeBookCombinedData.tradeBookList.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+                      <td style={{ padding: '0.5rem', textAlign: 'left' }}>{item.time}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right' }}>{item.price.toLocaleString()}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(item.buy_lot)}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(item.sell_lot)}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right', color: parseFloat(item.net_lot.replace(/,/g, '')) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>{formatCompactNumber(item.net_lot)}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(item.buy_frequency)}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(item.sell_frequency)}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right', color: parseFloat(item.net_frequency.replace(/,/g, '')) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>{formatCompactNumber(item.net_frequency)}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(item.buy_value)}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(item.sell_value)}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right', color: parseFloat(item.net_value.replace(/,/g, '')) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>{formatCompactNumber(item.net_value)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>

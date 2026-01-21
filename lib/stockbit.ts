@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookResponse, TradeBookTotal } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookResponse, TradeBookTotal, TradeBookListItem } from './types';
 import { getSessionValue, updateTokenLastUsed, invalidateToken } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -362,7 +362,7 @@ export async function fetchKeyStats(emiten: string): Promise<KeyStatsData> {
 /**
  * Fetch Trade Book data for a specific symbol
  */
-export async function fetchTradeBook(symbol: string): Promise<TradeBookTotal | null> {
+export async function fetchTradeBook(symbol: string): Promise<{ book_total: TradeBookTotal | null; trade_book_list: TradeBookListItem[] }> {
   const url = new URL(`${STOCKBIT_BASE_URL}/order-trade/trade-book`);
   url.searchParams.append('symbol', symbol);
   url.searchParams.append('group_by', 'GROUP_BY_TIME');
@@ -377,10 +377,13 @@ export async function fetchTradeBook(symbol: string): Promise<TradeBookTotal | n
     await handleApiResponse(response, `Trade Book API (${symbol})`);
 
     const json: TradeBookResponse = await response.json();
-    return json.data?.book_total || null;
+    return {
+      book_total: json.data?.book_total || null,
+      trade_book_list: json.data?.trade_book_list || [],
+    };
   } catch (error) {
     console.error(`Error fetching trade book for ${symbol}:`, error);
-    return null; // Return null on error to not block market movers
+    return { book_total: null, trade_book_list: [] }; // Return null for total and empty array for list on error
   }
 }
 
