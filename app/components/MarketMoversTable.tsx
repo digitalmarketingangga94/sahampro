@@ -17,10 +17,19 @@ const formatCompactNumber = (num: number): string => {
   return num.toLocaleString();
 };
 
+type SortColumn = 'last_price' | 'value' | 'volume' | 'frequency' | 'net_foreign_buy';
+type SortDirection = 'asc' | 'desc';
+
+interface SortConfig {
+  column: SortColumn | null;
+  direction: SortDirection;
+}
+
 export default function MarketMoversTable({ type, title, limit = 10 }: MarketMoversTableProps) {
   const [movers, setMovers] = useState<MarketMoverItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ column: null, direction: 'asc' });
 
   useEffect(() => {
     const fetchMovers = async () => {
@@ -28,7 +37,7 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
       setError(null);
       try {
         const res = await fetch(`/api/market-movers?type=${type}&limit=${limit}`);
-        const json = await res.json();
+        const json = await response.json();
 
         if (!json.success) {
           throw new Error(json.error || `Failed to fetch ${title}`);
@@ -43,6 +52,36 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
 
     fetchMovers();
   }, [type, limit, title]);
+
+  const handleSort = (column: SortColumn) => {
+    let direction: SortDirection = 'asc';
+    if (sortConfig.column === column && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ column, direction });
+  };
+
+  const sortedMovers = [...movers].sort((a, b) => {
+    if (sortConfig.column === null) return 0;
+
+    const aValue = a[sortConfig.column] || 0;
+    const bValue = b[sortConfig.column] || 0;
+
+    if (aValue < bValue) {
+      return sortConfig.direction === 'asc' ? -1 : 1;
+    }
+    if (aValue > bValue) {
+      return sortConfig.direction === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+
+  const getSortIndicator = (column: SortColumn) => {
+    if (sortConfig.column === column) {
+      return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+    }
+    return '';
+  };
 
   return (
     <div className="glass-card-static" style={{ padding: '1rem' }}>
@@ -61,16 +100,41 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Symbol</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Price</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Value</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Volume</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Freq</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Net Foreign</th>
+                <th 
+                  style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                  onClick={() => handleSort('last_price')}
+                >
+                  Price {getSortIndicator('last_price')}
+                </th>
+                <th 
+                  style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                  onClick={() => handleSort('value')}
+                >
+                  Value {getSortIndicator('value')}
+                </th>
+                <th 
+                  style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                  onClick={() => handleSort('volume')}
+                >
+                  Volume {getSortIndicator('volume')}
+                </th>
+                <th 
+                  style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                  onClick={() => handleSort('frequency')}
+                >
+                  Freq {getSortIndicator('frequency')}
+                </th>
+                <th 
+                  style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                  onClick={() => handleSort('net_foreign_buy')}
+                >
+                  Net Foreign {getSortIndicator('net_foreign_buy')}
+                </th>
               </tr>
             </thead>
             <tbody>
-              {movers.map((item, index) => (
-                <tr key={item.symbol} style={{ borderBottom: index < movers.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+              {sortedMovers.map((item, index) => (
+                <tr key={item.symbol} style={{ borderBottom: index < sortedMovers.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
                   <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>{item.symbol}</td>
                   <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>
                     {item.last_price.toLocaleString()}
