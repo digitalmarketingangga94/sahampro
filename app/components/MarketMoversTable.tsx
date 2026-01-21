@@ -37,7 +37,7 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
       setError(null);
       try {
         const res = await fetch(`/api/market-movers?type=${type}&limit=${limit}`);
-        const json = await response.json();
+        const json = await res.json(); // Perbaikan di sini: menggunakan 'res' bukan 'response'
 
         if (!json.success) {
           throw new Error(json.error || `Failed to fetch ${title}`);
