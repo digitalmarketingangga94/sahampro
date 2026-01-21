@@ -1,0 +1,162 @@
+'use client';
+
+import { useState } from 'react';
+import type { TradeBookTotal } from '@/lib/types';
+
+// Helper to format large numbers (e.g., 1234567890 -> 1.23B)
+const formatCompactNumber = (num: number | string | null | undefined): string => {
+  if (num === null || num === undefined || num === '') return '-';
+  const n = typeof num === 'string' ? parseFloat(num.replace(/,/g, '')) : num;
+  if (isNaN(n)) return '-';
+
+  if (Math.abs(n) >= 1_000_000_000) return (n / 1_000_000_000).toFixed(2) + 'B';
+  if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(2) + 'M';
+  if (Math.abs(n) >= 1_000) return (n / 1_000).toFixed(2) + 'K';
+  return n.toLocaleString();
+};
+
+interface TradeBookDisplayProps {
+  initialEmiten?: string;
+}
+
+export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProps) {
+  const [emiten, setEmiten] = useState(initialEmiten || '');
+  const [tradeBookData, setTradeBookData] = useState<TradeBookTotal | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emiten) {
+      setError('Please enter a stock symbol.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setTradeBookData(null);
+
+    try {
+      const response = await fetch(`/api/trade-book?symbol=${emiten.toUpperCase()}`);
+      const json = await response.json();
+
+      if (!json.success) {
+        throw new Error(json.error || 'Failed to fetch trade book data.');
+      }
+      setTradeBookData(json.data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
+      <div className="glass-card-static compact-form" style={{ marginBottom: '2rem' }}>
+        <form onSubmit={handleSubmit}>
+          <div className="compact-form-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent-primary)' }}>
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              </svg>
+              <h3 style={{ textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.85rem' }}>Trade Book Analysis</h3>
+            </div>
+          </div>
+
+          <div className="compact-form-row">
+            <div className="input-group compact-group" style={{ flex: '1 1 140px', minWidth: '120px' }}>
+              <label htmlFor="emiten" className="input-label compact-label">
+                Emiten
+              </label>
+              <input
+                id="emiten"
+                type="text"
+                value={emiten}
+                onChange={(e) => setEmiten(e.target.value.toUpperCase())}
+                placeholder="CODE"
+                required
+                className="input-field compact-input"
+                style={{
+                  fontWeight: '700',
+                  letterSpacing: '0.5px'
+                }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-primary compact-btn"
+              disabled={loading}
+              style={{
+                minWidth: '100px',
+                fontSize: '0.8rem',
+                fontWeight: '600'
+              }}
+            >
+              {loading ? '...' : 'Search'}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {loading && (
+        <div className="text-center mt-4">
+          <div className="spinner" style={{ margin: '0 auto' }}></div>
+          <p className="text-secondary mt-2">Fetching trade book data...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="glass-card mt-4" style={{
+          background: 'rgba(245, 87, 108, 0.1)',
+          borderColor: 'var(--accent-warning)'
+        }}>
+          <h3>❌ Error</h3>
+          <p style={{ color: 'var(--accent-warning)' }}>{error}</p>
+        </div>
+      )}
+
+      {tradeBookData && (
+        <div className="glass-card" style={{ padding: '1.5rem' }}>
+          <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+            Trade Book Summary for {emiten.toUpperCase()}
+          </h3>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Metric</th>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Buy</th>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Sell</th>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                  <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Lot</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.buy_lot)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.sell_lot)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.total_lot)}</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                  <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Frequency</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.buy_frequency)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.sell_frequency)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.total_frequency)}</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Percentage</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookData.buy_percentage}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookData.sell_percentage}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>-</td> {/* Total percentage not directly available */}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

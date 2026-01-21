@@ -48,6 +48,20 @@ const Navbar = () => {
               Calculator
             </Link>
             <Link 
+              href="/tradebook" 
+              style={{
+                textDecoration: 'none',
+                color: pathname === '/tradebook' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                fontWeight: pathname === '/tradebook' ? 600 : 400,
+                fontSize: '0.9rem',
+                borderBottom: pathname === '/tradebook' ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                paddingBottom: '2px',
+                transition: 'all 0.2s'
+              }}
+            >
+              Tradebook
+            </Link>
+            <Link 
               href="/history" 
               style={{
                 textDecoration: 'none',

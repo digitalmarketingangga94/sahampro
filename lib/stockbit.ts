@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookResponse, TradeBookTotal } from './types';
 import { getSessionValue, updateTokenLastUsed, invalidateToken } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -360,8 +360,29 @@ export async function fetchKeyStats(emiten: string): Promise<KeyStatsData> {
 }
 
 /**
- * Removed fetchTradeBook function as requested
+ * Fetch Trade Book data for a specific symbol
  */
+export async function fetchTradeBook(symbol: string): Promise<TradeBookTotal | null> {
+  const url = new URL(`${STOCKBIT_BASE_URL}/order-trade/trade-book`);
+  url.searchParams.append('symbol', symbol);
+  url.searchParams.append('group_by', 'GROUP_BY_TIME');
+  url.searchParams.append('time_interval', '10m'); // Using 10m as per example
+
+  try {
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: await getHeaders(),
+    });
+
+    await handleApiResponse(response, `Trade Book API (${symbol})`);
+
+    const json: TradeBookResponse = await response.json();
+    return json.data?.book_total || null;
+  } catch (error) {
+    console.error(`Error fetching trade book for ${symbol}:`, error);
+    return null; // Return null on error to not block market movers
+  }
+}
 
 /**
  * Fetch Market Movers data (Top Gainer, Loser, Value, Volume, Frequency)
@@ -403,7 +424,6 @@ export async function fetchMarketMovers(type: MarketMoverType, limit: number = 2
     volume: item.volume.raw,
     frequency: item.frequency.raw,
     net_foreign_buy: item.net_foreign_buy?.raw || 0,
-    // tradeBookData: tradeBookData || undefined, // Removed as requested
   }));
 
   return mappedMovers;
