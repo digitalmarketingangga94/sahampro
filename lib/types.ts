@@ -330,11 +330,59 @@ export interface MarketMoverItem {
   net_foreign_buy?: number; // Assuming this is 'Net Foreign' from the image
 }
 
+// Raw response structure for market movers
 export interface MarketMoversResponse {
-  data: {
-    result: MarketMoverItem[];
-  };
   message: string;
+  data: {
+    mover_list: {
+      stock_detail: {
+        code: string;
+        name: string;
+        icon_url: string;
+        has_uma: boolean;
+        notations: any[];
+        corpaction: {
+          active: boolean;
+          icon_url: string;
+          text: string;
+        };
+      };
+      price: number;
+      change: {
+        value: number;
+        percentage: number;
+      };
+      value: {
+        raw: number;
+        formatted: string;
+      };
+      volume: {
+        raw: number;
+        formatted: string;
+      };
+      frequency: {
+        raw: number;
+        formatted: string;
+      };
+      net_foreign_buy: {
+        raw: number;
+        formatted: string;
+      };
+      net_foreign_sell: {
+        raw: number;
+        formatted: string;
+      };
+      net_buy: {
+        raw: number;
+        formatted: string;
+      };
+      net_sell: {
+        raw: number;
+        formatted: string;
+      };
+      iepiev_detail: any;
+    }[];
+  };
 }
 
 export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency';

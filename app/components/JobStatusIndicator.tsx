@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import type { BackgroundJobLog } from '@/lib/types';
+import type { BackgroundJobLog, BackgroundJobLogEntry } from '@/lib/types';
 
 export default function JobStatusIndicator() {
   const [latestLog, setLatestLog] = useState<BackgroundJobLog | null>(null);
@@ -118,7 +118,7 @@ export default function JobStatusIndicator() {
               className="log-entries-scroll"
             >
               {latestLog.log_entries && latestLog.log_entries.length > 0 ? (
-                latestLog.log_entries.slice(-5).map((entry, idx) => (
+                latestLog.log_entries.slice(-5).map((entry: BackgroundJobLogEntry, idx: number) => (
                   <div key={idx} className={`log-entry-line level-${entry.level}`}>
                     <span>[{entry.emiten || 'SYS'}]</span>
                     <span>{entry.message}</span>

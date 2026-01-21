@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import type { BackgroundJobLog } from '@/lib/types';
+import type { BackgroundJobLog, BackgroundJobLogEntry } from '@/lib/types';
 
 interface JobLogsCardProps {
   jobName?: string;
@@ -145,7 +145,7 @@ export default function JobLogsCard({
                   
                   <div className="log-entries-scroll" ref={scrollRef}>
                     {log.log_entries && log.log_entries.length > 0 ? (
-                      log.log_entries.map((entry, idx) => (
+                      log.log_entries.map((entry: BackgroundJobLogEntry, idx: number) => (
                         <div key={idx} className={`log-entry-line level-${entry.level}`}>
                           <span className="entry-time">{new Date(entry.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                           {entry.emiten && <span className="entry-ticker">[{entry.emiten}]</span>}

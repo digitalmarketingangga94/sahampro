@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: movers.data.result,
+      data: movers, // Fixed: fetchMarketMovers now returns MarketMoverItem[] directly
     });
   } catch (error) {
     console.error(`Market Movers API (${request.nextUrl.searchParams.get('type')}) error:`, error);

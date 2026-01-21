@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem } from './types';
 import { getSessionValue, updateTokenLastUsed, invalidateToken } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -362,13 +362,22 @@ export async function fetchKeyStats(emiten: string): Promise<KeyStatsData> {
 /**
  * Fetch Market Movers data (Top Gainer, Loser, Value, Volume, Frequency)
  */
-export async function fetchMarketMovers(type: MarketMoverType, limit: number = 20): Promise<MarketMoversResponse> {
-  // Placeholder URL - actual Stockbit API endpoint might vary
-  // Assuming a generic endpoint that takes 'type' as a parameter
-  const url = new URL(`${STOCKBIT_BASE_URL}/market/movers`);
-  url.searchParams.append('type', type); // e.g., 'gainer', 'loser', 'value', 'volume', 'frequency'
+export async function fetchMarketMovers(type: MarketMoverType, limit: number = 20): Promise<MarketMoverItem[]> {
+  const moverTypeMap: Record<MarketMoverType, string> = {
+    gainer: 'MOVER_TYPE_TOP_GAINER',
+    loser: 'MOVER_TYPE_TOP_LOSER',
+    value: 'MOVER_TYPE_TOP_VALUE',
+    volume: 'MOVER_TYPE_TOP_VOLUME',
+    frequency: 'MOVER_TYPE_TOP_FREQUENCY',
+  };
+
+  const url = new URL(`${STOCKBIT_BASE_URL}/order-trade/market-mover`);
+  url.searchParams.append('mover_type', moverTypeMap[type]);
+  url.searchParams.append('filter_stocks', 'FILTER_STOCKS_TYPE_MAIN_BOARD');
+  url.searchParams.append('filter_stocks', 'FILTER_STOCKS_TYPE_DEVELOPMENT_BOARD');
+  url.searchParams.append('filter_stocks', 'FILTER_STOCKS_TYPE_ACCELERATION_BOARD');
+  url.searchParams.append('filter_stocks', 'FILTER_STOCKS_TYPE_NEW_ECONOMY_BOARD');
   url.searchParams.append('limit', limit.toString());
-  url.searchParams.append('board', 'REGULER'); // Assuming regular board
 
   const response = await fetch(url.toString(), {
     method: 'GET',
@@ -377,5 +386,20 @@ export async function fetchMarketMovers(type: MarketMoverType, limit: number = 2
 
   await handleApiResponse(response, `Market Movers API (${type})`);
 
-  return response.json();
+  const json: MarketMoversResponse = await response.json();
+  
+  // Map the new response structure to the existing MarketMoverItem interface
+  const mappedMovers: MarketMoverItem[] = json.data.mover_list.map(item => ({
+    symbol: item.stock_detail.code,
+    name: item.stock_detail.name,
+    last_price: item.price,
+    change_point: item.change.value,
+    change_percentage: item.change.percentage,
+    value: item.value.raw,
+    volume: item.volume.raw,
+    frequency: item.frequency.raw,
+    net_foreign_buy: item.net_foreign_buy?.raw || 0, // Default to 0 if not present
+  }));
+
+  return mappedMovers;
 }
