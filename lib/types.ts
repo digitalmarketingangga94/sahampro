@@ -328,6 +328,7 @@ export interface MarketMoverItem {
   volume: number; // in shares
   frequency: number;
   net_foreign_buy?: number; // Assuming this is 'Net Foreign' from the image
+  tradeBookData?: TradeBookTotal; // New field for trade book data
 }
 
 // Raw response structure for market movers
@@ -382,6 +383,25 @@ export interface MarketMoversResponse {
       };
       iepiev_detail: any;
     }[];
+  };
+}
+
+export interface TradeBookTotal {
+  buy_frequency: string;
+  sell_frequency: string;
+  buy_lot: string;
+  sell_lot: string;
+  buy_percentage: string;
+  sell_percentage: string;
+  total_frequency: string;
+  total_lot: string;
+}
+
+export interface TradeBookResponse {
+  message: string;
+  data: {
+    book_total: TradeBookTotal;
+    // other fields like trade_book_list, etc.
   };
 }
 
