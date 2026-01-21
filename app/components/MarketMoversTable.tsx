@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import type { MarketMoverItem, MarketMoverType } from '@/lib/types';
 
 interface MarketMoversTableProps {
@@ -17,8 +18,6 @@ const formatCompactNumber = (num: number): string => {
   return num.toLocaleString();
 };
 
-// Removed helper functions for trade book parsing and formatting as requested
-
 type SortColumn = 'last_price' | 'value' | 'volume' | 'frequency' | 'net_foreign_buy';
 type SortDirection = 'asc' | 'desc';
 
@@ -32,6 +31,7 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ column: null, direction: 'asc' });
+  const router = useRouter(); // Initialize useRouter
 
   useEffect(() => {
     const fetchMovers = async () => {
@@ -85,6 +85,10 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
     return '';
   };
 
+  const handleSymbolClick = (symbol: string) => {
+    router.push(`/tradebook?symbol=${symbol}`);
+  };
+
   return (
     <div className="glass-card-static" style={{ padding: '1rem' }}>
       <h3 style={{ marginBottom: '1rem', fontSize: '1rem', color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal' }}>{title}</h3>
@@ -132,13 +136,17 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
                 >
                   Net Foreign {getSortIndicator('net_foreign_buy')}
                 </th>
-                {/* Removed Trade Book Headers */}
               </tr>
             </thead>
             <tbody>
               {sortedMovers.map((item, index) => (
                 <tr key={item.symbol} style={{ borderBottom: index < sortedMovers.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
-                  <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>{item.symbol}</td>
+                  <td 
+                    style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer' }}
+                    onClick={() => handleSymbolClick(item.symbol)}
+                  >
+                    {item.symbol}
+                  </td>
                   <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>
                     {item.last_price.toLocaleString()}
                     <span style={{ color: item.change_percentage >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)', marginLeft: '0.5rem' }}>
@@ -151,7 +159,6 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
                   <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: item.net_foreign_buy && item.net_foreign_buy >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
                     {item.net_foreign_buy ? formatCompactNumber(item.net_foreign_buy) : '-'}
                   </td>
-                  {/* Removed Trade Book Data Cells */}
                 </tr>
               ))}
             </tbody>

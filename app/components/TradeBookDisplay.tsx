@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 import type { TradeBookTotal } from '@/lib/types';
 
 // Helper to format large numbers (e.g., 1234567890 -> 1.23B)
@@ -20,14 +21,32 @@ interface TradeBookDisplayProps {
 }
 
 export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProps) {
+  const searchParams = useSearchParams(); // Initialize useSearchParams
   const [emiten, setEmiten] = useState(initialEmiten || '');
   const [tradeBookData, setTradeBookData] = useState<TradeBookTotal | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Effect to handle initial symbol from URL
+  useEffect(() => {
+    const symbolFromUrl = searchParams.get('symbol');
+    if (symbolFromUrl && symbolFromUrl !== emiten) {
+      setEmiten(symbolFromUrl.toUpperCase());
+      // Trigger search automatically
+      const syntheticEvent = { preventDefault: () => {} } as React.FormEvent;
+      handleSubmit(syntheticEvent, symbolFromUrl.toUpperCase());
+    } else if (!symbolFromUrl && !initialEmiten) {
+      // Clear data if no symbol in URL and no initialEmiten
+      setTradeBookData(null);
+      setError(null);
+    }
+  }, [searchParams]); // Depend on searchParams to react to URL changes
+
+  const handleSubmit = async (e: React.FormEvent, symbolOverride?: string) => {
     e.preventDefault();
-    if (!emiten) {
+    const currentEmiten = symbolOverride || emiten;
+
+    if (!currentEmiten) {
       setError('Please enter a stock symbol.');
       return;
     }
@@ -37,7 +56,7 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
     setTradeBookData(null);
 
     try {
-      const response = await fetch(`/api/trade-book?symbol=${emiten.toUpperCase()}`);
+      const response = await fetch(`/api/trade-book?symbol=${currentEmiten}`);
       const json = await response.json();
 
       if (!json.success) {
