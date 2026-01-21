@@ -362,11 +362,11 @@ export async function fetchKeyStats(emiten: string): Promise<KeyStatsData> {
 /**
  * Fetch Trade Book data for a specific symbol
  */
-export async function fetchTradeBook(symbol: string): Promise<{ book_total: TradeBookTotal | null }> {
+export async function fetchTradeBook(symbol: string): Promise<TradeBookTotal | null> {
   const url = new URL(`${STOCKBIT_BASE_URL}/order-trade/trade-book`);
   url.searchParams.append('symbol', symbol);
   url.searchParams.append('group_by', 'GROUP_BY_TIME');
-  url.searchParams.append('time_interval', '10m'); // Mengubah dari '10m' menjadi '1h'
+  url.searchParams.append('time_interval', '10m'); // Using 10m as per example
 
   try {
     const response = await fetch(url.toString(), {
@@ -377,14 +377,10 @@ export async function fetchTradeBook(symbol: string): Promise<{ book_total: Trad
     await handleApiResponse(response, `Trade Book API (${symbol})`);
 
     const json: TradeBookResponse = await response.json();
-    // Removed console.log as requested
-    return {
-      book_total: json.data?.book_total || null,
-      // Removed trade_book_list
-    };
+    return json.data?.book_total || null;
   } catch (error) {
     console.error(`Error fetching trade book for ${symbol}:`, error);
-    return { book_total: null };
+    return null; // Return null on error to not block market movers
   }
 }
 
