@@ -366,7 +366,7 @@ export async function fetchTradeBook(symbol: string): Promise<{ book_total: Trad
   const url = new URL(`${STOCKBIT_BASE_URL}/order-trade/trade-book`);
   url.searchParams.append('symbol', symbol);
   url.searchParams.append('group_by', 'GROUP_BY_TIME');
-  url.searchParams.append('time_interval', '1h'); // Mengubah dari '10m' menjadi '1h'
+  url.searchParams.append('time_interval', '10m'); // Mengubah dari '10m' menjadi '1h'
 
   try {
     const response = await fetch(url.toString(), {
