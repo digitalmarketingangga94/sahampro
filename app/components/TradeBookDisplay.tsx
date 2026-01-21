@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation'; // Import useSearchParams
-import type { TradeBookTotal, TradeBookCombinedData, TradeBookDetailItem } from '@/lib/types';
+import type { TradeBookTotal, TradeBookCombinedData } from '@/lib/types';
 
 // Helper to format large numbers (e.g., 1234567890 -> 1.23B)
 const formatCompactNumber = (num: number | string | null | undefined): string => {
@@ -68,27 +68,6 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
     } finally {
       setLoading(false);
     }
-  };
-
-  const renderChartBar = (buyPercentage: string, sellPercentage: string) => {
-    const buyP = parseFloat(buyPercentage.replace('%', ''));
-    const sellP = parseFloat(sellPercentage.replace('%', ''));
-
-    if (isNaN(buyP) || isNaN(sellP)) {
-      return (
-        <div style={{ display: 'flex', width: '100%', height: '8px', borderRadius: '4px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)' }}>
-          <div style={{ width: '50%', background: 'rgba(56, 239, 125, 0.3)' }}></div>
-          <div style={{ width: '50%', background: 'rgba(245, 87, 108, 0.3)' }}></div>
-        </div>
-      );
-    }
-
-    return (
-      <div style={{ display: 'flex', width: '100%', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
-        <div style={{ width: `${buyP}%`, background: 'var(--accent-success)' }}></div>
-        <div style={{ width: `${sellP}%`, background: 'var(--accent-warning)' }}></div>
-      </div>
-    );
   };
 
   return (
@@ -159,123 +138,84 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
       )}
 
       {tradeBookCombinedData && (
-        <>
-          <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
-              Trade Book Summary for {emiten.toUpperCase()}
-            </h3>
+        <div className="glass-card" style={{ padding: '1.5rem' }}>
+          <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+            Trade Book Summary for {emiten.toUpperCase()}
+          </h3>
 
-            {/* Display Price, Percentage Change, Volume, Value */}
-            <div style={{ marginBottom: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Price</span>
-                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
-                  {tradeBookCombinedData.marketData.price.toLocaleString()}
-                </div>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Change %</span>
-                <div style={{ fontSize: '1.1rem', fontWeight: 600, marginTop: '0.25rem', color: tradeBookCombinedData.marketData.change_percentage >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
-                  {tradeBookCombinedData.marketData.change_percentage >= 0 ? '+' : ''}{tradeBookCombinedData.marketData.change_percentage.toFixed(2)}%
-                </div>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Volume</span>
-                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
-                  {formatCompactNumber(tradeBookCombinedData.marketData.volume)}
-                </div>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Value</span>
-                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
-                  {formatCompactNumber(tradeBookCombinedData.marketData.value)}
-                </div>
+          {/* New: Display Price, Percentage Change, Volume, Value */}
+          <div style={{ marginBottom: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Price</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
+                {tradeBookCombinedData.marketData.price.toLocaleString()}
               </div>
             </div>
-
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Metric</th>
-                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Buy</th>
-                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Sell</th>
-                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    {
-                      label: 'Lot',
-                      buy: tradeBookCombinedData.tradeBookTotal.buy_lot,
-                      sell: tradeBookCombinedData.tradeBookTotal.sell_lot,
-                      total: tradeBookCombinedData.tradeBookTotal.total_lot,
-                      isPercentage: false,
-                    },
-                    {
-                      label: 'Frequency',
-                      buy: tradeBookCombinedData.tradeBookTotal.buy_frequency,
-                      sell: tradeBookCombinedData.tradeBookTotal.sell_frequency,
-                      total: tradeBookCombinedData.tradeBookTotal.total_frequency,
-                      isPercentage: false,
-                    },
-                    {
-                      label: 'Percentage',
-                      buy: tradeBookCombinedData.tradeBookTotal.buy_percentage,
-                      sell: tradeBookCombinedData.tradeBookTotal.sell_percentage,
-                      total: '-', // Total percentage not directly available
-                      isPercentage: true,
-                    },
-                  ].map((row, index) => (
-                    <tr key={row.label} style={{ borderBottom: index < 2 ? '1px solid rgba(255,255,255,0.03)' : 'none'}}>
-                      <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>{row.label}</td>
-                      <td style={{ padding: '0.5rem', textAlign: 'right' }}>{row.isPercentage ? row.buy : formatCompactNumber(row.buy)}</td>
-                      <td style={{ padding: '0.5rem', textAlign: 'right' }}>{row.isPercentage ? row.sell : formatCompactNumber(row.sell)}</td>
-                      <td style={{ padding: '0.5rem', textAlign: 'right' }}>{row.isPercentage ? row.total : formatCompactNumber(row.total)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Change %</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, marginTop: '0.25rem', color: tradeBookCombinedData.marketData.change_percentage >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
+                {tradeBookCombinedData.marketData.change_percentage >= 0 ? '+' : ''}{tradeBookCombinedData.marketData.change_percentage.toFixed(2)}%
+              </div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Volume</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
+                {formatCompactNumber(tradeBookCombinedData.marketData.volume)}
+              </div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Value</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
+                {formatCompactNumber(tradeBookCombinedData.marketData.value)}
+              </div>
             </div>
           </div>
 
-          {/* New: Detailed Trade Book per Time Interval */}
-          {tradeBookCombinedData.tradeBookDetails && tradeBookCombinedData.tradeBookDetails.length > 0 && (
-            <div className="glass-card" style={{ padding: '1.5rem', marginTop: '1.5rem' }}>
-              <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
-                Trade Book Details (10m Interval)
-              </h3>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '500px' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <th style={{ padding: '0.75rem 0.5rem', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Time</th>
-                      <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Buy Lot</th>
-                      <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>%Buy</th>
-                      <th style={{ padding: '0.75rem 0.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Chart</th>
-                      <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>%Sell</th>
-                      <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Sell Lot</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tradeBookCombinedData.tradeBookDetails.map((item: TradeBookDetailItem, index: number) => (
-                      <tr key={index} style={{ borderBottom: index < tradeBookCombinedData.tradeBookDetails.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none'}}>
-                        <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>{item.time}</td>
-                        <td style={{ padding: '0.5rem', textAlign: 'right', color: 'var(--accent-success)' }}>{formatCompactNumber(item.buy.lot)}</td>
-                        <td style={{ padding: '0.5rem', textAlign: 'right', color: 'var(--accent-success)' }}>{item.buy.percentage}</td>
-                        <td style={{ padding: '0.5rem', textAlign: 'center' }}>
-                          {renderChartBar(item.buy.percentage, item.sell.percentage)}
-                        </td>
-                        <td style={{ padding: '0.5rem', textAlign: 'right', color: 'var(--accent-warning)' }}>{item.sell.percentage}</td>
-                        <td style={{ padding: '0.5rem', textAlign: 'right', color: 'var(--accent-warning)' }}>{formatCompactNumber(item.sell.lot)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Metric</th>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Buy</th>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Sell</th>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  {
+                    label: 'Lot',
+                    buy: tradeBookCombinedData.tradeBookTotal.buy_lot,
+                    sell: tradeBookCombinedData.tradeBookTotal.sell_lot,
+                    total: tradeBookCombinedData.tradeBookTotal.total_lot,
+                    isPercentage: false,
+                  },
+                  {
+                    label: 'Frequency',
+                    buy: tradeBookCombinedData.tradeBookTotal.buy_frequency,
+                    sell: tradeBookCombinedData.tradeBookTotal.sell_frequency,
+                    total: tradeBookCombinedData.tradeBookTotal.total_frequency,
+                    isPercentage: false,
+                  },
+                  {
+                    label: 'Percentage',
+                    buy: tradeBookCombinedData.tradeBookTotal.buy_percentage,
+                    sell: tradeBookCombinedData.tradeBookTotal.sell_percentage,
+                    total: '-', // Total percentage not directly available
+                    isPercentage: true,
+                  },
+                ].map((row, index) => (
+                  <tr key={row.label} style={{ borderBottom: index < 2 ? '1px solid rgba(255,255,255,0.03)' : 'none'}}>
+                    <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>{row.label}</td>
+                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{row.isPercentage ? row.buy : formatCompactNumber(row.buy)}</td>
+                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{row.isPercentage ? row.sell : formatCompactNumber(row.sell)}</td>
+                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{row.isPercentage ? row.total : formatCompactNumber(row.total)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
     </div>
   );
