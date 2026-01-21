@@ -1,0 +1,142 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { fetchWatchlist, fetchMarketDetector, fetchOrderbook, getTopBroker, fetchEmitenInfo } from '@/lib/stockbit';
+import { calculateTargets } from '@/lib/calculations';
+import { saveWatchlistAnalysis, updatePreviousDayRealPrice } from '@/lib/supabase';
+
+export async function POST(request: NextRequest) {
+  try {
+    // Optional: Add authorization check
+    const authHeader = request.headers.get('authorization');
+    const expectedToken = process.env.CRON_SECRET;
+
+    if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get current date for analysis
+    const today = new Date().toISOString().split('T')[0];
+
+    // Fetch watchlist
+    const watchlistResponse = await fetchWatchlist();
+    const watchlistItems = watchlistResponse.data?.result || [];
+
+    if (watchlistItems.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: 'No watchlist items to analyze',
+        results: []
+      });
+    }
+
+    const results = [];
+    const errors = [];
+
+    // Analyze each watchlist item
+    for (const item of watchlistItems) {
+      const emiten = item.symbol || item.company_code;
+
+      try {
+        // Fetch market data for today
+        const [marketDetectorData, orderbookData, emitenInfoData] = await Promise.all([
+          fetchMarketDetector(emiten, today, today),
+          fetchOrderbook(emiten),
+          fetchEmitenInfo(emiten).catch(() => null), // Don't fail if sector fetch fails
+        ]);
+
+        const brokerData = getTopBroker(marketDetectorData);
+        const sector = emitenInfoData?.data?.sector || undefined;
+
+
+        if (!brokerData) {
+          errors.push({ emiten, error: 'No broker data' });
+          continue;
+        }
+
+        const obData = orderbookData.data || (orderbookData as any);
+        const offerPrices = (obData.offer || []).map((o: any) => Number(o.price));
+        const bidPrices = (obData.bid || []).map((b: any) => Number(b.price));
+
+        const marketData = {
+          harga: Number(obData.close),
+          offerTeratas: offerPrices.length > 0 ? Math.max(...offerPrices) : Number(obData.high || 0),
+          bidTerbawah: bidPrices.length > 0 ? Math.min(...bidPrices) : 0,
+          totalBid: Number(obData.total_bid_offer.bid.lot.replace(/,/g, '')),
+          totalOffer: Number(obData.total_bid_offer.offer.lot.replace(/,/g, '')),
+        };
+
+        const calculated = calculateTargets(
+          brokerData.rataRataBandar,
+          brokerData.barangBandar,
+          marketData.offerTeratas,
+          marketData.bidTerbawah,
+          marketData.totalBid / 100,
+          marketData.totalOffer / 100,
+          marketData.harga
+        );
+
+        // Save to database
+        await saveWatchlistAnalysis({
+          from_date: today,
+          to_date: today,
+          emiten,
+          sector,
+          bandar: brokerData.bandar,
+          barang_bandar: brokerData.barangBandar,
+          rata_rata_bandar: brokerData.rataRataBandar,
+          harga: marketData.harga,
+          ara: marketData.offerTeratas,
+          arb: marketData.bidTerbawah,
+          fraksi: calculated.fraksi,
+          total_bid: marketData.totalBid,
+          total_offer: marketData.totalOffer,
+          total_papan: calculated.totalPapan,
+          rata_rata_bid_ofer: calculated.rataRataBidOfer,
+          a: calculated.a,
+          p: calculated.p,
+          target_realistis: calculated.targetRealistis1,
+          target_max: calculated.targetMax,
+          status: 'success'
+        });
+
+        // Update previous day's record with real price (current price)
+        try {
+          await updatePreviousDayRealPrice(emiten, today, marketData.harga);
+        } catch (updateError) {
+          console.error(`Failed to update previous day real price for ${emiten}`, updateError);
+        }
+
+        results.push({ emiten, status: 'success' });
+
+      } catch (error) {
+        console.error(`Error analyzing ${emiten}:`, error);
+
+        errors.push({
+          emiten,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      date: today,
+      analyzed: results.length,
+      errors: errors.length,
+      results,
+      errorDetails: errors
+    });
+
+  } catch (error) {
+    console.error('Watchlist analysis error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+}
