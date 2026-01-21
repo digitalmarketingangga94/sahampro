@@ -316,3 +316,25 @@ export interface BackgroundJobLog {
   error_message?: string;
   metadata?: Record<string, unknown>;
 }
+
+// New Market Movers Types
+export interface MarketMoverItem {
+  symbol: string;
+  name: string;
+  last_price: number;
+  change_point: number;
+  change_percentage: number;
+  value: number; // in IDR
+  volume: number; // in shares
+  frequency: number;
+  net_foreign_buy?: number; // Assuming this is 'Net Foreign' from the image
+}
+
+export interface MarketMoversResponse {
+  data: {
+    result: MarketMoverItem[];
+  };
+  message: string;
+}
+
+export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency';

@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType } from './types';
 import { getSessionValue, updateTokenLastUsed, invalidateToken } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -359,3 +359,23 @@ export async function fetchKeyStats(emiten: string): Promise<KeyStatsData> {
   return parseKeyStatsResponse(json);
 }
 
+/**
+ * Fetch Market Movers data (Top Gainer, Loser, Value, Volume, Frequency)
+ */
+export async function fetchMarketMovers(type: MarketMoverType, limit: number = 20): Promise<MarketMoversResponse> {
+  // Placeholder URL - actual Stockbit API endpoint might vary
+  // Assuming a generic endpoint that takes 'type' as a parameter
+  const url = new URL(`${STOCKBIT_BASE_URL}/market/movers`);
+  url.searchParams.append('type', type); // e.g., 'gainer', 'loser', 'value', 'volume', 'frequency'
+  url.searchParams.append('limit', limit.toString());
+  url.searchParams.append('board', 'REGULER'); // Assuming regular board
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: await getHeaders(),
+  });
+
+  await handleApiResponse(response, `Market Movers API (${type})`);
+
+  return response.json();
+}

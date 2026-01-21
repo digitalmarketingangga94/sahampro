@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import TokenStatusIndicator from './TokenStatusIndicator';
 import JobStatusIndicator from './JobStatusIndicator';
 
 const Navbar = () => {
@@ -12,7 +11,6 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {/* Removed the SVG icon */}
           <div className="navbar-content">
             <h1 className="navbar-title" style={{ fontSize: '1.5rem', marginBottom: '0' }}>RSY Calculator</h1>
             <p className="navbar-subtitle" style={{ fontSize: '0.75rem' }}>Analyze stock targets based on broker summary</p>
@@ -36,6 +34,20 @@ const Navbar = () => {
               Calculator
             </Link>
             <Link 
+              href="/dashboard" 
+              style={{
+                textDecoration: 'none',
+                color: pathname === '/dashboard' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                fontWeight: pathname === '/dashboard' ? 600 : 400,
+                fontSize: '0.9rem',
+                borderBottom: pathname === '/dashboard' ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                paddingBottom: '2px',
+                transition: 'all 0.2s'
+              }}
+            >
+              Dashboard
+            </Link>
+            <Link 
               href="/history" 
               style={{
                 textDecoration: 'none',
@@ -52,7 +64,6 @@ const Navbar = () => {
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
             <JobStatusIndicator />
-            {/* <TokenStatusIndicator /> -- Removed as requested */}
           </div>
         </div>
       </div>
