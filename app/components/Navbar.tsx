@@ -9,50 +9,41 @@ const Navbar = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="navbar">
-      <div className="navbar-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {/* Removed the SVG icon */}
-          <div className="navbar-content">
-            <h1 className="navbar-title" style={{ fontSize: '1.5rem', marginBottom: '0' }}>RSY Calculator</h1>
-            <p className="navbar-subtitle" style={{ fontSize: '0.75rem' }}>Analyze stock targets based on broker summary</p>
+    <nav className="sticky top-0 z-50 bg-card backdrop-blur-md border-b border-border-color py-3">
+      <div className="container mx-auto px-4 flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col justify-center">
+            <h1 className="text-xl md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">RSY Calculator</h1>
+            <p className="text-xs md:text-sm text-text-secondary font-normal opacity-80 hidden md:block">Analyze stock targets based on broker summary</p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div className="nav-links" style={{ display: 'flex', gap: '1.5rem' }}>
+        <div className="flex items-center gap-6">
+          <div className="flex gap-6">
             <Link 
               href="/" 
-              style={{
-                textDecoration: 'none',
-                color: pathname === '/' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: pathname === '/' ? 600 : 400,
-                fontSize: '0.9rem',
-                borderBottom: pathname === '/' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                paddingBottom: '2px',
-                transition: 'all 0.2s'
-              }}
+              className={`text-sm md:text-base font-medium transition-all pb-0.5 ${
+                pathname === '/' 
+                  ? 'text-text-primary border-b-2 border-accent-primary' 
+                  : 'text-text-secondary hover:text-text-primary hover:border-b-2 hover:border-border-color'
+              }`}
             >
               Calculator
             </Link>
             <Link 
               href="/history" 
-              style={{
-                textDecoration: 'none',
-                color: pathname === '/history' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: pathname === '/history' ? 600 : 400,
-                fontSize: '0.9rem',
-                borderBottom: pathname === '/history' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                paddingBottom: '2px',
-                transition: 'all 0.2s'
-              }}
+              className={`text-sm md:text-base font-medium transition-all pb-0.5 ${
+                pathname === '/history' 
+                  ? 'text-text-primary border-b-2 border-accent-primary' 
+                  : 'text-text-secondary hover:text-text-primary hover:border-b-2 hover:border-border-color'
+              }`}
             >
               History
             </Link>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <div className="flex gap-3 items-center">
             <JobStatusIndicator />
-            {/* <TokenStatusIndicator /> -- Removed as requested */}
+            <TokenStatusIndicator />
           </div>
         </div>
       </div>
