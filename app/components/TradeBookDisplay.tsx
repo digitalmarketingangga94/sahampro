@@ -70,6 +70,9 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
     }
   };
 
+  // Log tradeBookCombinedData to console for debugging
+  console.log("TradeBookCombinedData:", tradeBookCombinedData);
+
   return (
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
       <div className="glass-card-static compact-form" style={{ marginBottom: '2rem' }}>
@@ -217,7 +220,7 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
           </div>
 
           {/* New: Trade Book List Table */}
-          {tradeBookCombinedData.tradeBookList && tradeBookCombinedData.tradeBookList.length > 0 && (
+          {tradeBookCombinedData.tradeBookList && tradeBookCombinedData.tradeBookList.length > 0 ? (
             <div style={{ marginTop: '2rem', overflowX: 'auto' }}>
               <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
                 Trade Book Details
@@ -256,6 +259,10 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
                   ))}
                 </tbody>
               </table>
+            </div>
+          ) : (
+            <div style={{ marginTop: '2rem', padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+              No detailed trade book data available for {emiten.toUpperCase()} for the selected interval.
             </div>
           )}
         </div>
