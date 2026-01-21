@@ -134,13 +134,13 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
                 </tr>
               </thead>
               <tbody>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)'}}>
                   <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Lot</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.buy_lot)}</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.sell_lot)}</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.total_lot)}</td>
                 </tr>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)'}}>
                   <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Frequency</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.buy_frequency)}</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.sell_frequency)}</td>
