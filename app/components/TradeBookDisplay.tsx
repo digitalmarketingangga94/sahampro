@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation'; // Import useSearchParams
-import type { TradeBookTotal } from '@/lib/types';
+import type { TradeBookTotal, TradeBookCombinedData } from '@/lib/types';
 
 // Helper to format large numbers (e.g., 1234567890 -> 1.23B)
 const formatCompactNumber = (num: number | string | null | undefined): string => {
@@ -23,7 +23,7 @@ interface TradeBookDisplayProps {
 export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProps) {
   const searchParams = useSearchParams(); // Initialize useSearchParams
   const [emiten, setEmiten] = useState(initialEmiten || '');
-  const [tradeBookData, setTradeBookData] = useState<TradeBookTotal | null>(null);
+  const [tradeBookCombinedData, setTradeBookCombinedData] = useState<TradeBookCombinedData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +37,7 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
       handleSubmit(syntheticEvent, symbolFromUrl.toUpperCase());
     } else if (!symbolFromUrl && !initialEmiten) {
       // Clear data if no symbol in URL and no initialEmiten
-      setTradeBookData(null);
+      setTradeBookCombinedData(null);
       setError(null);
     }
   }, [searchParams]); // Depend on searchParams to react to URL changes
@@ -53,7 +53,7 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
 
     setLoading(true);
     setError(null);
-    setTradeBookData(null);
+    setTradeBookCombinedData(null);
 
     try {
       const response = await fetch(`/api/trade-book?symbol=${currentEmiten}`);
@@ -62,7 +62,7 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
       if (!json.success) {
         throw new Error(json.error || 'Failed to fetch trade book data.');
       }
-      setTradeBookData(json.data);
+      setTradeBookCombinedData(json.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred.');
     } finally {
@@ -137,11 +137,40 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
         </div>
       )}
 
-      {tradeBookData && (
+      {tradeBookCombinedData && (
         <div className="glass-card" style={{ padding: '1.5rem' }}>
           <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
             Trade Book Summary for {emiten.toUpperCase()}
           </h3>
+
+          {/* New: Display Price, Percentage Change, Volume, Value */}
+          <div style={{ marginBottom: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Price</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
+                {tradeBookCombinedData.marketData.price.toLocaleString()}
+              </div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Change %</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, marginTop: '0.25rem', color: tradeBookCombinedData.marketData.change_percentage >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
+                {tradeBookCombinedData.marketData.change_percentage >= 0 ? '+' : ''}{tradeBookCombinedData.marketData.change_percentage.toFixed(2)}%
+              </div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Volume</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
+                {formatCompactNumber(tradeBookCombinedData.marketData.volume)}
+              </div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Value</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
+                {formatCompactNumber(tradeBookCombinedData.marketData.value)}
+              </div>
+            </div>
+          </div>
+
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
               <thead>
@@ -155,20 +184,20 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
               <tbody>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)'}}>
                   <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Lot</td>
-                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.buy_lot)}</td>
-                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.sell_lot)}</td>
-                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.total_lot)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookCombinedData.tradeBookTotal.buy_lot)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookCombinedData.tradeBookTotal.sell_lot)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookCombinedData.tradeBookTotal.total_lot)}</td>
                 </tr>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)'}}>
                   <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Frequency</td>
-                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.buy_frequency)}</td>
-                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.sell_frequency)}</td>
-                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.total_frequency)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookCombinedData.tradeBookTotal.buy_frequency)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookCombinedData.tradeBookTotal.sell_frequency)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookCombinedData.tradeBookTotal.total_frequency)}</td>
                 </tr>
                 <tr>
                   <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Percentage</td>
-                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookData.buy_percentage}</td>
-                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookData.sell_percentage}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookCombinedData.tradeBookTotal.buy_percentage}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookCombinedData.tradeBookTotal.sell_percentage}</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>-</td> {/* Total percentage not directly available */}
                 </tr>
               </tbody>

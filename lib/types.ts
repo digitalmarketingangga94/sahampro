@@ -404,4 +404,16 @@ export interface TradeBookResponse {
   };
 }
 
+export interface TradeBookMarketData {
+  price: number;
+  change_percentage: number;
+  volume: number;
+  value: number;
+}
+
+export interface TradeBookCombinedData {
+  tradeBookTotal: TradeBookTotal;
+  marketData: TradeBookMarketData;
+}
+
 export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency';
