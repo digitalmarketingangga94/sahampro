@@ -5,11 +5,11 @@ export default function DashboardPage() {
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
       <h2 style={{ marginBottom: '2rem' }}>Market Dashboard</h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
-        <MarketMoversTable type="gainer" title="Top Gainer" />
-        <MarketMoversTable type="loser" title="Top Loser" />
-        <MarketMoversTable type="value" title="Top Value" />
-        <MarketMoversTable type="volume" title="Top Volume" />
-        <MarketMoversTable type="frequency" title="Top Frequency" />
+        <MarketMoversTable type="gainer" title="Top Gainer" limit={20} />
+        <MarketMoversTable type="loser" title="Top Loser" limit={20} />
+        <MarketMoversTable type="value" title="Top Value" limit={20} />
+        <MarketMoversTable type="volume" title="Top Volume" limit={20} />
+        <MarketMoversTable type="frequency" title="Top Frequency" limit={20} />
       </div>
     </div>
   );
