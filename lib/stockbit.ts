@@ -374,12 +374,32 @@ export async function fetchTradeBook(symbol: string): Promise<TradeBookTotal | n
       headers: await getHeaders(),
     });
 
-    await handleApiResponse(response, `Trade Book API (${symbol})`);
+    // Check for 401 specifically, otherwise just check response.ok
+    if (response.status === 401) {
+      await invalidateToken();
+      cachedToken = null;
+      console.warn(`[Trade Book API] Token expired for ${symbol}.`);
+      return null; // Return null for this specific item
+    }
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.warn(`[Trade Book API] Error fetching for ${symbol}: ${response.status} ${response.statusText}. Response: ${errorText}`);
+      return null; // Return null on non-OK response
+    }
+    
+    // Token is valid - update last used timestamp (fire and forget)
+    updateTokenLastUsed().catch(() => {});
 
     const json: TradeBookResponse = await response.json();
-    return json.data?.book_total || null;
+    // Check if json.data or json.data.book_total is null/undefined
+    if (!json.data || !json.data.book_total) {
+      console.warn(`[Trade Book API] No trade book data found for ${symbol}. Response:`, json);
+      return null;
+    }
+    return json.data.book_total;
   } catch (error) {
-    console.error(`Error fetching trade book for ${symbol}:`, error);
+    console.error(`[Trade Book API] Critical error fetching trade book for ${symbol}:`, error);
     return null; // Return null on error to not block market movers
   }
 }

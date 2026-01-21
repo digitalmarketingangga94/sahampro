@@ -10,10 +10,12 @@ interface MarketMoversTableProps {
 }
 
 // Helper to format large numbers (e.g., 1234567890 -> 1.23B)
-const formatCompactNumber = (num: number): string => {
-  if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(2) + 'B';
-  if (num >= 1_000_000) return (num / 1_000_000).toFixed(2) + 'M';
-  if (num >= 1_000) return (num / 1_000).toFixed(2) + 'K';
+const formatCompactNumber = (num: number | null | undefined): string => {
+  if (num === undefined || num === null || num === 0) return '-'; // Menampilkan '-' untuk 0
+  const absNum = Math.abs(num);
+  if (absNum >= 1_000_000_000) return (num / 1_000_000_000).toFixed(2) + 'B';
+  if (absNum >= 1_000_000) return (num / 1_000_000).toFixed(2) + 'M';
+  if (absNum >= 1_000) return (num / 1_000).toFixed(2) + 'K';
   return num.toLocaleString();
 };
 
@@ -170,12 +172,12 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
                     {item.net_foreign_buy ? formatCompactNumber(item.net_foreign_buy) : '-'}
                   </td>
                   {/* New Data Cells */}
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{item.tradeBookData?.buy_lot ? formatCompactNumber(parseTradeBookNumber(item.tradeBookData.buy_lot) || 0) : '-'}</td>
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{item.tradeBookData?.sell_lot ? formatCompactNumber(parseTradeBookNumber(item.tradeBookData.sell_lot) || 0) : '-'}</td>
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{item.tradeBookData?.total_lot ? formatCompactNumber(parseTradeBookNumber(item.tradeBookData.total_lot) || 0) : '-'}</td>
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{item.tradeBookData?.buy_frequency ? formatCompactNumber(parseTradeBookNumber(item.tradeBookData.buy_frequency) || 0) : '-'}</td>
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{item.tradeBookData?.sell_frequency ? formatCompactNumber(parseTradeBookNumber(item.tradeBookData.sell_frequency) || 0) : '-'}</td>
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{item.tradeBookData?.total_frequency ? formatCompactNumber(parseTradeBookNumber(item.tradeBookData.total_frequency) || 0) : '-'}</td>
+                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatCompactNumber(parseTradeBookNumber(item.tradeBookData?.buy_lot))}</td>
+                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatCompactNumber(parseTradeBookNumber(item.tradeBookData?.sell_lot))}</td>
+                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatCompactNumber(parseTradeBookNumber(item.tradeBookData?.total_lot))}</td>
+                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatCompactNumber(parseTradeBookNumber(item.tradeBookData?.buy_frequency))}</td>
+                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatCompactNumber(parseTradeBookNumber(item.tradeBookData?.sell_frequency))}</td>
+                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatCompactNumber(parseTradeBookNumber(item.tradeBookData?.total_frequency))}</td>
                   <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatPercentage(item.tradeBookData?.buy_percentage)}</td>
                   <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatPercentage(item.tradeBookData?.sell_percentage)}</td>
                 </tr>
