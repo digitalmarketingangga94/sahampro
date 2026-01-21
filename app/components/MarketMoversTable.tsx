@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { MarketMoverItem, MarketMoverType, TradeBookTotal } from '@/lib/types';
+import type { MarketMoverItem, MarketMoverType } from '@/lib/types';
 
 interface MarketMoversTableProps {
   type: MarketMoverType;
@@ -17,17 +17,7 @@ const formatCompactNumber = (num: number): string => {
   return num.toLocaleString();
 };
 
-// Helper to parse string numbers from trade book
-const parseTradeBookNumber = (numStr: string | undefined): number | null => {
-  if (!numStr || numStr === '-') return null;
-  return parseFloat(numStr.replace(/,/g, ''));
-};
-
-// Helper to format percentage string
-const formatPercentage = (percentStr: string | undefined): string => {
-  if (!percentStr || percentStr === '-') return '-';
-  return percentStr; // Already includes '%'
-};
+// Removed helper functions for trade book parsing and formatting as requested
 
 type SortColumn = 'last_price' | 'value' | 'volume' | 'frequency' | 'net_foreign_buy';
 type SortDirection = 'asc' | 'desc';
@@ -142,15 +132,7 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
                 >
                   Net Foreign {getSortIndicator('net_foreign_buy')}
                 </th>
-                {/* New Headers */}
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Buy Lot</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Sell Lot</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Total Lot</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Buy Freq</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Sell Freq</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Total Freq</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Buy %</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Sell %</th>
+                {/* Removed Trade Book Headers */}
               </tr>
             </thead>
             <tbody>
@@ -169,15 +151,7 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
                   <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: item.net_foreign_buy && item.net_foreign_buy >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
                     {item.net_foreign_buy ? formatCompactNumber(item.net_foreign_buy) : '-'}
                   </td>
-                  {/* New Data Cells */}
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{item.tradeBookData?.buy_lot ? formatCompactNumber(parseTradeBookNumber(item.tradeBookData.buy_lot) || 0) : '-'}</td>
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{item.tradeBookData?.sell_lot ? formatCompactNumber(parseTradeBookNumber(item.tradeBookData.sell_lot) || 0) : '-'}</td>
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{item.tradeBookData?.total_lot ? formatCompactNumber(parseTradeBookNumber(item.tradeBookData.total_lot) || 0) : '-'}</td>
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{item.tradeBookData?.buy_frequency ? formatCompactNumber(parseTradeBookNumber(item.tradeBookData.buy_frequency) || 0) : '-'}</td>
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{item.tradeBookData?.sell_frequency ? formatCompactNumber(parseTradeBookNumber(item.tradeBookData.sell_frequency) || 0) : '-'}</td>
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{item.tradeBookData?.total_frequency ? formatCompactNumber(parseTradeBookNumber(item.tradeBookData.total_frequency) || 0) : '-'}</td>
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatPercentage(item.tradeBookData?.buy_percentage)}</td>
-                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatPercentage(item.tradeBookData?.sell_percentage)}</td>
+                  {/* Removed Trade Book Data Cells */}
                 </tr>
               ))}
             </tbody>

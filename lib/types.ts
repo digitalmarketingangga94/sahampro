@@ -328,7 +328,7 @@ export interface MarketMoverItem {
   volume: number; // in shares
   frequency: number;
   net_foreign_buy?: number; // Assuming this is 'Net Foreign' from the image
-  tradeBookData?: TradeBookTotal; // New field for trade book data
+  // tradeBookData?: TradeBookTotal; // Removed as requested
 }
 
 // Raw response structure for market movers
@@ -386,23 +386,6 @@ export interface MarketMoversResponse {
   };
 }
 
-export interface TradeBookTotal {
-  buy_frequency: string;
-  sell_frequency: string;
-  buy_lot: string;
-  sell_lot: string;
-  buy_percentage: string;
-  sell_percentage: string;
-  total_frequency: string;
-  total_lot: string;
-}
-
-export interface TradeBookResponse {
-  message: string;
-  data: {
-    book_total: TradeBookTotal;
-    // other fields like trade_book_list, etc.
-  };
-}
+// Removed TradeBookTotal and TradeBookResponse interfaces as requested
 
 export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency';
