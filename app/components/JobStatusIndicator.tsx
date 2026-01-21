@@ -43,74 +43,89 @@ export default function JobStatusIndicator() {
   const isFailed = latestLog.status === 'failed';
   const isCompleted = latestLog.status === 'completed';
 
-  const statusClass = isRunning ? 'bg-yellow-500' : isFailed ? 'bg-accent-warning' : 'bg-accent-success';
+  const statusClass = isRunning ? 'warning' : isFailed ? 'error' : 'good';
   const statusLabel = isRunning ? 'Job Running' : isFailed ? 'Job Failed' : 'Jobs Idle';
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div style={{ position: 'relative' }} ref={containerRef}>
       <div
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full cursor-pointer transition-colors bg-secondary hover:bg-white/[0.1]"
+        className="token-status-pill"
         onClick={() => setShowDetails(!showDetails)}
+        style={{ cursor: 'pointer' }}
       >
-        <div className={`w-2.5 h-2.5 rounded-full ${statusClass}`} />
-        <span className={`text-xs font-medium whitespace-nowrap ${isFailed ? 'text-accent-warning' : isRunning ? 'text-yellow-500' : 'text-accent-success'}`}>
+        <div className={`token-dot ${statusClass}`} />
+        <span style={{ 
+          color: isFailed ? '#ff4d4d' : isRunning ? 'var(--accent-warning)' : 'var(--accent-success)',
+          whiteSpace: 'nowrap'
+        }}>
           {statusLabel}
         </span>
       </div>
 
       {showDetails && (
-        <div className="absolute right-0 mt-2 w-80 p-4 bg-card border border-border-color rounded-xl shadow-lg animate-slideIn z-50">
-          <div className="flex items-center justify-between mb-3 pb-3 border-b border-border-color">
-            <span className="text-sm font-semibold text-text-primary">Latest Job Run</span>
-            <div className={`w-2.5 h-2.5 rounded-full ${statusClass}`} />
+        <div className="token-popup" style={{ width: '320px', padding: '1rem' }}>
+          <div className="token-popup-title">
+            <span>Latest Job Run</span>
+            <div className={`token-dot ${statusClass}`} />
           </div>
 
-          <div className="flex justify-between items-center mb-2 text-sm">
-            <span className="text-text-secondary">Job:</span>
-            <span className="text-text-primary">{latestLog.job_name}</span>
+          <div className="token-info-row">
+            <span>Job:</span>
+            <span className="token-info-value">{latestLog.job_name}</span>
           </div>
 
-          <div className="flex justify-between items-center mb-2 text-sm">
-            <span className="text-text-secondary">Started:</span>
-            <span className="text-text-primary">
+          <div className="token-info-row">
+            <span>Started:</span>
+            <span className="token-info-value">
               {new Date(latestLog.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
 
-          <div className="flex justify-between items-center mb-2 text-sm">
-            <span className="text-text-secondary">Stats:</span>
-            <span className="text-text-primary">
-              <span className="text-accent-success">✓{latestLog.success_count}</span>
+          <div className="token-info-row">
+            <span>Stats:</span>
+            <span className="token-info-value">
+              <span style={{ color: 'var(--accent-success)' }}>✓{latestLog.success_count}</span>
               {latestLog.error_count > 0 && (
-                <span className="text-accent-warning ml-2">✕{latestLog.error_count}</span>
+                <span style={{ color: '#ff4d4d', marginLeft: '8px' }}>✕{latestLog.error_count}</span>
               )}
             </span>
           </div>
 
           {latestLog.status === 'failed' && latestLog.error_message && (
-            <div className="mt-3 p-2 bg-accent-warning/[0.1] border border-accent-warning/[0.3] rounded-md text-accent-warning text-xs flex items-start gap-2">
-              <span className="text-base">⚠</span>
+            <div className="job-error-banner" style={{ marginTop: '0.75rem' }}>
+              <span className="error-icon">⚠</span>
               {latestLog.error_message}
             </div>
           )}
 
-          <div className="mt-4 pt-3 border-t border-border-color">
-            <div className="text-xs text-text-muted uppercase tracking-wider mb-2">
+          <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
+            <div style={{ 
+              fontSize: '0.65rem', 
+              color: 'var(--text-muted)', 
+              marginBottom: '0.5rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
               Recent logs
             </div>
             <div 
-              className="max-h-[150px] overflow-y-auto text-xs font-mono custom-scrollbar"
-              ref={scrollRef}
+              style={{ 
+                maxHeight: '150px', 
+                overflowY: 'auto',
+                fontSize: '0.65rem',
+                fontFamily: 'monospace'
+              }}
+              className="log-entries-scroll"
             >
               {latestLog.log_entries && latestLog.log_entries.length > 0 ? (
                 latestLog.log_entries.slice(-5).map((entry, idx) => (
-                  <div key={idx} className={`flex items-baseline gap-1 ${entry.level === 'error' ? 'text-accent-warning' : entry.level === 'warn' ? 'text-yellow-500' : 'text-text-secondary'}`}>
-                    <span className="flex-shrink-0">[{entry.emiten || 'SYS'}]</span>
-                    <span className="flex-grow">{entry.message}</span>
+                  <div key={idx} className={`log-entry-line level-${entry.level}`}>
+                    <span>[{entry.emiten || 'SYS'}]</span>
+                    <span>{entry.message}</span>
                   </div>
                 ))
               ) : (
-                <div className="text-text-muted text-center p-4">
+                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '1rem' }}>
                   No logs available
                 </div>
               )}
@@ -118,7 +133,8 @@ export default function JobStatusIndicator() {
           </div>
 
           <button 
-            className="w-full inline-flex items-center justify-center px-4 py-2 bg-accent-primary hover:bg-accent-primary/90 text-white text-sm font-medium rounded-lg transition-colors mt-4"
+            className="token-action-btn"
+            style={{ marginTop: '1rem' }}
             onClick={() => window.open('/history', '_self')}
           >
             Go to History

@@ -11,12 +11,12 @@ export default function ResultTable({ marketData, calculated }: ResultTableProps
   const formatNumber = (num: number | null | undefined) => num?.toLocaleString() ?? '-';
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-2">
       {/* Market Data */}
-      <div className="bg-card border border-border-color rounded-xl p-4 shadow-md">
-        <h3 className="text-lg font-bold text-text-primary mb-4 pb-3 border-b border-border-color">📊 Market Data</h3>
+      <div className="glass-card">
+        <h3>📊 Market Data</h3>
         
-        <div className="flex flex-col gap-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <DataRow label="Harga" value={`Rp ${formatNumber(marketData.harga)}`} />
           <DataRow label="ARA (Offer Teratas)" value={`Rp ${formatNumber(marketData.offerTeratas)}`} />
           <DataRow label="ARB (Bid Terbawah)" value={`Rp ${formatNumber(marketData.bidTerbawah)}`} />
@@ -27,10 +27,10 @@ export default function ResultTable({ marketData, calculated }: ResultTableProps
       </div>
 
       {/* Calculated Data */}
-      <div className="bg-card border border-border-color rounded-xl p-4 shadow-md">
-        <h3 className="text-lg font-bold text-text-primary mb-4 pb-3 border-b border-border-color">🧮 Calculations</h3>
+      <div className="glass-card">
+        <h3>🧮 Calculations</h3>
         
-        <div className="flex flex-col gap-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <DataRow label="Total Papan" value={formatNumber(calculated.totalPapan)} />
           <DataRow label="Rata² Bid/Offer" value={formatNumber(calculated.rataRataBidOfer)} />
           <DataRow label="a (5% dari rata² bandar)" value={formatNumber(calculated.a)} />
@@ -43,9 +43,14 @@ export default function ResultTable({ marketData, calculated }: ResultTableProps
 
 function DataRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between items-center py-2 border-b border-border-color last:border-b-0">
-      <span className="text-text-secondary text-sm">{label}</span>
-      <span className="font-semibold text-text-primary text-sm">{value}</span>
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'space-between',
+      padding: '0.5rem 0',
+      borderBottom: '1px solid var(--border-color)'
+    }}>
+      <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+      <span style={{ fontWeight: '600' }}>{value}</span>
     </div>
   );
 }

@@ -39,12 +39,20 @@ function DailyHeatmap({ dailyData, tradingDates }: { dailyData: BrokerFlowDailyD
   const midPoint = containerHeight / 2;
   
   return (
-    <div className="flex items-center gap-1 h-9">
-      <span className="text-[0.6rem] text-text-muted min-w-[22px]">D-{tradingDates.length - 1}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', height: `${containerHeight}px` }}>
+      <span style={{ fontSize: '0.6rem', color: '#666', minWidth: '22px' }}>D-{tradingDates.length - 1}</span>
       
-      <div className="flex items-center gap-0.5 h-full relative min-w-[120px]">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '2px', height: '100%', position: 'relative', minWidth: '120px' }}>
         {/* Baseline (x-axis) */}
-        <div className="absolute left-0 right-0 h-0.5 bg-white/[0.08] rounded-sm top-1/2 -translate-y-1/2" />
+        <div style={{ 
+          position: 'absolute', 
+          left: 0, 
+          right: 0, 
+          top: `${midPoint}px`, 
+          height: '2px', 
+          background: 'rgba(255,255,255,0.08)',
+          borderRadius: '1px'
+        }} />
         
         {tradingDates.slice().reverse().map((date, idx) => {
           const data = dataMap.get(date);
@@ -53,14 +61,21 @@ function DailyHeatmap({ dailyData, tradingDates }: { dailyData: BrokerFlowDailyD
           const isPositive = netVal >= 0;
           
           return (
-            <div key={idx} className="w-3 h-full relative">
+            <div key={idx} style={{ width: '12px', height: '100%', position: 'relative' }}>
               <div
                 style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
                   height: `${Math.max(2, barHeight)}px`,
                   bottom: isPositive ? `${midPoint}px` : 'auto',
                   top: !isPositive ? `${midPoint}px` : 'auto',
+                  backgroundColor: isPositive ? '#38ef7d' : '#f5576c',
+                  borderRadius: '1px',
+                  opacity: data ? 1 : 0.2,
+                  zIndex: 1,
+                  transition: 'all 0.3s ease'
                 }}
-                className={`absolute left-0 right-0 rounded-sm opacity-100 z-10 transition-all duration-300 ease-in-out ${isPositive ? 'bg-accent-success' : 'bg-accent-warning'} ${data ? '' : 'opacity-20'}`}
                 title={`${date}: ${data ? formatNetValue(String(data.n)) : 'No data'}`}
               />
             </div>
@@ -68,7 +83,7 @@ function DailyHeatmap({ dailyData, tradingDates }: { dailyData: BrokerFlowDailyD
         })}
       </div>
       
-      <span className="text-[0.6rem] text-text-muted min-w-[18px]">D0</span>
+      <span style={{ fontSize: '0.6rem', color: '#666', minWidth: '18px' }}>D0</span>
     </div>
   );
 }
@@ -124,17 +139,17 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
   };
 
   return (
-    <div className="bg-card border border-border-color rounded-xl p-4 shadow-md flex-1 flex flex-col">
+    <div className="broker-flow-card">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-border-color">
-        <span className="text-lg font-bold text-text-primary">Broker Flow</span>
-        <div className="flex gap-2 items-center">
+      <div className="broker-flow-header">
+        <span className="broker-flow-title">Broker Flow</span>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           {/* Status Filters */}
-          <div className="flex gap-1">
+          <div className="broker-flow-filters">
             {statusOptions.map((opt) => (
               <button
                 key={opt.id}
-                className={`px-2 py-1 text-xs rounded-md transition-colors ${selectedStatus.includes(opt.id) ? 'bg-accent-primary text-white' : 'bg-secondary text-text-secondary hover:bg-white/[0.1]'}`}
+                className={`broker-flow-filter-btn ${selectedStatus.includes(opt.id) ? 'active' : ''}`}
                 onClick={() => toggleStatus(opt.id)}
                 title={`Toggle ${opt.label}`}
               >
@@ -144,14 +159,14 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
           </div>
 
           {/* Divider */}
-          <div className="w-px h-4 bg-border-color mx-0.5" />
+          <div style={{ width: '1px', height: '16px', background: 'var(--border-color)', margin: '0 2px' }} />
 
           {/* Time Filters */}
-          <div className="flex gap-1">
+          <div className="broker-flow-filters">
             {filterOptions.map((days) => (
               <button
                 key={days}
-                className={`px-2 py-1 text-xs rounded-md transition-colors ${lookbackDays === days ? 'bg-accent-primary text-white' : 'bg-secondary text-text-secondary hover:bg-white/[0.1]'}`}
+                className={`broker-flow-filter-btn ${lookbackDays === days ? 'active' : ''}`}
                 onClick={() => setLookbackDays(days)}
               >
                 {days}D
@@ -163,32 +178,32 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
 
       {/* Content */}
       {loading && (
-        <div className="p-8 text-center">
-          <div className="spinner w-6 h-6 mx-auto"></div>
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <div className="spinner" style={{ margin: '0 auto', width: '24px', height: '24px' }}></div>
         </div>
       )}
 
       {error && (
-        <div className="p-4 text-accent-warning text-sm">
+        <div style={{ padding: '1rem', color: '#f5576c', fontSize: '0.8rem' }}>
           {error}
         </div>
       )}
 
       {!loading && !error && data && (
-        <div className="flex-1 overflow-x-auto custom-scrollbar">
+        <div className="broker-flow-content">
           {data.activities.length === 0 ? (
-            <div className="p-4 text-center text-text-muted">
+            <div style={{ padding: '1rem', textAlign: 'center', color: '#888' }}>
               No broker activity found for {emiten}
             </div>
           ) : (
-            <table className="w-full text-sm border-collapse">
+            <table className="broker-flow-table">
               <thead>
-                <tr className="text-left text-text-muted border-b border-border-color">
-                  <th className="py-2 font-normal">#</th>
-                  <th className="py-2 font-normal">BROKER</th>
-                  <th className="py-2 font-normal">DAILY HEATMAP</th>
-                  <th className="py-2 font-normal text-right">NET VALUE</th>
-                  <th className="py-2 font-normal text-right">CONSISTENCY</th>
+                <tr>
+                  <th>#</th>
+                  <th>BROKER</th>
+                  <th>DAILY HEATMAP</th>
+                  <th>NET VALUE</th>
+                  <th>CONSISTENCY</th>
                 </tr>
               </thead>
               <tbody>
@@ -223,43 +238,34 @@ function BrokerFlowRow({
     ? brokerInfo.type 
     : (activity.broker_status === 'Bandar' ? 'Smart Money' : activity.broker_status);
   
-  const statusColorClass = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'bandar':
-      case 'smartmoney': return 'bg-blue-600';
-      case 'whale': return 'bg-purple-600';
-      case 'retail': return 'bg-red-600';
-      case 'mix': return 'bg-gray-600';
-      default: return 'bg-gray-700';
-    }
-  };
-
   return (
-    <tr className="border-b border-border-color/[0.5] last:border-b-0">
-      <td className="py-2 text-text-muted">{index}</td>
-      <td className="py-2">
-        <div className="flex items-center gap-2">
+    <tr>
+      <td className="row-num">{index}</td>
+      <td className="broker-info">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span 
-            className={`px-2 py-0.5 rounded-md text-xs font-medium ${statusColorClass(activity.broker_status)} text-white`}
+            className={`broker-code-badge ${activity.broker_status.toLowerCase()}`}
             title={brokerInfo.name}
+            style={{ cursor: 'help' }}
           >
             {activity.broker_code}
           </span>
           <span 
-            className={`text-xs opacity-80 ${displayType.toLowerCase() === 'smart money' ? 'text-blue-400' : displayType.toLowerCase() === 'whale' ? 'text-purple-400' : displayType.toLowerCase() === 'retail' ? 'text-red-400' : 'text-gray-400'}`}
+            className={`broker-type-label ${brokerInfo.type !== 'Unknown' ? brokerInfo.type.toLowerCase() : activity.broker_status.toLowerCase()}`}
+            style={{ fontSize: '0.65rem', opacity: 0.8 }}
           >
             {displayType}
           </span>
         </div>
       </td>
-      <td className="py-2">
+      <td className="heatmap-cell">
         <DailyHeatmap dailyData={activity.daily_data} tradingDates={tradingDates} />
       </td>
-      <td className={`py-2 text-right font-medium ${parseFloat(activity.net_value) >= 0 ? 'text-accent-success' : 'text-accent-warning'}`}>
+      <td className={`net-value ${parseFloat(activity.net_value) >= 0 ? 'positive' : 'negative'}`}>
         {formatNetValue(activity.net_value)}
       </td>
-      <td className="py-2 text-right">
-        <span className="px-2 py-0.5 rounded-full text-xs bg-secondary text-text-secondary">
+      <td className="consistency">
+        <span className="consistency-badge">
           {activity.buy_days}/{activity.active_days}
         </span>
       </td>

@@ -36,24 +36,40 @@ export default function PriceGraph({ ticker }: PriceGraphProps) {
   }, [ticker]);
 
   return (
-    <div className="bg-card border border-border-color rounded-xl p-0 overflow-hidden shadow-md flex flex-col h-[600px]">
-      <div className="flex items-center justify-between p-3 border-b border-border-color/[0.05] bg-black/[0.2]">
-        <div className="flex items-center gap-2">
+    <div className="glass-card" style={{ 
+      padding: '0', 
+      overflow: 'hidden',
+      height: '600px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      background: '#131722', // Matching TradingView's dark theme
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      <div style={{
+        padding: '0.75rem 1rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+        background: 'rgba(0, 0, 0, 0.2)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 3v18h18"></path>
             <path d="m19 9-5 5-4-4-3 3"></path>
           </svg>
-          <span className="text-xs font-semibold text-white uppercase tracking-wider">
+          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Advanced Chart
           </span>
         </div>
         
         <button 
-          className="flex items-center gap-1 px-3 py-1.5 text-xs bg-secondary hover:bg-white/[0.1] text-text-secondary rounded-md transition-colors"
+          className="chartbit-btn"
           onClick={() => {
             const url = `https://stockbit.com/symbol/${ticker.toUpperCase()}/chartbit`;
             window.open(url, 'Chartbit', 'width=1200,height=800,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
           }}
+          style={{ padding: '6px 12px', fontSize: '0.7rem' }}
           title="Open Stockbit Chartbit"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -67,9 +83,10 @@ export default function PriceGraph({ ticker }: PriceGraphProps) {
       <div 
         id="tradingview_widget"
         ref={container}
-        className="flex-1 w-full" 
+        className="tradingview-widget-container" 
+        style={{ flex: 1, width: "100%" }}
       >
-        <div className="tradingview-widget-container__widget h-full w-full"></div>
+        <div className="tradingview-widget-container__widget" style={{ height: "100%", width: "100%" }}></div>
       </div>
     </div>
   );
