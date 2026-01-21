@@ -15,14 +15,14 @@ export default function KeyStatsCard({ emiten, keyStats }: KeyStatsCardProps) {
     const displayItems = items.slice(0, maxItems);
     
     return (
-      <div className="keystats-section">
-        <div className="keystats-section-title">{title}</div>
-        <table className="keystats-table">
+      <div className="mb-4">
+        <div className="text-sm font-semibold text-text-primary mb-2">{title}</div>
+        <table className="w-full text-sm">
           <tbody>
             {displayItems.map((item) => (
-              <tr key={item.id}>
-                <td className="keystats-label">{formatLabel(item.name)}</td>
-                <td className="keystats-value">{item.value || '-'}</td>
+              <tr key={item.id} className="border-b border-border-color/[0.5] last:border-b-0">
+                <td className="py-1.5 text-text-secondary">{formatLabel(item.name)}</td>
+                <td className="py-1.5 text-right font-medium text-text-primary">{item.value || '-'}</td>
               </tr>
             ))}
           </tbody>
@@ -43,18 +43,18 @@ export default function KeyStatsCard({ emiten, keyStats }: KeyStatsCardProps) {
   };
 
   return (
-    <div className="keystats-card">
+    <div className="bg-card border border-border-color rounded-xl p-4 shadow-md">
       {/* Header */}
-      <div className="compact-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent-primary)' }}>
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-border-color">
+        <div className="flex items-center gap-2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-accent-primary">
             <line x1="18" y1="20" x2="18" y2="10"></line>
             <line x1="12" y1="20" x2="12" y2="4"></line>
             <line x1="6" y1="20" x2="6" y2="14"></line>
           </svg>
-          <div className="compact-ticker" style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Key Stats</div>
+          <div className="text-xs font-extrabold text-text-muted uppercase tracking-wider">Key Stats</div>
         </div>
-        <div className="compact-date">{emiten.toUpperCase()}</div>
+        <div className="text-sm font-bold text-accent-primary">{emiten.toUpperCase()}</div>
       </div>
 
       {/* Sections */}

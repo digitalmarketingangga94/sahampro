@@ -15,80 +15,42 @@ export default function TargetCard({ emiten, sector, currentPrice, targetRealist
   };
 
   return (
-    <div className="glass-card">
-      <h3>🎯 Target Prices</h3>
-      <div style={{ marginTop: '0.5rem', marginBottom: '1rem' }}>
-        <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--accent-primary)' }}>
+    <div className="bg-card border border-border-color rounded-xl p-4 shadow-md">
+      <h3 className="text-lg font-bold text-text-primary mb-4 pb-3 border-b border-border-color">🎯 Target Prices</h3>
+      <div className="mt-2 mb-4">
+        <div className="text-xl font-bold text-accent-primary">
           {emiten}
         </div>
         {sector && (
-          <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.25rem' }}>
+          <div className="text-sm text-text-muted mt-1">
             {sector}
           </div>
         )}
       </div>
       
-      <div className="grid grid-2" style={{ marginTop: '1rem' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         {/* Target Realistis */}
-        <div style={{
-          background: 'var(--gradient-success)',
-          borderRadius: '16px',
-          padding: '2rem',
-          textAlign: 'center',
-          boxShadow: '0 4px 20px rgba(56, 239, 125, 0.3)'
-        }}>
-          <div style={{ 
-            fontSize: '0.875rem', 
-            fontWeight: '600',
-            marginBottom: '0.5rem',
-            textTransform: 'uppercase',
-            letterSpacing: '1px'
-          }}>
+        <div className="bg-gradient-success rounded-xl p-8 text-center shadow-lg">
+          <div className="text-sm font-semibold mb-2 uppercase tracking-wider">
             Target Realistis
           </div>
-          <div style={{ 
-            fontSize: '3rem', 
-            fontWeight: '700',
-            marginBottom: '0.5rem'
-          }}>
+          <div className="text-5xl font-bold mb-2">
             {targetRealistis}
           </div>
-          <div style={{ 
-            fontSize: '1rem',
-            opacity: 0.9
-          }}>
+          <div className="text-base opacity-90">
             {calculateGain(targetRealistis)}% gain
           </div>
         </div>
 
         {/* Target Max */}
-        <div style={{
-          background: 'var(--gradient-warning)',
-          borderRadius: '16px',
-          padding: '2rem',
-          textAlign: 'center',
-          boxShadow: '0 4px 20px rgba(245, 87, 108, 0.3)'
-        }}>
-          <div style={{ 
-            fontSize: '0.875rem', 
-            fontWeight: '600',
-            marginBottom: '0.5rem',
-            textTransform: 'uppercase',
-            letterSpacing: '1px'
-          }}>
+        <div className="bg-gradient-warning rounded-xl p-8 text-center shadow-lg">
+          <div className="text-sm font-semibold mb-2 uppercase tracking-wider">
             Target Max
           </div>
-          <div style={{ 
-            fontSize: '3rem', 
-            fontWeight: '700',
-            marginBottom: '0.5rem'
-          }}>
+          <div className="text-5xl font-bold mb-2">
             {targetMax}
           </div>
-          <div style={{ 
-            fontSize: '1rem',
-            opacity: 0.9
-          }}>
+          <div className="text-base opacity-90">
             {calculateGain(targetMax)}% gain
           </div>
         </div>

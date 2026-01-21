@@ -27,34 +27,26 @@ export default function CompactResultCard({
   };
 
   return (
-    <div className="compact-card">
+    <div className="bg-card border border-border-color rounded-xl p-4 shadow-md">
       {/* Header */}
-      <div className="compact-header">
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-border-color">
+        <div className="flex items-start gap-4">
           <div>
-            <div className="compact-ticker">+ {input.emiten.toUpperCase()}</div>
+            <div className="text-lg font-bold text-accent-primary">+ {input.emiten.toUpperCase()}</div>
             {result.sector && (
-              <div style={{ fontSize: '0.7rem', color: '#999', marginTop: '2px' }}>
+              <div className="text-xs text-text-muted mt-0.5">
                 {result.sector}
               </div>
             )}
           </div>
         </div>
         
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ 
-            fontSize: '0.85rem', 
-            fontWeight: 800, 
-            color: '#666',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            marginBottom: '4px',
-            opacity: 0.8
-          }}>
+        <div className="text-right">
+          <div className="text-xs font-extrabold text-text-muted uppercase tracking-wider mb-1 opacity-80">
             RSY
           </div>
-          <div className="compact-date">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.7 }}>
+          <div className="flex items-center gap-1 text-xs text-text-muted">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-70">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
               <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -66,22 +58,22 @@ export default function CompactResultCard({
       </div>
 
       {/* Top Broker Section */}
-      <div className="compact-section">
-        <div className="compact-section-title">Top Broker</div>
-        <div className="compact-grid-3">
-          <div className="compact-cell">
-            <span className="compact-label">Bandar</span>
-            <span className="compact-value compact-badge-primary">{stockbitData.bandar}</span>
+      <div className="mb-4 pb-4 border-b border-border-color">
+        <div className="text-sm font-semibold text-text-primary mb-2">Top Broker</div>
+        <div className="grid grid-cols-3 gap-3 text-sm">
+          <div className="flex flex-col">
+            <span className="text-text-muted text-xs">Bandar</span>
+            <span className="font-semibold text-accent-primary">{stockbitData.bandar}</span>
           </div>
-          <div className="compact-cell">
-            <span className="compact-label">Barang</span>
-            <span className="compact-value">{formatNumber(stockbitData.barangBandar)} lot</span>
+          <div className="flex flex-col">
+            <span className="text-text-muted text-xs">Barang</span>
+            <span className="font-semibold text-text-primary">{formatNumber(stockbitData.barangBandar)} lot</span>
           </div>
-          <div className="compact-cell">
-            <span className="compact-label">Avg Harga</span>
-            <span className="compact-value">Rp {formatNumber(stockbitData.rataRataBandar)}</span>
+          <div className="flex flex-col">
+            <span className="text-text-muted text-xs">Avg Harga</span>
+            <span className="font-semibold text-text-primary">Rp {formatNumber(stockbitData.rataRataBandar)}</span>
             {stockbitData.rataRataBandar && marketData.harga && stockbitData.rataRataBandar < marketData.harga && (
-              <span style={{ fontSize: '0.65rem', color: '#888', marginTop: '2px', display: 'block' }}>
+              <span className="text-xs text-text-muted mt-0.5">
                 {marketData.harga >= stockbitData.rataRataBandar ? '+' : ''}{(((marketData.harga - stockbitData.rataRataBandar) / stockbitData.rataRataBandar) * 100).toFixed(1)}%
               </span>
             )}
@@ -90,88 +82,88 @@ export default function CompactResultCard({
       </div>
 
       {/* Market Data Section */}
-      <div className="compact-section">
-        <div className="compact-section-title">Market Data</div>
-        <div className="compact-grid-3">
-          <div className="compact-cell">
-            <span className="compact-label">Harga</span>
-            <span className="compact-value">Rp {formatNumber(marketData.harga)}</span>
+      <div className="mb-4 pb-4 border-b border-border-color">
+        <div className="text-sm font-semibold text-text-primary mb-2">Market Data</div>
+        <div className="grid grid-cols-3 gap-3 text-sm">
+          <div className="flex flex-col">
+            <span className="text-text-muted text-xs">Harga</span>
+            <span className="font-semibold text-text-primary">Rp {formatNumber(marketData.harga)}</span>
           </div>
-          <div className="compact-cell">
-            <span className="compact-label">Offer Max</span>
-            <span className="compact-value">Rp {formatNumber(marketData.offerTeratas)}</span>
+          <div className="flex flex-col">
+            <span className="text-text-muted text-xs">Offer Max</span>
+            <span className="font-semibold text-text-primary">Rp {formatNumber(marketData.offerTeratas)}</span>
           </div>
-          <div className="compact-cell">
-            <span className="compact-label">Bid Min</span>
-            <span className="compact-value">Rp {formatNumber(marketData.bidTerbawah)}</span>
+          <div className="flex flex-col">
+            <span className="text-text-muted text-xs">Bid Min</span>
+            <span className="font-semibold text-text-primary">Rp {formatNumber(marketData.bidTerbawah)}</span>
           </div>
         </div>
-        <div className="compact-grid-3">
-          <div className="compact-cell">
-            <span className="compact-label">Fraksi</span>
-            <span className="compact-value">{formatNumber(marketData.fraksi)}</span>
+        <div className="grid grid-cols-3 gap-3 text-sm mt-3">
+          <div className="flex flex-col">
+            <span className="text-text-muted text-xs">Fraksi</span>
+            <span className="font-semibold text-text-primary">{formatNumber(marketData.fraksi)}</span>
           </div>
-          <div className="compact-cell">
-            <span className="compact-label">Total Bid</span>
-            <span className="compact-value">{formatNumber(marketData.totalBid / 100)}</span>
+          <div className="flex flex-col">
+            <span className="text-text-muted text-xs">Total Bid</span>
+            <span className="font-semibold text-text-primary">{formatNumber(marketData.totalBid / 100)}</span>
           </div>
-          <div className="compact-cell">
-            <span className="compact-label">Total Offer</span>
-            <span className="compact-value">{formatNumber(marketData.totalOffer / 100)}</span>
+          <div className="flex flex-col">
+            <span className="text-text-muted text-xs">Total Offer</span>
+            <span className="font-semibold text-text-primary">{formatNumber(marketData.totalOffer / 100)}</span>
           </div>
         </div>
       </div>
 
       {/* Calculations Section */}
-      <div className="compact-section">
-        <div className="compact-section-title">Calculations</div>
-        <div className="compact-grid-2">
-          <div className="compact-cell">
-            <span className="compact-label">Total Papan</span>
-            <span className="compact-value">{formatNumber(calculated.totalPapan)}</span>
+      <div className="mb-4 pb-4 border-b border-border-color">
+        <div className="text-sm font-semibold text-text-primary mb-2">Calculations</div>
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="flex flex-col">
+            <span className="text-text-muted text-xs">Total Papan</span>
+            <span className="font-semibold text-text-primary">{formatNumber(calculated.totalPapan)}</span>
           </div>
-          <div className="compact-cell">
-            <span className="compact-label">Rata² Bid/Offer</span>
-            <span className="compact-value">{formatNumber(calculated.rataRataBidOfer)}</span>
+          <div className="flex flex-col">
+            <span className="text-text-muted text-xs">Rata² Bid/Offer</span>
+            <span className="font-semibold text-text-primary">{formatNumber(calculated.rataRataBidOfer)}</span>
           </div>
         </div>
-        <div className="compact-grid-2">
-          <div className="compact-cell">
-            <span className="compact-label">a (5% avg bandar)</span>
-            <span className="compact-value">{formatNumber(calculated.a)}</span>
+        <div className="grid grid-cols-2 gap-3 text-sm mt-3">
+          <div className="flex flex-col">
+            <span className="text-text-muted text-xs">a (5% avg bandar)</span>
+            <span className="font-semibold text-text-primary">{formatNumber(calculated.a)}</span>
           </div>
-          <div className="compact-cell">
-            <span className="compact-label">p (Brg/Avg)</span>
-            <span className="compact-value">{formatNumber(calculated.p)}</span>
+          <div className="flex flex-col">
+            <span className="text-text-muted text-xs">p (Brg/Avg)</span>
+            <span className="font-semibold text-text-primary">{formatNumber(calculated.p)}</span>
           </div>
         </div>
       </div>
 
       {/* Target Section */}
-      <div className="compact-section">
-        <div className="compact-section-title">Target Prices</div>
-        <div className="compact-grid-2">
-          <div className="compact-cell compact-target-cell">
-            <span className="compact-label">Target Realistis</span>
-            <div className="compact-target">
-              <span className="compact-target-value compact-badge-success">{calculated.targetRealistis1}</span>
-              <span className="compact-target-gain">{calculateGain(calculated.targetRealistis1)}%</span>
+      <div className="mb-4">
+        <div className="text-sm font-semibold text-text-primary mb-2">Target Prices</div>
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="flex flex-col p-3 bg-gradient-success/[0.1] rounded-lg border border-accent-success/[0.3]">
+            <span className="text-text-muted text-xs">Target Realistis</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg font-bold text-accent-success">{calculated.targetRealistis1}</span>
+              <span className="text-xs text-text-secondary">{calculateGain(calculated.targetRealistis1)}%</span>
             </div>
           </div>
-          <div className="compact-cell compact-target-cell">
-            <span className="compact-label">Target Max</span>
-            <div className="compact-target">
-              <span className="compact-target-value compact-badge-warning">{calculated.targetMax}</span>
-              <span className="compact-target-gain">{calculateGain(calculated.targetMax)}%</span>
+          <div className="flex flex-col p-3 bg-gradient-warning/[0.1] rounded-lg border border-accent-warning/[0.3]">
+            <span className="text-text-muted text-xs">Target Max</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg font-bold text-accent-warning">{calculated.targetMax}</span>
+              <span className="text-xs text-text-secondary">{calculateGain(calculated.targetMax)}%</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Actions Footer */}
-      <div className="compact-footer">
+      <div className="flex justify-center gap-3 pt-4 border-t border-border-color">
         <button 
-          className={`compact-action-btn ${copiedText ? 'active' : ''}`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${copiedText ? 'bg-accent-primary text-white' : 'bg-secondary text-text-secondary hover:bg-white/[0.1]'}`}
           onClick={onCopyText}
         >
           {copiedText ? (
@@ -187,7 +179,7 @@ export default function CompactResultCard({
           {copiedText ? 'Copied Text' : 'Copy Text'}
         </button>
         <button 
-          className={`compact-action-btn ${copiedImage ? 'active' : ''}`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${copiedImage ? 'bg-accent-primary text-white' : 'bg-secondary text-text-secondary hover:bg-white/[0.1]'}`}
           onClick={onCopyImage}
         >
           {copiedImage ? (

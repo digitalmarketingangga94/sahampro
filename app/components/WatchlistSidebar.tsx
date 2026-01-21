@@ -115,11 +115,11 @@ export default function WatchlistSidebar({ onSelect }: WatchlistSidebarProps) {
 
   if (loading && groups.length === 0) {
     return (
-      <div style={{ padding: '1rem' }}>
-        <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Watchlist</h3>
-        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '2rem 0' }}>
-          <div className="spinner" style={{ width: '20px', height: '20px', margin: '0 auto 1rem' }}></div>
-          <div style={{ fontSize: '0.8rem' }}>Loading Watchlist...</div>
+      <div className="p-4">
+        <h3 className="mb-4 text-text-secondary text-xs uppercase tracking-wider">Watchlist</h3>
+        <div className="text-center text-text-secondary py-8">
+          <div className="spinner w-5 h-5 mx-auto mb-4"></div>
+          <div className="text-sm">Loading Watchlist...</div>
         </div>
       </div>
     );
@@ -127,19 +127,13 @@ export default function WatchlistSidebar({ onSelect }: WatchlistSidebarProps) {
 
   if (error && groups.length === 0) {
     return (
-      <div style={{ padding: '1rem' }}>
-        <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Watchlist</h3>
-        <div className="glass-card" style={{ 
-          padding: '1rem', 
-          background: 'rgba(245, 87, 108, 0.05)', 
-          border: '1px solid rgba(245, 87, 108, 0.2)',
-          borderRadius: '12px',
-          textAlign: 'center'
-        }}>
-          <div style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>
+      <div className="p-4">
+        <h3 className="mb-4 text-text-secondary text-xs uppercase tracking-wider">Watchlist</h3>
+        <div className="bg-accent-warning/[0.05] border border-accent-warning/[0.2] rounded-xl p-4 text-center">
+          <div className="text-accent-warning text-sm mb-2">
             {error.includes('token') || error.includes('auth') ? '🔴 Session Expired' : '❌ Error'}
           </div>
-          <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', lineHeight: '1.4' }}>
+          <div className="text-text-secondary text-xs leading-tight">
             {error.includes('token') || error.includes('auth') 
               ? 'Please login to Stockbit via the extension and wait for connection.' 
               : error}
@@ -150,31 +144,14 @@ export default function WatchlistSidebar({ onSelect }: WatchlistSidebarProps) {
   }
 
   return (
-    <div style={{ padding: '1rem' }}>
+    <div className="p-4">
       {/* Header with Group Selector */}
-      <div style={{ marginBottom: '1rem' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '0.5rem'
-        }}>
-          <h3 style={{
-            margin: 0,
-            color: 'var(--text-secondary)',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            fontSize: '0.75rem'
-          }}>
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="m-0 text-text-secondary uppercase tracking-wider text-xs">
             Watchlist
           </h3>
-          <span style={{
-            fontSize: '0.7rem',
-            color: 'var(--text-muted)',
-            background: 'rgba(255,255,255,0.1)',
-            padding: '2px 6px',
-            borderRadius: '4px'
-          }}>
+          <span className="text-text-muted bg-white/[0.1] px-2 py-1 rounded-md text-xs">
             {watchlist.length}
           </span>
         </div>
@@ -183,20 +160,10 @@ export default function WatchlistSidebar({ onSelect }: WatchlistSidebarProps) {
           <select
             value={selectedGroupId || ''}
             onChange={(e) => setSelectedGroupId(Number(e.target.value))}
-            style={{
-              width: '100%',
-              padding: '0.5rem',
-              fontSize: '0.8rem',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '8px',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-              outline: 'none'
-            }}
+            className="w-full p-2 text-sm bg-white/[0.05] border border-white/[0.1] rounded-lg text-text-primary cursor-pointer outline-none focus:border-accent-primary transition-all"
           >
             {groups.map(g => (
-              <option key={g.watchlist_id} value={g.watchlist_id} style={{ background: '#1a1a1a' }}>
+              <option key={g.watchlist_id} value={g.watchlist_id} className="bg-secondary">
                 {g.emoji ? `${g.emoji} ` : ''}{g.name}
               </option>
             ))}
@@ -206,34 +173,19 @@ export default function WatchlistSidebar({ onSelect }: WatchlistSidebarProps) {
 
       {/* Loading indicator when switching groups */}
       {loading && (
-        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem' }}>
+        <div className="text-center text-text-secondary p-4">
           Loading...
         </div>
       )}
 
       {error && groups.length > 0 && (
-        <div style={{ 
-          color: 'var(--accent-warning)', 
-          fontSize: '0.75rem', 
-          padding: '0.75rem', 
-          textAlign: 'center',
-          background: 'rgba(245, 87, 108, 0.05)',
-          borderRadius: '8px',
-          marginBottom: '0.5rem'
-        }}>
+        <div className="text-accent-warning text-xs p-3 text-center bg-accent-warning/[0.05] rounded-lg mb-2">
           ⚠️ {error}
         </div>
       )}
 
       <div
-        className="watchlist-items-container"
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.25rem',
-          maxHeight: 'calc(100vh - 160px)',
-          overflowY: 'auto'
-        }}
+        className="flex flex-col gap-1 max-h-[calc(100vh-160px)] overflow-y-auto"
       >
         {watchlist.map((item, index) => {
           const percentValue = parseFloat(item.percent) || 0;
@@ -242,13 +194,12 @@ export default function WatchlistSidebar({ onSelect }: WatchlistSidebarProps) {
           return (
             <div
               key={item.company_id || index}
-              className="watchlist-item"
+              className="flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-white/[0.05] transition-colors"
               onClick={() => onSelect?.(item.symbol || item.company_code)}
-              style={{ padding: '0.65rem 0.75rem' }}
             >
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{item.symbol || item.company_code}</div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1">
+                  <div className="font-semibold text-sm">{item.symbol || item.company_code}</div>
                   {item.flag === 'OK' && (
                     <CheckCircle2 size={12} color="#3b82f6" fill="rgba(59, 130, 246, 0.2)" />
                   )}
@@ -259,28 +210,15 @@ export default function WatchlistSidebar({ onSelect }: WatchlistSidebarProps) {
                     <MinusCircle size={12} color="var(--text-secondary)" />
                   )}
                 </div>
-                <div style={{
-                  fontSize: '0.7rem',
-                  color: '#999',
-                  marginTop: '2px',
-                  maxWidth: '140px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
-                }}>
+                <div className="text-xs text-text-muted mt-0.5 max-w-[140px] truncate">
                   {item.sector || item.company_name}
                 </div>
               </div>
-              <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>
+              <div className="text-right flex flex-col items-end">
+                <div className="font-semibold text-sm">
                   {item.formatted_price || item.last_price?.toLocaleString() || '-'}
                 </div>
-                <div style={{
-                  fontSize: '0.7rem',
-                  color: isPositive ? 'var(--accent-success)' : 'var(--accent-warning)',
-                  marginTop: '1px',
-                  fontWeight: 500
-                }}>
+                <div className={`text-xs mt-0.5 font-medium ${isPositive ? 'text-accent-success' : 'text-accent-warning'}`}>
                   {isPositive ? '+' : ''}{item.percent}%
                 </div>
               </div>

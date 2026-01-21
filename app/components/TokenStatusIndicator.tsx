@@ -76,51 +76,51 @@ export default function TokenStatusIndicator() {
   const isError = !status.exists || !status.isValid || status.isExpired;
 
   return (
-    <div style={{ position: 'relative' }} ref={containerRef}>
+    <div className="relative" ref={containerRef}>
       <div
-        className="token-status-pill"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full cursor-pointer transition-colors bg-secondary hover:bg-white/[0.1]"
         onClick={() => setShowDetails(!showDetails)}
       >
-        <div className={`token-dot ${isError ? 'error' : isWarning ? 'warning' : 'good'}`} />
-        <span style={{ color: isError ? '#ff4d4d' : isWarning ? 'var(--accent-warning)' : 'var(--accent-success)' }}>
+        <div className={`w-2.5 h-2.5 rounded-full ${isError ? 'bg-accent-warning' : isWarning ? 'bg-yellow-500' : 'bg-accent-success'}`} />
+        <span className={`text-xs font-medium whitespace-nowrap ${isError ? 'text-accent-warning' : isWarning ? 'text-yellow-500' : 'text-accent-success'}`}>
           {isError ? 'Token Invalid' : isWarning ? 'Token Expiring' : 'Stockbit Connected'}
         </span>
       </div>
 
       {showDetails && (
-        <div className="token-popup">
-          <div className="token-popup-title">
-            <span>Stockbit Link</span>
-            <div className={`token-dot ${isError ? 'error' : isWarning ? 'warning' : 'good'}`} />
+        <div className="absolute right-0 mt-2 w-64 p-4 bg-card border border-border-color rounded-xl shadow-lg animate-slideIn z-50">
+          <div className="flex items-center justify-between mb-3 pb-3 border-b border-border-color">
+            <span className="text-sm font-semibold text-text-primary">Stockbit Link</span>
+            <div className={`w-2.5 h-2.5 rounded-full ${isError ? 'bg-accent-warning' : isWarning ? 'bg-yellow-500' : 'bg-accent-success'}`} />
           </div>
 
-          <div className="token-info-row">
-            <span>Status:</span>
-            <span className={isError ? 'status-error' : 'status-valid'}>
+          <div className="flex justify-between items-center mb-2 text-sm">
+            <span className="text-text-secondary">Status:</span>
+            <span className={`${isError ? 'text-accent-warning' : 'text-accent-success'} font-medium`}>
               {isError ? 'Disconnected' : 'Connected'}
             </span>
           </div>
 
           {status.lastUsedAt && (
-            <div className="token-info-row">
-              <span>Last Used:</span>
-              <span className="token-info-value">
+            <div className="flex justify-between items-center mb-2 text-sm">
+              <span className="text-text-secondary">Last Used:</span>
+              <span className="text-text-primary text-sm">
                 {new Date(status.lastUsedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           )}
 
           {status.expiresAt && (
-            <div className="token-info-row">
-              <span>Expires:</span>
-              <span className={`token-info-value ${isWarning ? 'status-warning' : ''}`}>
+            <div className="flex justify-between items-center mb-2 text-sm">
+              <span className="text-text-secondary">Expires:</span>
+              <span className={`text-sm ${isWarning ? 'text-yellow-500' : 'text-text-primary'}`}>
                 {new Date(status.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           )}
 
-          <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
-            <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: '1.4', marginBottom: '0.75rem' }}>
+          <div className="mt-4 pt-4 border-t border-border-color">
+            <p className="text-xs text-text-muted leading-tight mb-3">
               {isError
                 ? 'Token has expired or is invalid. Please login to Stockbit via the extension to refresh.'
                 : 'Connection is active. Token will be automatically refreshed by the extension.'}
@@ -129,7 +129,7 @@ export default function TokenStatusIndicator() {
               href="https://stockbit.com/login"
               target="_blank"
               rel="noopener noreferrer"
-              className="token-action-btn"
+              className="w-full inline-flex items-center justify-center px-4 py-2 bg-accent-primary hover:bg-accent-primary/90 text-white text-sm font-medium rounded-lg transition-colors"
             >
               {isError ? 'Login to Stockbit' : 'Open Stockbit'}
             </a>

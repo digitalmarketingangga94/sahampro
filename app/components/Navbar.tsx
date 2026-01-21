@@ -43,7 +43,7 @@ const Navbar = () => {
           </div>
           <div className="flex gap-3 items-center">
             <JobStatusIndicator />
-            <TokenStatusIndicator />
+            <TokenStatusIndicator /> {/* Re-added TokenStatusIndicator */}
           </div>
         </div>
       </div>

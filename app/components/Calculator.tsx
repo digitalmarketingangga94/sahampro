@@ -315,9 +315,7 @@ export default function Calculator({ selectedStock }: CalculatorProps) {
   };
 
   return (
-    <div className="container">
-
-
+    <div className="container mx-auto px-4 py-8">
       <InputForm
         onSubmit={handleSubmit}
         loading={loading}
@@ -335,51 +333,37 @@ export default function Calculator({ selectedStock }: CalculatorProps) {
       />
 
       {loading && (
-        <div className="text-center mt-4">
-          <div className="spinner" style={{ margin: '0 auto' }}></div>
-          <p className="text-secondary mt-2">Fetching data from Stockbit...</p>
+        <div className="text-center mt-8">
+          <div className="spinner w-8 h-8 mx-auto"></div>
+          <p className="text-text-secondary mt-4">Fetching data from Stockbit...</p>
         </div>
       )}
 
       {error && (
-        <div className="glass-card mt-4" style={{
-          background: 'rgba(245, 87, 108, 0.1)',
-          borderColor: 'var(--accent-warning)'
-        }}>
-          <h3>❌ Error</h3>
-          <p style={{ color: 'var(--accent-warning)' }}>{error}</p>
+        <div className="bg-accent-warning/[0.1] border border-accent-warning rounded-xl p-6 mt-8">
+          <h3 className="text-xl font-bold text-accent-warning mb-2">❌ Error</h3>
+          <p className="text-accent-warning">{error}</p>
         </div>
       )}
 
       {result && (
-        <div style={{ marginTop: '2rem' }}>
+        <div className="mt-8">
           {result.isFromHistory && result.historyDate && (
-            <div style={{
-              marginBottom: '1.5rem',
-              padding: '1rem',
-              background: 'rgba(255, 193, 7, 0.1)',
-              border: '1px solid rgba(255, 193, 7, 0.3)',
-              borderRadius: '12px',
-              color: '#ffc107',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              fontSize: '0.9rem'
-            }}>
-              <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+            <div className="mb-6 p-4 bg-yellow-500/[0.1] border border-yellow-500/[0.3] rounded-xl text-yellow-500 flex items-center gap-3 text-sm">
+              <span className="text-xl">⚠️</span>
               <div>
                 Data broker live tidak tersedia. Menampilkan data history terakhir dari tanggal
-                <strong style={{ marginLeft: '4px', color: '#ffca2c' }}>
+                <strong className="ml-1 text-yellow-400">
                   {new Date(result.historyDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </strong>
               </div>
             </div>
           )}
 
-          {/* Side-by-side Cards Container */}
-          <div className="cards-row">
+          {/* Main content grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {/* Left Column: Compact Result */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="lg:col-span-1 xl:col-span-1 flex flex-col gap-4">
               <div id="compact-result-card-container">
                 <CompactResultCard
                   result={result}
@@ -389,48 +373,34 @@ export default function Calculator({ selectedStock }: CalculatorProps) {
                   copiedImage={copiedImage}
                 />
               </div>
-
-
             </div>
 
-            {/* Right Column: Broker Summary */}
-            {result.brokerSummary && (
-              <BrokerSummaryCard
-                emiten={result.input.emiten}
-                dateRange={`${result.input.fromDate} — ${result.input.toDate}`}
-                brokerSummary={result.brokerSummary}
-                sector={result.sector}
-              />
-            )}
+            {/* Middle Column: Broker Summary & KeyStats */}
+            <div className="lg:col-span-1 xl:col-span-1 flex flex-col gap-4">
+              {result.brokerSummary && (
+                <BrokerSummaryCard
+                  emiten={result.input.emiten}
+                  dateRange={`${result.input.fromDate} — ${result.input.toDate}`}
+                  brokerSummary={result.brokerSummary}
+                  sector={result.sector}
+                />
+              )}
+              {keyStats && (
+                <KeyStatsCard
+                  emiten={result.input.emiten}
+                  keyStats={keyStats}
+                />
+              )}
+            </div>
 
-            {/* KeyStats Card */}
-            {keyStats && (
-              <KeyStatsCard
-                emiten={result.input.emiten}
-                keyStats={keyStats}
-              />
-            )}
-
-            {/* Price Graph + Broker Flow Section */}
-            <div style={{
-              gridColumn: '1 / -1',
-              width: '100%',
-              marginTop: '1rem',
-              display: 'flex',
-              gap: '1.5rem',
-              flexWrap: 'wrap',
-              alignItems: 'stretch'
-            }}>
-              <div style={{ flex: '1 1 0', minWidth: '400px' }}>
-                <PriceGraph ticker={result.input.emiten} />
-              </div>
-              <div style={{ flex: '1 1 0', minWidth: '400px', display: 'flex' }}>
-                <BrokerFlowCard emiten={result.input.emiten} />
-              </div>
+            {/* Right Column: Price Graph & Broker Flow */}
+            <div className="lg:col-span-1 xl:col-span-2 flex flex-col gap-4">
+              <PriceGraph ticker={result.input.emiten} />
+              <BrokerFlowCard emiten={result.input.emiten} />
             </div>
 
             {/* Agent Story Section - Full Width */}
-            <div style={{ gridColumn: '1 / -1', marginTop: '0', width: '100%' }}>
+            <div className="lg:col-span-3 xl:col-span-4 mt-4">
               {(agentStories.length > 0 || storyStatus !== 'idle') && (
                 <AgentStoryCard
                   stories={agentStories}

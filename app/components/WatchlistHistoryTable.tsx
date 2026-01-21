@@ -104,26 +104,19 @@ export default function WatchlistHistoryTable() {
   };
 
   return (
-    <div className="glass-card-static">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h2>📊 Watchlist Analysis History</h2>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+    <div className="bg-card border border-border-color rounded-xl p-6 shadow-md">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h2 className="text-2xl font-bold text-text-primary">📊 Watchlist Analysis History</h2>
+        <div className="flex gap-2">
           <button
-            className="btn btn-primary"
+            className="px-4 py-2 bg-secondary hover:bg-white/[0.1] text-text-secondary text-sm font-medium rounded-lg transition-colors"
             onClick={fetchHistory}
-            style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}
           >
             Refresh
           </button>
           <button
-            className="btn btn-primary"
+            className="px-4 py-2 bg-gradient-success hover:bg-accent-success/90 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-accent-success/[0.4]"
             onClick={() => exportHistoryToPDF(data, filters)}
-            style={{
-              padding: '0.5rem 1rem',
-              fontSize: '0.8rem',
-              background: 'var(--gradient-success)',
-              boxShadow: '0 4px 15px rgba(56, 239, 125, 0.4)'
-            }}
             disabled={data.length === 0}
           >
             📄 Export PDF
@@ -132,12 +125,12 @@ export default function WatchlistHistoryTable() {
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <div className="input-group" style={{ flex: '1 1 150px', marginBottom: 0 }}>
-          <label className="input-label compact-label">Emiten</label>
+      <div className="flex flex-wrap gap-4 mb-6">
+        <div className="flex-1 min-w-[150px]">
+          <label className="block text-xs uppercase tracking-wide font-medium text-text-secondary mb-1">Emiten</label>
           <input
             type="text"
-            className="input-field compact-input"
+            className="w-full bg-secondary border border-border-color rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent-primary transition-all"
             placeholder="e.g., BBCA"
             value={filters.emiten}
             onChange={(e) => {
@@ -147,11 +140,11 @@ export default function WatchlistHistoryTable() {
           />
         </div>
 
-        <div className="input-group" style={{ flex: '1 1 150px', marginBottom: 0 }}>
-          <label className="input-label compact-label">From Date</label>
+        <div className="flex-1 min-w-[150px]">
+          <label className="block text-xs uppercase tracking-wide font-medium text-text-secondary mb-1">From Date</label>
           <input
             type="date"
-            className="input-field compact-input"
+            className="w-full bg-secondary border border-border-color rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent-primary transition-all appearance-none"
             value={filters.fromDate}
             onChange={(e) => {
               setFilters({ ...filters, fromDate: e.target.value });
@@ -161,11 +154,11 @@ export default function WatchlistHistoryTable() {
           />
         </div>
 
-        <div className="input-group" style={{ flex: '1 1 150px', marginBottom: 0 }}>
-          <label className="input-label compact-label">To Date</label>
+        <div className="flex-1 min-w-[150px]">
+          <label className="block text-xs uppercase tracking-wide font-medium text-text-secondary mb-1">To Date</label>
           <input
             type="date"
-            className="input-field compact-input"
+            className="w-full bg-secondary border border-border-color rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent-primary transition-all appearance-none"
             value={filters.toDate}
             onChange={(e) => {
               setFilters({ ...filters, toDate: e.target.value });
@@ -175,10 +168,10 @@ export default function WatchlistHistoryTable() {
           />
         </div>
 
-        <div className="input-group" style={{ flex: '1 1 120px', marginBottom: 0 }}>
-          <label className="input-label compact-label">Status</label>
+        <div className="flex-1 min-w-[120px]">
+          <label className="block text-xs uppercase tracking-wide font-medium text-text-secondary mb-1">Status</label>
           <select
-            className="input-field compact-input"
+            className="w-full bg-secondary border border-border-color rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent-primary transition-all"
             value={filters.status}
             onChange={(e) => {
               setFilters({ ...filters, status: e.target.value });
@@ -191,10 +184,10 @@ export default function WatchlistHistoryTable() {
           </select>
         </div>
 
-        <div className="input-group" style={{ flex: '1 1 150px', marginBottom: 0 }}>
-          <label className="input-label compact-label">Sector</label>
+        <div className="flex-1 min-w-[150px]">
+          <label className="block text-xs uppercase tracking-wide font-medium text-text-secondary mb-1">Sector</label>
           <select
-            className="input-field compact-input"
+            className="w-full bg-secondary border border-border-color rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent-primary transition-all"
             value={filters.sector}
             onChange={(e) => {
               setFilters({ ...filters, sector: e.target.value });
@@ -211,21 +204,21 @@ export default function WatchlistHistoryTable() {
 
       {/* Table */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem' }}>
-          <div className="spinner" style={{ margin: '0 auto' }}></div>
+        <div className="text-center py-12">
+          <div className="spinner w-8 h-8 mx-auto"></div>
         </div>
       ) : data.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
+        <div className="text-center py-12 text-text-secondary bg-secondary rounded-xl">
           No data found matching your filters
         </div>
       ) : (
         <>
-          <div style={{ overflowX: 'auto', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
-              <thead style={{ background: 'var(--bg-secondary)' }}>
+          <div className="overflow-x-auto border border-border-color rounded-xl">
+            <table className="w-full text-sm border-collapse min-w-[800px]">
+              <thead className="bg-secondary">
                 <tr>
                   <th
-                    style={{ whiteSpace: 'nowrap', padding: '1rem', textAlign: 'left', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer' }}
+                    className="p-4 text-left text-text-secondary font-semibold whitespace-nowrap cursor-pointer"
                     onClick={() => {
                       const direction = sort.column === 'from_date' && sort.direction === 'desc' ? 'asc' : 'desc';
                       setSort({ column: 'from_date', direction });
@@ -234,7 +227,7 @@ export default function WatchlistHistoryTable() {
                     Date {sort.column === 'from_date' ? (sort.direction === 'desc' ? '↓' : '↑') : ''}
                   </th>
                   <th
-                    style={{ whiteSpace: 'nowrap', padding: '1rem', textAlign: 'left', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer' }}
+                    className="p-4 text-left text-text-secondary font-semibold whitespace-nowrap cursor-pointer"
                     onClick={() => {
                       const direction = sort.column === 'emiten' && sort.direction === 'asc' ? 'desc' : 'asc';
                       setSort({ column: 'emiten', direction });
@@ -242,117 +235,92 @@ export default function WatchlistHistoryTable() {
                   >
                     Emiten {sort.column === 'emiten' ? (sort.direction === 'desc' ? '↓' : '↑') : ''}
                   </th>
-                  <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Harga</th>
-                  <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Target R1</th>
-                  <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Target Max</th>
-                  <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Real Harga</th>
-                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Bandar</th>
-                  <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Vol Bandar</th>
-                  <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Avg Bandar</th>
-                  <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Status</th>
+                  <th className="p-4 text-right text-text-secondary font-semibold">Harga</th>
+                  <th className="p-4 text-right text-text-secondary font-semibold">Target R1</th>
+                  <th className="p-4 text-right text-text-secondary font-semibold">Target Max</th>
+                  <th className="p-4 text-right text-text-secondary font-semibold">Real Harga</th>
+                  <th className="p-4 text-left text-text-secondary font-semibold">Bandar</th>
+                  <th className="p-4 text-right text-text-secondary font-semibold">Vol Bandar</th>
+                  <th className="p-4 text-right text-text-secondary font-semibold">Avg Bandar</th>
+                  <th className="p-4 text-center text-text-secondary font-semibold">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {data.map((record, index) => (
                   <tr
                     key={record.id}
-                    style={{
-                      borderBottom: index < data.length - 1 ? '1px solid var(--border-color)' : 'none',
-                      background: index % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)'
-                    }}
+                    className={`border-b border-border-color/[0.5] last:border-b-0 ${index % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
                   >
-                    <td style={{ padding: '0.75rem 1rem' }}>{formatDate(record.from_date)}</td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <div style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>{record.emiten}</div>
+                    <td className="p-3 text-sm">{formatDate(record.from_date)}</td>
+                    <td className="p-3 text-sm">
+                      <div className="font-semibold text-accent-primary">{record.emiten}</div>
                       {record.sector && (
-                        <div style={{ fontSize: '0.7rem', color: '#999', marginTop: '2px' }}>
+                        <div className="text-xs text-text-muted mt-0.5">
                           {record.sector}
                         </div>
                       )}
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums', fontSize: '0.95rem' }}>
+                    <td className="p-3 text-right font-semibold tabular-nums text-base">
                       {formatNumber(record.harga)}
                     </td>
-                    <td style={{ padding: '0.5rem 1rem', textAlign: 'right', verticalAlign: 'middle' }}>
-                      <div style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', fontSize: '0.95rem', color: 'var(--accent-success)' }}>
+                    <td className="p-2 text-right align-middle">
+                      <div className="font-semibold tabular-nums text-base text-accent-success">
                         {formatNumber(record.target_realistis)}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                      <div className="text-xs text-text-secondary mt-0.5">
                         {calculateGain(record.harga, record.target_realistis)}
                       </div>
                     </td>
-                    <td style={{ padding: '0.5rem 1rem', textAlign: 'right', verticalAlign: 'middle' }}>
-                      <div style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', fontSize: '0.95rem', color: 'var(--accent-warning)' }}>
+                    <td className="p-2 text-right align-middle">
+                      <div className="font-semibold tabular-nums text-base text-accent-warning">
                         {formatNumber(record.target_max)}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                      <div className="text-xs text-text-secondary mt-0.5">
                         {calculateGain(record.harga, record.target_max)}
                       </div>
                     </td>
-                    <td style={{ padding: '0.5rem 1rem', textAlign: 'right', verticalAlign: 'middle' }}>
+                    <td className="p-2 text-right align-middle">
                       {record.real_harga ? (
                         <>
-                          <div style={{
-                            fontWeight: 600,
-                            fontVariantNumeric: 'tabular-nums',
-                            fontSize: '0.95rem',
-                            color: record.target_realistis && record.real_harga >= record.target_realistis
-                              ? 'var(--accent-success)'
+                          <div className={`font-semibold tabular-nums text-base ${
+                            record.target_realistis && record.real_harga >= record.target_realistis
+                              ? 'text-accent-success'
                               : (record.harga && record.real_harga > record.harga
-                                ? '#F59E0B' // Yellow/Orange for profit but below target
-                                : 'var(--accent-destructive)') // Red for loss
-                          }}>
+                                ? 'text-yellow-500' // Yellow/Orange for profit but below target
+                                : 'text-accent-warning') // Red for loss
+                          }`}>
                             {formatNumber(record.real_harga)}
                           </div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                          <div className="text-xs text-text-secondary mt-0.5">
                             {calculateGain(record.harga, record.real_harga)}
                           </div>
                         </>
                       ) : (
-                        <span style={{ color: 'var(--text-muted)' }}>-</span>
+                        <span className="text-text-muted">-</span>
                       )}
                     </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>{record.bandar || '-'}</td>
-                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontSize: '0.9rem' }}>
+                    <td className="p-3 text-sm">{record.bandar || '-'}</td>
+                    <td className="p-3 text-right tabular-nums text-sm">
                       {formatNumber(record.barang_bandar)}
                     </td>
-                    <td style={{ padding: '0.5rem 1rem', textAlign: 'right', verticalAlign: 'middle' }}>
-                      <div style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', fontSize: '0.95rem' }}>
+                    <td className="p-2 text-right align-middle">
+                      <div className="font-semibold tabular-nums text-base">
                         {formatNumber(record.rata_rata_bandar)}
                       </div>
                       {record.rata_rata_bandar && record.harga && record.rata_rata_bandar < record.harga && (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                        <div className="text-xs text-text-secondary mt-0.5">
                           {calculateGain(record.rata_rata_bandar, record.harga)}
                         </div>
                       )}
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
+                    <td className="p-3 text-center">
                       {record.status === 'success' ? (
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: '24px',
-                          height: '24px',
-                          borderRadius: '50%',
-                          background: 'rgba(56, 239, 125, 0.1)',
-                          color: 'var(--accent-success)'
-                        }}>
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent-success/[0.1] text-accent-success">
                           ✓
                         </span>
                       ) : (
                         <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '24px',
-                            height: '24px',
-                            borderRadius: '50%',
-                            background: 'rgba(245, 87, 108, 0.1)',
-                            color: 'var(--accent-warning)',
-                            cursor: 'pointer'
-                          }}
+                          className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent-warning/[0.1] text-accent-warning cursor-pointer"
                           title={record.error_message}
                         >
                           ✕
@@ -366,32 +334,20 @@ export default function WatchlistHistoryTable() {
           </div>
 
           {/* Pagination */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+          <div className="flex flex-col md:flex-row justify-between items-center mt-6 gap-4">
+            <div className="text-text-secondary text-sm">
               Showing {page * pageSize + 1} - {Math.min((page + 1) * pageSize, totalCount)} of {totalCount} records
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div className="flex gap-2">
               <button
-                className="btn"
-                style={{
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-color)',
-                  color: page === 0 ? 'var(--text-muted)' : 'var(--text-primary)',
-                  padding: '0.5rem 1rem'
-                }}
+                className="px-4 py-2 bg-secondary border border-border-color text-text-primary text-sm font-medium rounded-lg transition-colors disabled:text-text-muted disabled:opacity-50"
                 disabled={page === 0}
                 onClick={() => setPage(page - 1)}
               >
                 Previous
               </button>
               <button
-                className="btn"
-                style={{
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-color)',
-                  color: (page + 1) * pageSize >= totalCount ? 'var(--text-muted)' : 'var(--text-primary)',
-                  padding: '0.5rem 1rem'
-                }}
+                className="px-4 py-2 bg-secondary border border-border-color text-text-primary text-sm font-medium rounded-lg transition-colors disabled:text-text-muted disabled:opacity-50"
                 disabled={(page + 1) * pageSize >= totalCount}
                 onClick={() => setPage(page + 1)}
               >
