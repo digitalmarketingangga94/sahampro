@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation'; // Import useSearchParams
-import type { TradeBookTotal, EmitenInfoResponse, OrderbookResponse } from '@/lib/types';
-import { fetchEmitenInfo, fetchOrderbook } from '@/lib/stockbit'; // Import new fetch functions
+import type { TradeBookTotal } from '@/lib/types';
 
 // Helper to format large numbers (e.g., 1234567890 -> 1.23B)
 const formatCompactNumber = (num: number | string | null | undefined): string => {
   if (num === null || num === undefined || num === '') return '-';
-  const n = typeof num === 'string' ? parseFloat(String(num).replace(/,/g, '')) : num;
+  const n = typeof num === 'string' ? parseFloat(num.replace(/,/g, '')) : num;
   if (isNaN(n)) return '-';
 
   if (Math.abs(n) >= 1_000_000_000) return (n / 1_000_000_000).toFixed(2) + 'B';
@@ -25,8 +24,6 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
   const searchParams = useSearchParams(); // Initialize useSearchParams
   const [emiten, setEmiten] = useState(initialEmiten || '');
   const [tradeBookData, setTradeBookData] = useState<TradeBookTotal | null>(null);
-  const [marketInfo, setMarketInfo] = useState<EmitenInfoResponse['data'] | null>(null);
-  const [orderbookSummary, setOrderbookSummary] = useState<OrderbookResponse['data'] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,8 +38,6 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
     } else if (!symbolFromUrl && !initialEmiten) {
       // Clear data if no symbol in URL and no initialEmiten
       setTradeBookData(null);
-      setMarketInfo(null);
-      setOrderbookSummary(null);
       setError(null);
     }
   }, [searchParams]); // Depend on searchParams to react to URL changes
@@ -59,41 +54,21 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
     setLoading(true);
     setError(null);
     setTradeBookData(null);
-    setMarketInfo(null);
-    setOrderbookSummary(null);
 
     try {
-      const [tradeBookRes, emitenInfoRes, orderbookRes] = await Promise.all([
-        fetch(`/api/trade-book?symbol=${currentEmiten}`),
-        fetchEmitenInfo(currentEmiten), // Use existing lib function
-        fetchOrderbook(currentEmiten), // Use existing lib function
-      ]);
+      const response = await fetch(`/api/trade-book?symbol=${currentEmiten}`);
+      const json = await response.json();
 
-      const tradeBookJson = await tradeBookRes.json();
-      if (!tradeBookJson.success) {
-        throw new Error(tradeBookJson.error || 'Failed to fetch trade book data.');
+      if (!json.success) {
+        throw new Error(json.error || 'Failed to fetch trade book data.');
       }
-      setTradeBookData(tradeBookJson.data);
-
-      if (emitenInfoRes.data) {
-        setMarketInfo(emitenInfoRes.data);
-      }
-
-      if (orderbookRes.data) {
-        setOrderbookSummary(orderbookRes.data);
-      }
-
+      setTradeBookData(json.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred.');
     } finally {
       setLoading(false);
     }
   };
-
-  const currentPrice = marketInfo?.price ? parseFloat(marketInfo.price) : null;
-  const changePercentage = marketInfo?.percentage;
-  const totalVolume = orderbookSummary?.total_bid_offer?.total_lot ? parseFloat(orderbookSummary.total_bid_offer.total_lot.replace(/,/g, '')) : null;
-  const totalValue = (currentPrice !== null && totalVolume !== null) ? currentPrice * totalVolume * 100 : null; // Assuming 1 lot = 100 shares
 
   return (
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
@@ -163,77 +138,41 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
       )}
 
       {tradeBookData && (
-        <div style={{ marginTop: '2rem' }}>
-          {/* New Market Info Section */}
-          <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
-              Market Info for {emiten.toUpperCase()}
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', fontSize: '0.9rem' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Price</span>
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {currentPrice !== null ? currentPrice.toLocaleString() : '-'}
-                </span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Change (%)</span>
-                <span style={{ fontWeight: 600, color: changePercentage !== null ? (changePercentage >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)') : 'var(--text-primary)' }}>
-                  {changePercentage !== null ? `${changePercentage >= 0 ? '+' : ''}${changePercentage.toFixed(2)}%` : '-'}
-                </span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Volume (Lot)</span>
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {totalVolume !== null ? totalVolume.toLocaleString() : '-'}
-                </span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Value (Rp)</span>
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {totalValue !== null ? formatCompactNumber(totalValue) : '-'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Existing Trade Book Summary Table */}
-          <div className="glass-card" style={{ padding: '1.5rem' }}>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
-              Trade Book Summary
-            </h3>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Metric</th>
-                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Buy</th>
-                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Sell</th>
-                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)'}}>
-                    <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Lot</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.buy_lot)}</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.sell_lot)}</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.total_lot)}</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)'}}>
-                    <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Frequency</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.buy_frequency)}</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.sell_frequency)}</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.total_frequency)}</td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Percentage</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookData.buy_percentage}</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookData.sell_percentage}</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>-</td> {/* Total percentage not directly available */}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+        <div className="glass-card" style={{ padding: '1.5rem' }}>
+          <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+            Trade Book Summary for {emiten.toUpperCase()}
+          </h3>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Metric</th>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Buy</th>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Sell</th>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)'}}>
+                  <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Lot</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.buy_lot)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.sell_lot)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.total_lot)}</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)'}}>
+                  <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Frequency</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.buy_frequency)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.sell_frequency)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookData.total_frequency)}</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Percentage</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookData.buy_percentage}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookData.sell_percentage}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>-</td> {/* Total percentage not directly available */}
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       )}
