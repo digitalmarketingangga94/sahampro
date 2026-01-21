@@ -377,7 +377,7 @@ export async function fetchTradeBook(symbol: string): Promise<{ book_total: Trad
     await handleApiResponse(response, `Trade Book API (${symbol})`);
 
     const json: TradeBookResponse = await response.json();
-    // Removed console.log as requested
+    console.log(`[fetchTradeBook] Raw API response for ${symbol}:`, json); // Tambahkan console.log ini
     return {
       book_total: json.data?.book_total || null,
       // Removed trade_book_list
