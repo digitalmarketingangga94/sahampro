@@ -18,14 +18,14 @@ export async function GET(request: NextRequest) {
     const today = new Date().toISOString().split('T')[0];
 
     // Fetch all data concurrently
-    const [tradeBookTotal, emitenInfo, orderbookData, marketDetectorData] = await Promise.all([
+    const [tradeBookDataRaw, emitenInfo, orderbookData, marketDetectorData] = await Promise.all([
       fetchTradeBook(symbol),
       fetchEmitenInfo(symbol).catch(() => null), // Catch error to allow other fetches to succeed
       fetchOrderbook(symbol).catch(() => null),
       fetchMarketDetector(symbol, today, today).catch(() => null),
     ]);
 
-    if (!tradeBookTotal) {
+    if (!tradeBookDataRaw || !tradeBookDataRaw.book_total) {
       return NextResponse.json(
         { success: false, error: 'No trade book data found for this symbol' },
         { status: 404 }
@@ -72,8 +72,10 @@ export async function GET(request: NextRequest) {
     };
 
     const combinedData: TradeBookCombinedData = {
-      tradeBookTotal: tradeBookTotal,
+      tradeBookTotal: tradeBookDataRaw.book_total,
       marketData: marketData,
+      tradeBookDetails: tradeBookDataRaw.book_list || [], // Include detailed list
+      marketHourSteps: tradeBookDataRaw.market_hour_steps || [], // Include market hour steps
     };
 
     return NextResponse.json({

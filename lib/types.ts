@@ -396,11 +396,27 @@ export interface TradeBookTotal {
   total_lot: string;
 }
 
+export interface TradeBookDetailItem {
+  price: string; // This seems to be the interval price, but not directly used in the table columns shown
+  buy: {
+    lot: string;
+    frequency: string;
+    percentage: string;
+  };
+  sell: {
+    lot: string;
+    frequency: string;
+    percentage: string;
+  };
+  time: string; // The time interval, e.g., "09:00"
+}
+
 export interface TradeBookResponse {
   message: string;
   data: {
     book_total: TradeBookTotal;
-    // other fields like trade_book_list, etc.
+    book_list: TradeBookDetailItem[]; // This is the new detailed list
+    market_hour_steps: string[]; // Array of time strings, e.g., ["09:00", "09:10", ...]
   };
 }
 
@@ -414,6 +430,8 @@ export interface TradeBookMarketData {
 export interface TradeBookCombinedData {
   tradeBookTotal: TradeBookTotal;
   marketData: TradeBookMarketData;
+  tradeBookDetails: TradeBookDetailItem[]; // New field
+  marketHourSteps: string[]; // New field
 }
 
 export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency';

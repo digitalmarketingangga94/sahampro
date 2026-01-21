@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookResponse, TradeBookTotal } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookResponse, TradeBookTotal, TradeBookDetailItem } from './types';
 import { getSessionValue, updateTokenLastUsed, invalidateToken } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -179,7 +179,7 @@ export async function fetchEmitenInfo(emiten: string): Promise<EmitenInfoRespons
  * Fetch all sectors list
  */
 export async function fetchSectors(): Promise<string[]> {
-  const now = Date.now();
+  const now = Date.now(); // Perbaikan di sini: Date.now()
   
   // Check cache first
   if (sectorsListCache && (now - sectorsListCache.timestamp) < SECTORS_LIST_CACHE_DURATION) {
@@ -362,7 +362,7 @@ export async function fetchKeyStats(emiten: string): Promise<KeyStatsData> {
 /**
  * Fetch Trade Book data for a specific symbol
  */
-export async function fetchTradeBook(symbol: string): Promise<TradeBookTotal | null> {
+export async function fetchTradeBook(symbol: string): Promise<TradeBookResponse['data'] | null> {
   const url = new URL(`${STOCKBIT_BASE_URL}/order-trade/trade-book`);
   url.searchParams.append('symbol', symbol);
   url.searchParams.append('group_by', 'GROUP_BY_TIME');
@@ -377,10 +377,10 @@ export async function fetchTradeBook(symbol: string): Promise<TradeBookTotal | n
     await handleApiResponse(response, `Trade Book API (${symbol})`);
 
     const json: TradeBookResponse = await response.json();
-    return json.data?.book_total || null;
+    return json.data || null; // Return the entire data object
   } catch (error) {
     console.error(`Error fetching trade book for ${symbol}:`, error);
-    return null; // Return null on error to not block market movers
+    return null; // Return null on error
   }
 }
 
