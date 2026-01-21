@@ -20,20 +20,6 @@ const Navbar = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <div className="nav-links" style={{ display: 'flex', gap: '1.5rem' }}>
             <Link 
-              href="/" 
-              style={{
-                textDecoration: 'none',
-                color: pathname === '/' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: pathname === '/' ? 600 : 400,
-                fontSize: '0.9rem',
-                borderBottom: pathname === '/' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                paddingBottom: '2px',
-                transition: 'all 0.2s'
-              }}
-            >
-              Calculator
-            </Link>
-            <Link 
               href="/dashboard" 
               style={{
                 textDecoration: 'none',
@@ -46,6 +32,20 @@ const Navbar = () => {
               }}
             >
               Dashboard
+            </Link>
+            <Link 
+              href="/" 
+              style={{
+                textDecoration: 'none',
+                color: pathname === '/' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                fontWeight: pathname === '/' ? 600 : 400,
+                fontSize: '0.9rem',
+                borderBottom: pathname === '/' ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                paddingBottom: '2px',
+                transition: 'all 0.2s'
+              }}
+            >
+              Calculator
             </Link>
             <Link 
               href="/history" 
