@@ -1,20 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import type { WatchlistItem, WatchlistGroup } from '@/lib/types';
 import { CheckCircle2, XCircle, MinusCircle } from 'lucide-react';
 
-interface WatchlistSidebarProps {
-  onSelect?: (symbol: string) => void;
+interface WatchlistPageContentProps {
+  // onSelect?: (symbol: string) => void; // Removed as it will navigate directly
 }
 
-export default function WatchlistSidebar({ onSelect }: WatchlistSidebarProps) {
+export default function WatchlistPageContent(/* { onSelect } : WatchlistPageContentProps */) {
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [groups, setGroups] = useState<WatchlistGroup[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshSeed, setRefreshSeed] = useState(0);
+  const router = useRouter(); // Initialize useRouter
 
   // Fetch groups and watchlist items
   useEffect(() => {
@@ -113,6 +115,10 @@ export default function WatchlistSidebar({ onSelect }: WatchlistSidebarProps) {
 
   const selectedGroup = groups.find(g => g.watchlist_id === selectedGroupId);
 
+  const handleStockClick = (symbol: string) => {
+    router.push(`/?symbol=${symbol}`); // Navigate to Calculator page with symbol param
+  };
+
   if (loading && groups.length === 0) {
     return (
       <div style={{ padding: '1rem' }}>
@@ -150,7 +156,7 @@ export default function WatchlistSidebar({ onSelect }: WatchlistSidebarProps) {
   }
 
   return (
-    <div style={{ padding: '1rem' }}>
+    <div className="glass-card-static" style={{ padding: '1rem' }}> {/* Changed to glass-card-static for page content */}
       {/* Header with Group Selector */}
       <div style={{ marginBottom: '1rem' }}>
         <div style={{
@@ -231,7 +237,7 @@ export default function WatchlistSidebar({ onSelect }: WatchlistSidebarProps) {
           display: 'flex',
           flexDirection: 'column',
           gap: '0.25rem',
-          maxHeight: 'calc(100vh - 160px)',
+          maxHeight: 'calc(100vh - 160px)', // Adjusted for full page, might need more tuning
           overflowY: 'auto'
         }}
       >
@@ -243,7 +249,7 @@ export default function WatchlistSidebar({ onSelect }: WatchlistSidebarProps) {
             <div
               key={item.company_id || index}
               className="watchlist-item"
-              onClick={() => onSelect?.(item.symbol || item.company_code)}
+              onClick={() => handleStockClick(item.symbol || item.company_code)}
               style={{ padding: '0.65rem 0.75rem' }}
             >
               <div style={{ display: 'flex', flexDirection: 'column' }}>

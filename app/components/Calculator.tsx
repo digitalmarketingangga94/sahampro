@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 import InputForm from './InputForm';
 import CompactResultCard from './CompactResultCard';
 import BrokerSummaryCard from './BrokerSummaryCard';
@@ -13,7 +14,7 @@ import type { StockInput, StockAnalysisResult, KeyStatsData, AgentStoryResult } 
 import { getDefaultDate } from '@/lib/utils';
 
 interface CalculatorProps {
-  selectedStock?: string | null;
+  // selectedStock?: string | null; // Removed
 }
 
 // Helper function to format the result data for copying
@@ -57,7 +58,8 @@ function formatResultForCopy(result: StockAnalysisResult): string {
   return lines.join('\n');
 }
 
-export default function Calculator({ selectedStock }: CalculatorProps) {
+export default function Calculator(/* { selectedStock }: CalculatorProps */) {
+  const searchParams = useSearchParams(); // Initialize useSearchParams
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<StockAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -74,9 +76,21 @@ export default function Calculator({ selectedStock }: CalculatorProps) {
   const [fromDate, setFromDate] = useState(getDefaultDate());
   const [toDate, setToDate] = useState(getDefaultDate());
 
-  // Reset result and error when a new stock is selected from sidebar
+  // Effect to handle initial symbol from URL
   useEffect(() => {
-    if (selectedStock) {
+    const symbolFromUrl = searchParams.get('symbol');
+    if (symbolFromUrl) {
+      // Only trigger if the symbol is different or if there's no current result
+      if (!result || result.input.emiten.toUpperCase() !== symbolFromUrl.toUpperCase()) {
+        console.log(`Auto-analyzing stock from URL: ${symbolFromUrl}`);
+        handleSubmit({
+          emiten: symbolFromUrl,
+          fromDate,
+          toDate
+        });
+      }
+    } else {
+      // Clear result if no symbol in URL and no initialEmiten
       setResult(null);
       setError(null);
       setAgentStories([]);
@@ -85,15 +99,8 @@ export default function Calculator({ selectedStock }: CalculatorProps) {
         clearInterval(pollIntervalRef.current);
         pollIntervalRef.current = null;
       }
-      // Auto-analyze with current selected dates
-      // This allows clicking watchlist items to RESPECT the date range selected by user
-      handleSubmit({
-        emiten: selectedStock,
-        fromDate,
-        toDate
-      });
     }
-  }, [selectedStock]);
+  }, [searchParams, fromDate, toDate]); // Depend on searchParams, fromDate, toDate
 
   const handleSubmit = async (data: StockInput) => {
     setLoading(true);
@@ -179,7 +186,7 @@ export default function Calculator({ selectedStock }: CalculatorProps) {
       console.log('Token refreshed event received in Calculator');
       // If there's an error that looks like a token issue, retry the last analysis
       if (error && (error.toLowerCase().includes('token') || error.toLowerCase().includes('401'))) {
-        const emitenToRetry = selectedStock || result?.input.emiten;
+        const emitenToRetry = result?.input.emiten; // Use result.input.emiten if available
         if (emitenToRetry) {
           console.log(`Retrying analysis for ${emitenToRetry}`);
           handleSubmit({
@@ -193,7 +200,7 @@ export default function Calculator({ selectedStock }: CalculatorProps) {
 
     window.addEventListener('token-refreshed', handleTokenRefresh);
     return () => window.removeEventListener('token-refreshed', handleTokenRefresh);
-  }, [error, selectedStock, result, fromDate, toDate]);
+  }, [error, result, fromDate, toDate]);
 
   const handleAnalyzeStory = async (isResuming: boolean = false) => {
     if (!result) return;
@@ -321,7 +328,7 @@ export default function Calculator({ selectedStock }: CalculatorProps) {
       <InputForm
         onSubmit={handleSubmit}
         loading={loading}
-        initialEmiten={selectedStock}
+        initialEmiten={searchParams.get('symbol')} // Read from URL
         fromDate={fromDate}
         toDate={toDate}
         onDateChange={handleDateChange}

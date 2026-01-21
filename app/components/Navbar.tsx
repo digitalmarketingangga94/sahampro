@@ -48,6 +48,20 @@ const Navbar = () => {
               Calculator
             </Link>
             <Link 
+              href="/watchlist" 
+              style={{
+                textDecoration: 'none',
+                color: pathname === '/watchlist' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                fontWeight: pathname === '/watchlist' ? 600 : 400,
+                fontSize: '0.9rem',
+                borderBottom: pathname === '/watchlist' ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                paddingBottom: '2px',
+                transition: 'all 0.2s'
+              }}
+            >
+              Watchlist
+            </Link>
+            <Link 
               href="/tradebook" 
               style={{
                 textDecoration: 'none',
