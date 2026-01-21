@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchTradeBook, fetchEmitenInfo, fetchOrderbook, fetchMarketDetector, parseLot, fetchWatchlist } from '@/lib/stockbit';
+import { fetchTradeBook, fetchEmitenInfo, fetchOrderbook, fetchMarketDetector, parseLot } from '@/lib/stockbit';
 import type { TradeBookCombinedData, TradeBookTotal, TradeBookMarketData } from '@/lib/types';
 
 export async function GET(request: NextRequest) {
@@ -18,12 +18,11 @@ export async function GET(request: NextRequest) {
     const today = new Date().toISOString().split('T')[0];
 
     // Fetch all data concurrently
-    const [tradeBookTotal, emitenInfo, orderbookData, marketDetectorData, watchlistData] = await Promise.all([
+    const [tradeBookTotal, emitenInfo, orderbookData, marketDetectorData] = await Promise.all([
       fetchTradeBook(symbol),
       fetchEmitenInfo(symbol).catch(() => null), // Catch error to allow other fetches to succeed
       fetchOrderbook(symbol).catch(() => null),
       fetchMarketDetector(symbol, today, today).catch(() => null),
-      fetchWatchlist().catch(() => null), // Fetch watchlist data
     ]);
 
     if (!tradeBookTotal) {
@@ -39,22 +38,14 @@ export async function GET(request: NextRequest) {
     let volume: number = 0;
     let value: number = 0;
 
-    // --- Prioritize data from Watchlist ---
-    const watchlistMatch = watchlistData?.data?.result?.find(item => 
-      (item.symbol?.toUpperCase() === symbol || item.company_code?.toUpperCase() === symbol)
-    );
-
-    if (watchlistMatch) {
-      price = watchlistMatch.last_price;
-      change_percentage = watchlistMatch.change_percentage;
-    } else if (emitenInfo?.data) {
-      // Fallback to emitenInfo
+    // Prioritize emitenInfo for price and change_percentage
+    if (emitenInfo?.data) {
       price = parseFloat(emitenInfo.data.price);
       change_percentage = emitenInfo.data.percentage;
     } else if (orderbookData?.data) {
-      // Fallback to orderbook for price
+      // Fallback to orderbook for price if emitenInfo is not available
       price = orderbookData.data.close;
-      // change_percentage cannot be reliably derived from orderbook alone
+      // Cannot reliably get change_percentage from orderbook without previous close, so keep 0
     }
 
     // Try to get volume and value from market detector first
