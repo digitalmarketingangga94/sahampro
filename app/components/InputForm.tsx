@@ -212,7 +212,7 @@ export default function InputForm({
                 fontWeight: '600'
               }}
             >
-              {loading ? '...' : 'Adimology'}
+              {loading ? '...' : 'Analyze'}
             </button>
 
             <button
