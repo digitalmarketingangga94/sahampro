@@ -224,14 +224,39 @@ export default function Calculator(/* { selectedStock }: CalculatorProps */) {
         })
       });
 
-      const data = await response.json();
+      let data;
+      if (!response.ok) {
+        const errorBody = await response.text();
+        try {
+          data = JSON.parse(errorBody);
+        } catch {
+          throw new Error(`Server error: ${response.status} ${response.statusText}. Response: ${errorBody.substring(0, 200)}...`);
+        }
+        throw new Error(data.error || 'Failed to start analysis');
+      }
+      data = await response.json();
       if (!data.success) throw new Error(data.error);
 
       // Start polling for status
       pollIntervalRef.current = setInterval(async () => {
         try {
           const statusRes = await fetch(`/api/analyze-story?emiten=${emiten}`);
-          const statusData = await statusRes.json();
+          let statusData;
+          if (!statusRes.ok) {
+            const errorBody = await statusRes.text();
+            try {
+              statusData = JSON.parse(errorBody);
+            } catch {
+              // If it's not JSON, it's likely an HTML error page
+              console.error('Polling received non-JSON response:', errorBody);
+              setStoryStatus('error');
+              setError(`Polling server error: ${statusRes.status} ${statusRes.statusText}. Check Netlify function logs.`);
+              if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+              return; // Stop polling
+            }
+            throw new Error(statusData.error || 'Polling failed');
+          }
+          statusData = await statusRes.json();
 
           if (statusData.success && statusData.data && Array.isArray(statusData.data)) {
             const stories = statusData.data;
@@ -247,17 +272,24 @@ export default function Calculator(/* { selectedStock }: CalculatorProps */) {
             } else if (currentProcessing.status === 'processing') {
               setStoryStatus('processing');
             }
+          } else if (!statusData.success && statusData.error) {
+            // Handle explicit error from the API route
+            setStoryStatus('error');
+            setError(statusData.error);
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
           }
         } catch (pollErr) {
           console.error('Polling error:', pollErr);
+          setStoryStatus('error');
+          setError(pollErr instanceof Error ? pollErr.message : 'An unknown polling error occurred');
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
         }
       }, 5000);
 
     } catch (err) {
       console.error('Failed to start analysis:', err);
       setStoryStatus('error');
-      // We don't necessarily want to setAgentStories to an error object if we have other stories
-      // But for the sake of showing error in the card, we might need a workaround or specific error state in card
+      setError(err instanceof Error ? err.message : 'An error occurred while starting analysis');
     }
   };
 
