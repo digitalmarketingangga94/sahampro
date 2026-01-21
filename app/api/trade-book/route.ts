@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchTradeBook, fetchEmitenInfo, fetchOrderbook, fetchMarketDetector, parseLot } from '@/lib/stockbit';
-import type { TradeBookCombinedData, TradeBookTotal, TradeBookMarketData, TradeBookListItem } from '@/lib/types';
+import type { TradeBookCombinedData, TradeBookTotal, TradeBookMarketData } from '@/lib/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,14 +18,14 @@ export async function GET(request: NextRequest) {
     const today = new Date().toISOString().split('T')[0];
 
     // Fetch all data concurrently
-    const [tradeBookDataFromApi, emitenInfo, orderbookData, marketDetectorData] = await Promise.all([
+    const [tradeBookTotal, emitenInfo, orderbookData, marketDetectorData] = await Promise.all([
       fetchTradeBook(symbol),
       fetchEmitenInfo(symbol).catch(() => null), // Catch error to allow other fetches to succeed
       fetchOrderbook(symbol).catch(() => null),
       fetchMarketDetector(symbol, today, today).catch(() => null),
     ]);
 
-    if (!tradeBookDataFromApi.book_total) {
+    if (!tradeBookTotal.book_total) { // Access book_total from the returned object
       return NextResponse.json(
         { success: false, error: 'No trade book data found for this symbol' },
         { status: 404 }
@@ -72,9 +72,8 @@ export async function GET(request: NextRequest) {
     };
 
     const combinedData: TradeBookCombinedData = {
-      tradeBookTotal: tradeBookDataFromApi.book_total,
+      tradeBookTotal: tradeBookTotal.book_total, // Access book_total from the returned object
       marketData: marketData,
-      tradeBookList: tradeBookDataFromApi.trade_book_list, // Include the list
     };
 
     return NextResponse.json({
