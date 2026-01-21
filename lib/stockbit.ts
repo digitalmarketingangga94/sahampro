@@ -179,7 +179,7 @@ export async function fetchEmitenInfo(emiten: string): Promise<EmitenInfoRespons
  * Fetch all sectors list
  */
 export async function fetchSectors(): Promise<string[]> {
-  const now = Date.now(); // Perbaikan di sini: Date.now()
+  const now = Date.now();
   
   // Check cache first
   if (sectorsListCache && (now - sectorsListCache.timestamp) < SECTORS_LIST_CACHE_DURATION) {

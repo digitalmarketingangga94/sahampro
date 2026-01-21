@@ -204,24 +204,36 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
                   </tr>
                 </thead>
                 <tbody>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)'}}>
-                    <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Lot</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookCombinedData.tradeBookTotal.buy_lot)}</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookCombinedData.tradeBookTotal.sell_lot)}</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookCombinedData.tradeBookTotal.total_lot)}</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.03)'}}>
-                    <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Frequency</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookCombinedData.tradeBookTotal.buy_frequency)}</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookCombinedData.tradeBookTotal.sell_frequency)}</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCompactNumber(tradeBookCombinedData.tradeBookTotal.total_frequency)}</td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Percentage</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookCombinedData.tradeBookTotal.buy_percentage}</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tradeBookCombinedData.tradeBookTotal.sell_percentage}</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>-</td> {/* Total percentage not directly available */}
-                  </tr>
+                  {[
+                    {
+                      label: 'Lot',
+                      buy: tradeBookCombinedData.tradeBookTotal.buy_lot,
+                      sell: tradeBookCombinedData.tradeBookTotal.sell_lot,
+                      total: tradeBookCombinedData.tradeBookTotal.total_lot,
+                      isPercentage: false,
+                    },
+                    {
+                      label: 'Frequency',
+                      buy: tradeBookCombinedData.tradeBookTotal.buy_frequency,
+                      sell: tradeBookCombinedData.tradeBookTotal.sell_frequency,
+                      total: tradeBookCombinedData.tradeBookTotal.total_frequency,
+                      isPercentage: false,
+                    },
+                    {
+                      label: 'Percentage',
+                      buy: tradeBookCombinedData.tradeBookTotal.buy_percentage,
+                      sell: tradeBookCombinedData.tradeBookTotal.sell_percentage,
+                      total: '-', // Total percentage not directly available
+                      isPercentage: true,
+                    },
+                  ].map((row, index) => (
+                    <tr key={row.label} style={{ borderBottom: index < 2 ? '1px solid rgba(255,255,255,0.03)' : 'none'}}>
+                      <td style={{ padding: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>{row.label}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right' }}>{row.isPercentage ? row.buy : formatCompactNumber(row.buy)}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right' }}>{row.isPercentage ? row.sell : formatCompactNumber(row.sell)}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right' }}>{row.isPercentage ? row.total : formatCompactNumber(row.total)}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
