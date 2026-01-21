@@ -91,7 +91,9 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
 
   return (
     <div className="glass-card-static" style={{ padding: '1rem' }}>
-      <h3 style={{ marginBottom: '1rem', fontSize: '1rem', color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal' }}>{title}</h3>
+      <h3 style={{ marginBottom: '1rem', fontSize: '1rem', color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal' }}>
+        {title} ({movers.length} Saham) {/* Menambahkan jumlah saham di sini */}
+      </h3>
       {loading ? (
         <div style={{ textAlign: 'center', padding: '2rem 0' }}>
           <div className="spinner" style={{ width: '20px', height: '20px', margin: '0 auto' }}></div>
