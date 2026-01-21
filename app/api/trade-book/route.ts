@@ -33,10 +33,20 @@ export async function GET(request: NextRequest) {
     }
 
     // Extract market data
-    let price: number = emitenInfo?.data?.price ? parseFloat(emitenInfo.data.price) : 0;
-    let change_percentage: number = emitenInfo?.data?.percentage || 0;
+    let price: number = 0;
+    let change_percentage: number = 0;
     let volume: number = 0;
     let value: number = 0;
+
+    // Prioritize emitenInfo for price and change_percentage
+    if (emitenInfo?.data) {
+      price = parseFloat(emitenInfo.data.price);
+      change_percentage = emitenInfo.data.percentage;
+    } else if (orderbookData?.data) {
+      // Fallback to orderbook for price if emitenInfo is not available
+      price = orderbookData.data.close;
+      // Cannot reliably get change_percentage from orderbook without previous close, so keep 0
+    }
 
     // Try to get volume and value from market detector first
     if (marketDetectorData?.data?.bandar_detector) {
@@ -48,7 +58,7 @@ export async function GET(request: NextRequest) {
       const totalOfferLot = parseLot(orderbookData.data.total_bid_offer.offer.lot);
       volume = (totalBidLot + totalOfferLot) * 100; // Convert lots to shares (1 lot = 100 shares)
       // Value is harder to get accurately from orderbook without more complex calculations
-      // For now, we'll leave value as 0 or try to estimate if price is available
+      // For now, we'll estimate if price is available
       if (price && volume) {
         value = price * volume; // Simple estimation
       }
