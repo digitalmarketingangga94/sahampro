@@ -70,8 +70,6 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
     }
   };
 
-  // Removed console.log for debugging as requested
-
   return (
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
       <div className="glass-card-static compact-form" style={{ marginBottom: '2rem' }}>
@@ -217,8 +215,6 @@ export default function TradeBookDisplay({ initialEmiten }: TradeBookDisplayProp
               </tbody>
             </table>
           </div>
-
-          {/* Removed: Trade Book List Table */}
         </div>
       )}
     </div>
