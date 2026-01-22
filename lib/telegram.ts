@@ -38,8 +38,16 @@ export async function sendTelegramMessage(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      const errorMsg = `Failed to send Telegram message: ${response.status} ${response.statusText} - ${errorData.description || JSON.stringify(errorData)}`;
+      let errorData: any;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        errorData = await response.json();
+      } else {
+        errorData = await response.text(); // Read as text if not JSON
+        console.error(`Telegram API returned non-JSON error: ${errorData.substring(0, 200)}...`);
+      }
+      
+      const errorMsg = `Failed to send Telegram message: ${response.status} ${response.statusText} - ${typeof errorData === 'string' ? errorData : (errorData.description || JSON.stringify(errorData))}`;
       console.error(errorMsg);
       if (jobLogId) {
         await appendBackgroundJobLogEntry(jobLogId, {
