@@ -49,18 +49,18 @@ const Navbar = () => {
               Broker Activity
             </Link>
             <Link 
-              href="/watchlist" 
+              href="/hot-stock" 
               style={{
                 textDecoration: 'none',
-                color: pathname === '/watchlist' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: pathname === '/watchlist' ? 600 : 400,
+                color: pathname === '/hot-stock' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                fontWeight: pathname === '/hot-stock' ? 600 : 400,
                 fontSize: '0.9rem',
-                borderBottom: pathname === '/watchlist' ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                borderBottom: pathname === '/hot-stock' ? '2px solid var(--accent-primary)' : '2px solid transparent',
                 paddingBottom: '2px',
                 transition: 'all 0.2s'
               }}
             >
-              Watchlist
+              Hot Stock
             </Link>
             <Link 
               href="/history" 
