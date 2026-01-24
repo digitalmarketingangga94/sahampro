@@ -385,36 +385,4 @@ export interface MarketMoversResponse {
   };
 }
 
-export interface TradeBookTotal {
-  buy_frequency: string;
-  sell_frequency: string;
-  buy_lot: string;
-  sell_lot: string;
-  buy_percentage: string;
-  sell_percentage: string;
-  total_frequency: string;
-  total_lot: string;
-}
-
-export interface TradeBookResponse {
-  message: string;
-  data: {
-    book_total: TradeBookTotal;
-    // Removed trade_book_list
-  };
-}
-
-export interface TradeBookMarketData {
-  price: number;
-  change_percentage: number;
-  volume: number;
-  value: number;
-}
-
-export interface TradeBookCombinedData {
-  tradeBookTotal: TradeBookTotal;
-  marketData: TradeBookMarketData;
-  // Removed tradeBookList
-}
-
 export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency';
