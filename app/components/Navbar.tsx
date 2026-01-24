@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import JobStatusIndicator from './JobStatusIndicator';
-import TokenStatusIndicator from './TokenStatusIndicator'; // Added TokenStatusIndicator
+
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -20,7 +20,6 @@ const Navbar = () => {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <div className="nav-links" style={{ display: 'flex', gap: '1.5rem' }}>
-            {/* Removed Dashboard Link */}
             <Link 
               href="/" 
               style={{
@@ -49,7 +48,6 @@ const Navbar = () => {
             >
               Watchlist
             </Link>
-            {/* Removed Tradebook Link */}
             <Link 
               href="/history" 
               style={{
@@ -66,7 +64,6 @@ const Navbar = () => {
             </Link>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <TokenStatusIndicator />
             <JobStatusIndicator />
           </div>
         </div>

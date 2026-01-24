@@ -57,61 +57,6 @@ export async function getSessionValue(key: string): Promise<string | null> {
 }
 
 /**
- * Token status interface
- */
-export interface TokenStatus {
-  exists: boolean;
-  isValid: boolean;
-  token?: string;
-  expiresAt?: string;
-  lastUsedAt?: string;
-  updatedAt?: string;
-  isExpiringSoon: boolean;  // Within 1 hour of expiry
-  isExpired: boolean;
-  hoursUntilExpiry?: number;
-}
-
-/**
- * Get full token status including expiry information
- */
-export async function getTokenStatus(): Promise<TokenStatus> {
-  const { data, error } = await supabase
-    .from('session')
-    .select('value, expires_at, last_used_at, is_valid, updated_at')
-    .eq('key', 'stockbit_token')
-    .single();
-
-  if (error || !data) {
-    return {
-      exists: false,
-      isValid: false,
-      isExpiringSoon: false,
-      isExpired: true,
-    };
-  }
-
-  const now = new Date();
-  const expiresAt = data.expires_at ? new Date(data.expires_at) : null;
-  const isExpired = expiresAt ? expiresAt < now : false;
-  const hoursUntilExpiry = expiresAt 
-    ? (expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60) 
-    : undefined;
-  const isExpiringSoon = hoursUntilExpiry !== undefined && hoursUntilExpiry <= 1 && hoursUntilExpiry > 0;
-
-  return {
-    exists: true,
-    isValid: data.is_valid !== false && !isExpired,
-    token: data.value,
-    expiresAt: data.expires_at,
-    lastUsedAt: data.last_used_at,
-    updatedAt: data.updated_at,
-    isExpiringSoon,
-    isExpired,
-    hoursUntilExpiry,
-  };
-}
-
-/**
  * Upsert session value with optional expiry
  */
 export async function upsertSession(
@@ -136,51 +81,6 @@ export async function upsertSession(
 
   if (error) throw error;
   return data;
-}
-
-/**
- * Update token last used timestamp (call after successful API request)
- */
-export async function updateTokenLastUsed() {
-  const { error } = await supabase
-    .from('session')
-    .update({ last_used_at: new Date().toISOString() })
-    .eq('key', 'stockbit_token');
-
-  if (error) {
-    console.error('Error updating token last_used_at:', error);
-  }
-}
-
-/**
- * Mark token as invalid (call when receiving 401 from Stockbit API)
- */
-export async function invalidateToken() {
-  const { error } = await supabase
-    .from('session')
-    .update({ is_valid: false })
-    .eq('key', 'stockbit_token');
-
-  if (error) {
-    console.error('Error invalidating token:', error);
-  }
-}
-
-/**
- * Set token expiry time (typically 24 hours from login)
- */
-export async function setTokenExpiry(hoursFromNow: number = 24) {
-  const expiresAt = new Date();
-  expiresAt.setHours(expiresAt.getHours() + hoursFromNow);
-  
-  const { error } = await supabase
-    .from('session')
-    .update({ expires_at: expiresAt.toISOString() })
-    .eq('key', 'stockbit_token');
-
-  if (error) {
-    console.error('Error setting token expiry:', error);
-  }
 }
 
 /**
@@ -582,5 +482,3 @@ export async function getLatestBackgroundJobLog(jobName: string) {
 
   return data || null;
 }
-
-

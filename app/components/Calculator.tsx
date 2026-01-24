@@ -180,27 +180,7 @@ export default function Calculator(/* { selectedStock }: CalculatorProps */) {
     };
   }, []);
 
-  // Handle token refresh to auto-retry failed analysis
-  useEffect(() => {
-    const handleTokenRefresh = () => {
-      console.log('Token refreshed event received in Calculator');
-      // If there's an error that looks like a token issue, retry the last analysis
-      if (error && (error.toLowerCase().includes('token') || error.toLowerCase().includes('401'))) {
-        const emitenToRetry = result?.input.emiten; // Use result.input.emiten if available
-        if (emitenToRetry) {
-          console.log(`Retrying analysis for ${emitenToRetry}`);
-          handleSubmit({
-            emiten: emitenToRetry,
-            fromDate,
-            toDate
-          });
-        }
-      }
-    };
-
-    window.addEventListener('token-refreshed', handleTokenRefresh);
-    return () => window.removeEventListener('token-refreshed', handleTokenRefresh);
-  }, [error, result, fromDate, toDate]);
+  // Removed handle token refresh logic
 
   const handleAnalyzeStory = async (isResuming: boolean = false) => {
     if (!result) return;

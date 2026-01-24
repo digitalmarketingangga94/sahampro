@@ -1,16 +1,10 @@
 import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem } from './types';
-import { getSessionValue, updateTokenLastUsed, invalidateToken } from './supabase';
+import { getSessionValue, upsertSession } from './supabase'; // Removed updateTokenLastUsed, invalidateToken
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
 const STOCKBIT_AUTH_URL = 'https://stockbit.com';
 
-// Custom error for token expiry - allows UI to detect and show refresh prompt
-export class TokenExpiredError extends Error {
-  constructor(message: string = 'Token has expired or is invalid. Please login to Stockbit again.') {
-    super(message);
-    this.name = 'TokenExpiredError';
-  }
-}
+// Removed TokenExpiredError class
 
 // Cache token to reduce database calls
 let cachedToken: string | null = null;
@@ -74,9 +68,9 @@ async function getHeaders(): Promise<HeadersInit> {
 async function handleApiResponse(response: Response, apiName: string): Promise<void> {
   if (response.status === 401) {
     // Token is invalid - mark it and clear cache
-    await invalidateToken();
+    // Removed invalidateToken() call
     cachedToken = null;
-    throw new TokenExpiredError(`${apiName}: Token expired or invalid (401)`);
+    throw new Error(`${apiName}: Token expired or invalid (401)`); // Changed to generic Error
   }
   
   if (!response.ok) {
@@ -84,7 +78,7 @@ async function handleApiResponse(response: Response, apiName: string): Promise<v
   }
   
   // Token is valid - update last used timestamp (fire and forget)
-  updateTokenLastUsed().catch(() => {});
+  // Removed updateTokenLastUsed() call
 }
 
 /**
