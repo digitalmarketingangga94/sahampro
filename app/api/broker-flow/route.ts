@@ -1,11 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { BrokerFlowResponse } from '@/lib/types';
+import type { BrokerFlowResponse, BrokerFlowActivity } from '@/lib/types';
+import { getBrokerInfo, BrokerType } from '@/lib/brokers'; // Import BrokerType
+
+// Helper to map frontend status IDs to internal BrokerType
+const mapStatusIdToBrokerType = (statusId: string): BrokerType | null => {
+  switch (statusId) {
+    case 'Bandar': return 'Smartmoney';
+    case 'Foreign': return 'Foreign';
+    case 'Retail': return 'Retail';
+    case 'Mix': return 'Mix';
+    default: return null;
+  }
+};
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const emiten = searchParams.get('emiten');
   const lookbackDays = searchParams.get('lookback_days') || '7';
-  let brokerStatus = searchParams.get('broker_status') || 'Bandar,Foreign,Retail,Mix'; // Default to match frontend
+  const brokerStatusParam = searchParams.get('broker_status') || 'Bandar,Foreign,Retail,Mix'; // Default to match frontend
 
   if (!emiten) {
     return NextResponse.json(
@@ -22,12 +34,10 @@ export async function GET(request: NextRequest) {
     url.searchParams.set('mode', 'accum');
     url.searchParams.set('lookback_days', lookbackDays);
     
-    // Map 'Foreign' from frontend to 'Whale' for the external API
-    let externalBrokerStatus = brokerStatus.split(',')
-      .map(status => status === 'Foreign' ? 'Whale' : status)
-      .join(',');
-    
-    url.searchParams.set('broker_status', externalBrokerStatus);
+    // IMPORTANT: Do NOT set broker_status filter for the external API.
+    // We will fetch all relevant activities and filter internally using our own broker definitions.
+    // This ensures consistency with our internal broker classifications.
+    // url.searchParams.set('broker_status', externalBrokerStatus); // Removed this line
 
     url.searchParams.set('search', emiten.toLowerCase());
 
@@ -45,12 +55,24 @@ export async function GET(request: NextRequest) {
 
     const data: BrokerFlowResponse = await response.json();
 
-    // Map 'Whale' from external API response back to 'Foreign' for the frontend
     if (data && data.activities) {
+      // First, map 'Whale' from external API response back to 'Foreign' for consistency
       data.activities = data.activities.map(activity => ({
         ...activity,
         broker_status: activity.broker_status === 'Whale' ? 'Foreign' : activity.broker_status
       }));
+
+      // Now, filter activities based on our internal broker definitions
+      const selectedInternalBrokerTypes = brokerStatusParam.split(',')
+        .map(mapStatusIdToBrokerType)
+        .filter((type): type is BrokerType => type !== null);
+
+      const filteredActivities = data.activities.filter(activity => {
+        const brokerInfo = getBrokerInfo(activity.broker_code);
+        return selectedInternalBrokerTypes.includes(brokerInfo.type);
+      });
+
+      data.activities = filteredActivities;
     }
 
     return NextResponse.json({
