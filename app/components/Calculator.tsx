@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation'; // Import useSearchParams
+import { useSearchParams } from 'next/navigation';
 import InputForm from './InputForm';
 import CompactResultCard from './CompactResultCard';
 import BrokerSummaryCard from './BrokerSummaryCard';
@@ -14,7 +14,7 @@ import type { StockInput, StockAnalysisResult, KeyStatsData, AgentStoryResult } 
 import { getDefaultDate } from '@/lib/utils';
 
 interface CalculatorProps {
-  // selectedStock?: string | null; // Removed
+  selectedSymbolFromSidebar?: string | null; // New prop
 }
 
 // Helper function to format the result data for copying
@@ -58,8 +58,8 @@ function formatResultForCopy(result: StockAnalysisResult): string {
   return lines.join('\n');
 }
 
-export default function Calculator(/* { selectedStock }: CalculatorProps */) {
-  const searchParams = useSearchParams(); // Initialize useSearchParams
+export default function Calculator({ selectedSymbolFromSidebar }: CalculatorProps) { // Accept new prop
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<StockAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -76,31 +76,30 @@ export default function Calculator(/* { selectedStock }: CalculatorProps */) {
   const [fromDate, setFromDate] = useState(getDefaultDate());
   const [toDate, setToDate] = useState(getDefaultDate());
 
+  // State for the current emiten being analyzed, can be updated by URL or sidebar
+  const [currentEmiten, setCurrentEmiten] = useState<string>(searchParams.get('symbol') || 'SOCI'); // Initialize from URL or default
+
   // Effect to handle initial symbol from URL
   useEffect(() => {
     const symbolFromUrl = searchParams.get('symbol');
-    if (symbolFromUrl) {
-      // Only trigger if the symbol is different or if there's no current result
-      if (!result || result.input.emiten.toUpperCase() !== symbolFromUrl.toUpperCase()) {
-        console.log(`Auto-analyzing stock from URL: ${symbolFromUrl}`);
-        handleSubmit({
-          emiten: symbolFromUrl,
-          fromDate,
-          toDate
-        });
-      }
-    } else {
-      // Clear result if no symbol in URL and no initialEmiten
-      setResult(null);
-      setError(null);
-      setAgentStories([]);
-      setStoryStatus('idle');
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
-      }
+    if (symbolFromUrl && symbolFromUrl.toUpperCase() !== currentEmiten.toUpperCase()) {
+      setCurrentEmiten(symbolFromUrl.toUpperCase());
+      handleSubmit({ emiten: symbolFromUrl.toUpperCase(), fromDate, toDate });
+    } else if (!symbolFromUrl && !result) { // Clear if no symbol in URL and no result displayed
+      // This condition might be too aggressive if we want to keep the last analysis
+      // Let's refine: if no symbol in URL, and no sidebar selection, default to SOCI or keep last.
+      // For now, if no symbol in URL, and currentEmiten is not set, default to SOCI.
+      if (!currentEmiten) setCurrentEmiten('SOCI');
     }
   }, [searchParams, fromDate, toDate]); // Depend on searchParams, fromDate, toDate
+
+  // Effect to handle symbol selected from sidebar
+  useEffect(() => {
+    if (selectedSymbolFromSidebar && selectedSymbolFromSidebar.toUpperCase() !== currentEmiten.toUpperCase()) {
+      setCurrentEmiten(selectedSymbolFromSidebar.toUpperCase());
+      handleSubmit({ emiten: selectedSymbolFromSidebar.toUpperCase(), fromDate, toDate });
+    }
+  }, [selectedSymbolFromSidebar, fromDate, toDate]); // Depend on selectedSymbolFromSidebar
 
   const handleSubmit = async (data: StockInput) => {
     setLoading(true);
@@ -179,8 +178,6 @@ export default function Calculator(/* { selectedStock }: CalculatorProps */) {
       }
     };
   }, []);
-
-  // Removed handle token refresh logic
 
   const handleAnalyzeStory = async (isResuming: boolean = false) => {
     if (!result) return;
@@ -335,12 +332,10 @@ export default function Calculator(/* { selectedStock }: CalculatorProps */) {
 
   return (
     <div className="container">
-
-
       <InputForm
         onSubmit={handleSubmit}
         loading={loading}
-        initialEmiten={searchParams.get('symbol')} // Read from URL
+        initialEmiten={currentEmiten} // Use currentEmiten state
         fromDate={fromDate}
         toDate={toDate}
         onDateChange={handleDateChange}

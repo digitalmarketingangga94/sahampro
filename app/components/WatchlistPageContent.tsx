@@ -1,22 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation';
 import type { WatchlistItem, WatchlistGroup } from '@/lib/types';
 import { CheckCircle2, XCircle, MinusCircle } from 'lucide-react';
 
 interface WatchlistPageContentProps {
-  // onSelect?: (symbol: string) => void; // Removed as it will navigate directly
+  onSelectSymbol?: (symbol: string) => void; // New prop
 }
 
-export default function WatchlistPageContent(/* { onSelect } : WatchlistPageContentProps */) {
+export default function WatchlistPageContent({ onSelectSymbol }: WatchlistPageContentProps) { // Accept new prop
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [groups, setGroups] = useState<WatchlistGroup[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshSeed, setRefreshSeed] = useState(0);
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
 
   // Fetch groups and watchlist items
   useEffect(() => {
@@ -28,7 +28,6 @@ export default function WatchlistPageContent(/* { onSelect } : WatchlistPageCont
         const json = await res.json();
         
         if (!json.success) {
-          // If it's a known error (like token issue), show it
           if (json.error && (json.error.includes('token') || json.error.includes('auth'))) {
             setError(json.error);
           }
@@ -37,7 +36,6 @@ export default function WatchlistPageContent(/* { onSelect } : WatchlistPageCont
 
         if (Array.isArray(json.data) && json.data.length > 0) {
           setGroups(json.data);
-          // If no group is selected yet, or the current selected group is not in the new groups list
           const currentGroupExists = json.data.some((g: WatchlistGroup) => g.watchlist_id === selectedGroupId);
           if (!selectedGroupId || !currentGroupExists) {
             const defaultG = json.data.find((g: WatchlistGroup) => g.is_default) || json.data[0];
@@ -86,17 +84,6 @@ export default function WatchlistPageContent(/* { onSelect } : WatchlistPageCont
     fetchWatchlist();
   }, [selectedGroupId, refreshSeed]);
 
-  // Handle token refresh event
-  useEffect(() => {
-    const handleTokenRefresh = () => {
-      console.log('Token refreshed event received, triggering watchlist refresh');
-      setRefreshSeed(prev => prev + 1);
-    };
-
-    window.addEventListener('token-refreshed', handleTokenRefresh);
-    return () => window.removeEventListener('token-refreshed', handleTokenRefresh);
-  }, []);
-
   // Handle real-time flag updates from InputForm
   useEffect(() => {
     const handleFlagUpdate = (event: any) => {
@@ -116,7 +103,11 @@ export default function WatchlistPageContent(/* { onSelect } : WatchlistPageCont
   const selectedGroup = groups.find(g => g.watchlist_id === selectedGroupId);
 
   const handleStockClick = (symbol: string) => {
-    router.push(`/?symbol=${symbol}`); // Navigate to Calculator page with symbol param
+    if (onSelectSymbol) {
+      onSelectSymbol(symbol); // Use the prop if provided (for sidebar usage)
+    } else {
+      router.push(`/?symbol=${symbol}`); // Fallback to navigation (for standalone page usage)
+    }
   };
 
   if (loading && groups.length === 0) {
@@ -127,6 +118,22 @@ export default function WatchlistPageContent(/* { onSelect } : WatchlistPageCont
           <div className="spinner" style={{ width: '20px', height: '20px', margin: '0 auto 1rem' }}></div>
           <div style={{ fontSize: '0.8rem' }}>Loading Watchlist...</div>
         </div>
+      </div>
+    );
+  }
+
+  if (error && groups.length > 0) {
+    return (
+      <div style={{ 
+        color: 'var(--accent-warning)', 
+        fontSize: '0.75rem', 
+        padding: '0.75rem', 
+        textAlign: 'center',
+        background: 'rgba(245, 87, 108, 0.05)',
+        borderRadius: '8px',
+        marginBottom: '0.5rem'
+      }}>
+        ⚠️ {error}
       </div>
     );
   }
@@ -156,8 +163,7 @@ export default function WatchlistPageContent(/* { onSelect } : WatchlistPageCont
   }
 
   return (
-    <div className="glass-card-static" style={{ padding: '1rem' }}> {/* Changed to glass-card-static for page content */}
-      {/* Header with Group Selector */}
+    <div className="glass-card-static" style={{ padding: '1rem' }}>
       <div style={{ marginBottom: '1rem' }}>
         <div style={{
           display: 'flex',
@@ -210,7 +216,6 @@ export default function WatchlistPageContent(/* { onSelect } : WatchlistPageCont
         )}
       </div>
 
-      {/* Loading indicator when switching groups */}
       {loading && (
         <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem' }}>
           Loading...
@@ -237,7 +242,7 @@ export default function WatchlistPageContent(/* { onSelect } : WatchlistPageCont
           display: 'flex',
           flexDirection: 'column',
           gap: '0.25rem',
-          maxHeight: 'calc(100vh - 160px)', // Adjusted for full page, might need more tuning
+          maxHeight: 'calc(100vh - 160px)',
           overflowY: 'auto'
         }}
       >
