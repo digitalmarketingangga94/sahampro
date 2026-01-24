@@ -349,7 +349,7 @@ export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerAc
               onChange={(e) => {
                 setFromDate(e.target.value);
               }}
-              onClick={(e) => e.currentTarget.showPicker()}
+              // Removed onClick={(e) => e.currentTarget.showPicker()}
             />
             <span className="date-separator" style={{ margin: '0 1px', padding: 0 }}>→</span>
             <input
@@ -360,7 +360,7 @@ export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerAc
               onChange={(e) => {
                 setToDate(e.target.value);
               }}
-              onClick={(e) => e.currentTarget.showPicker()}
+              // Removed onClick={(e) => e.currentTarget.showPicker()}
             />
           </div>
           <button type="button" onClick={() => handleDateRangeChange(1)} className="quick-date-btn">1D</button>
