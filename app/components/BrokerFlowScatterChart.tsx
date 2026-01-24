@@ -94,15 +94,6 @@ export default function BrokerFlowScatterChart({
     );
   }
 
-  // Define colors for broker types (using internal BrokerType names)
-  const brokerTypeColors: { [key: string]: string } = {
-    'Smartmoney': '#667eea', // Primary accent
-    'Foreign': '#38ef7d',      // Success accent
-    'Retail': '#f5576c',     // Warning accent
-    'Mix': '#f093fb',        // Purple/Pink
-    'Unknown': '#a0a0b8',    // Muted
-  };
-
   // Transform data for Recharts ScatterChart
   const chartData = data.activities
     .map(activity => {
@@ -126,15 +117,9 @@ export default function BrokerFlowScatterChart({
       return selectedStatus.includes(statusToMatch);
     });
 
-  // Group data by broker_type for separate scatters
-  const groupedData = chartData.reduce((acc, item) => {
-    const type = item.broker_type || 'Unknown'; // This will be 'Smartmoney', 'Foreign', 'Retail', 'Mix', 'Unknown'
-    if (!acc[type]) {
-      acc[type] = [];
-    }
-    acc[type].push(item);
-    return acc;
-  }, {} as { [key: string]: typeof chartData });
+  // Separate data into Net Buy and Net Sell for distinct coloring
+  const netBuyData = chartData.filter(item => item.net_value >= 0);
+  const netSellData = chartData.filter(item => item.net_value < 0);
 
   return (
     <div style={{ width: '100%', height: '500px' }}>
@@ -173,19 +158,29 @@ export default function BrokerFlowScatterChart({
           <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '0.75rem' }} />
 
-          {Object.entries(groupedData).map(([brokerType, dataPoints]) => (
-            <Scatter
-              key={brokerType}
-              name={brokerType === 'Smartmoney' ? 'Smart Money' : brokerType} // Adjust name for legend
-              data={dataPoints}
-              fill={brokerTypeColors[brokerType]} // Use the internal brokerType for colors
-              opacity={0.8}
-              shape="circle"
-              line={false}
-            >
-              <LabelList dataKey="broker_code" position="top" fill="#fff" fontSize={10} />
-            </Scatter>
-          ))}
+          {/* Scatter for Net Buy */}
+          <Scatter
+            name="Net Buy"
+            data={netBuyData}
+            fill="#38ef7d" // Green for Net Buy
+            opacity={0.8}
+            shape="circle"
+            line={false}
+          >
+            <LabelList dataKey="broker_code" position="top" fill="#fff" fontSize={10} />
+          </Scatter>
+
+          {/* Scatter for Net Sell */}
+          <Scatter
+            name="Net Sell"
+            data={netSellData}
+            fill="#f5576c" // Red for Net Sell
+            opacity={0.8}
+            shape="circle"
+            line={false}
+          >
+            <LabelList dataKey="broker_code" position="top" fill="#fff" fontSize={10} />
+          </Scatter>
         </ScatterChart>
       </ResponsiveContainer>
     </div>
