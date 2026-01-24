@@ -337,6 +337,7 @@ function parseKeyStatsResponse(json: KeyStatsResponse): KeyStatsData {
   };
 
   return {
+    perShare: findCategory('Per Share'), // New category
     currentValuation: findCategory('Current Valuation'),
     incomeStatement: findCategory('Income Statement'),
     balanceSheet: findCategory('Balance Sheet'),

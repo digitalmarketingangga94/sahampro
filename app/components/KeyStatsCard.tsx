@@ -58,6 +58,7 @@ export default function KeyStatsCard({ emiten, keyStats }: KeyStatsCardProps) {
       </div>
 
       {/* Sections */}
+      {renderSection('Per Share', keyStats.perShare, 6)} {/* New section added here */}
       {renderSection('Current Valuation', keyStats.currentValuation, 6)}
       {renderSection('Income Statement', keyStats.incomeStatement, 4)}
       {renderSection('Balance Sheet', keyStats.balanceSheet, 5)}

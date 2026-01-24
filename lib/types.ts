@@ -224,6 +224,7 @@ export interface KeyStatsResponse {
 
 // Processed KeyStats data for UI
 export interface KeyStatsData {
+  perShare: KeyStatsItem[]; // New category
   currentValuation: KeyStatsItem[];
   incomeStatement: KeyStatsItem[];
   balanceSheet: KeyStatsItem[];
