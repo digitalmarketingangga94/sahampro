@@ -421,22 +421,14 @@ export default function Calculator({ selectedSymbolFromSidebar }: CalculatorProp
               />
             )}
 
-            {/* Price Graph + Broker Flow Section */}
-            <div style={{
-              gridColumn: '1 / -1',
-              width: '100%',
-              marginTop: '1rem',
-              display: 'flex',
-              gap: '1.5rem',
-              flexWrap: 'wrap',
-              alignItems: 'stretch'
-            }}>
-              <div style={{ flex: '1 1 0', minWidth: '400px' }}>
-                <PriceGraph ticker={result.input.emiten} />
-              </div>
-              <div style={{ flex: '1 1 0', minWidth: '400px', display: 'flex' }}>
-                <BrokerFlowCard emiten={result.input.emiten} />
-              </div>
+            {/* Price Graph Section */}
+            <div style={{ gridColumn: '1 / -1', width: '100%', marginTop: '1rem' }}>
+              <PriceGraph ticker={result.input.emiten} />
+            </div>
+
+            {/* Broker Flow Section */}
+            <div style={{ gridColumn: '1 / -1', width: '100%', marginTop: '1.5rem' }}>
+              <BrokerFlowCard emiten={result.input.emiten} />
             </div>
 
             {/* Insider Activity Section - Full Width */}
