@@ -10,6 +10,7 @@ import AgentStoryCard from './AgentStoryCard';
 import PriceGraph from './PriceGraph';
 import BrokerFlowCard from './BrokerFlowCard';
 import InsiderActivityCard from './InsiderActivityCard'; // New import
+import GrahamFormulaCard from './GrahamFormulaCard'; // New import
 import html2canvas from 'html2canvas';
 import type { StockInput, StockAnalysisResult, KeyStatsData, AgentStoryResult } from '@/lib/types';
 import { getLatestTradingDate } from '@/lib/utils'; // Updated import
@@ -326,6 +327,19 @@ export default function Calculator({ selectedSymbolFromSidebar }: CalculatorProp
     }
   };
 
+  // Extract EPS value from KeyStats
+  let epsValue: number | null = null;
+  if (keyStats?.perShare) {
+    const ttmEpsItem = keyStats.perShare.find(item => item.name === 'Current EPS (TTM)');
+    const annualEpsItem = keyStats.perShare.find(item => item.name === 'Current EPS (Annualised)');
+
+    if (ttmEpsItem && ttmEpsItem.value) {
+      epsValue = parseFloat(ttmEpsItem.value);
+    } else if (annualEpsItem && annualEpsItem.value) {
+      epsValue = parseFloat(annualEpsItem.value);
+    }
+  }
+
   return (
     <div className="container">
       <InputForm
@@ -420,32 +434,43 @@ export default function Calculator({ selectedSymbolFromSidebar }: CalculatorProp
                 keyStats={keyStats}
               />
             )}
+          </div>
 
-            {/* Price Graph Section */}
-            <div style={{ gridColumn: '1 / -1', width: '100%', marginTop: '1rem' }}>
-              <PriceGraph ticker={result.input.emiten} />
-            </div>
-
-            {/* Broker Flow Section */}
+          {/* Graham Formula Card */}
+          {result && keyStats && epsValue !== null && (
             <div style={{ gridColumn: '1 / -1', width: '100%', marginTop: '1.5rem' }}>
-              <BrokerFlowCard emiten={result.input.emiten} />
+              <GrahamFormulaCard
+                emiten={result.input.emiten}
+                currentPrice={result.marketData.harga}
+                eps={epsValue}
+              />
             </div>
+          )}
 
-            {/* Insider Activity Section - Full Width */}
-            <div style={{ gridColumn: '1 / -1', marginTop: '1.5rem', width: '100%' }}>
-              <InsiderActivityCard emiten={result.input.emiten} />
-            </div>
+          {/* Price Graph Section */}
+          <div style={{ gridColumn: '1 / -1', width: '100%', marginTop: '1.5rem' }}>
+            <PriceGraph ticker={result.input.emiten} />
+          </div>
 
-            {/* Agent Story Section - Full Width */}
-            <div style={{ gridColumn: '1 / -1', marginTop: '1.5rem', width: '100%' }}> {/* Adjusted margin-top */}
-              {(agentStories.length > 0 || storyStatus !== 'idle') && (
-                <AgentStoryCard
-                  stories={agentStories}
-                  status={storyStatus}
-                  onRetry={() => handleAnalyzeStory()}
-                />
-              )}
-            </div>
+          {/* Broker Flow Section */}
+          <div style={{ gridColumn: '1 / -1', width: '100%', marginTop: '1.5rem' }}>
+            <BrokerFlowCard emiten={result.input.emiten} />
+          </div>
+
+          {/* Insider Activity Section - Full Width */}
+          <div style={{ gridColumn: '1 / -1', marginTop: '1.5rem', width: '100%' }}>
+            <InsiderActivityCard emiten={result.input.emiten} />
+          </div>
+
+          {/* Agent Story Section - Full Width */}
+          <div style={{ gridColumn: '1 / -1', marginTop: '1.5rem', width: '100%' }}> {/* Adjusted margin-top */}
+            {(agentStories.length > 0 || storyStatus !== 'idle') && (
+              <AgentStoryCard
+                stories={agentStories}
+                status={storyStatus}
+                onRetry={() => handleAnalyzeStory()}
+              />
+            )}
           </div>
         </div>
       )}
