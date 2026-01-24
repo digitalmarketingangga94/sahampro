@@ -14,7 +14,7 @@ import {
   LabelList,
 } from 'recharts';
 import type { BrokerFlowResponse, BrokerFlowActivity } from '@/lib/types';
-import { getBrokerInfo } from '@/lib/brokers';
+import { getBrokerInfo } from '@/lib/brokers'; // Import getBrokerInfo
 
 interface BrokerFlowScatterChartProps {
   data: BrokerFlowResponse | null;
@@ -94,29 +94,36 @@ export default function BrokerFlowScatterChart({
     );
   }
 
-  // Define colors for broker types
+  // Define colors for broker types (using internal BrokerType names)
   const brokerTypeColors: { [key: string]: string } = {
-    'Bandar': '#667eea', // Smartmoney
-    'Foreign': '#38ef7d',      // Foreign
-    'Retail': '#f5576c',     // Retail
-    'Mix': '#f093fb',        // Mix
+    'Smartmoney': '#667eea', // Primary accent
+    'Foreign': '#38ef7d',      // Success accent
+    'Retail': '#f5576c',     // Warning accent
+    'Mix': '#f093fb',        // Purple/Pink
     'Unknown': '#a0a0b8',    // Muted
   };
 
   // Transform data for Recharts ScatterChart
   const chartData = data.activities
-    .filter(activity => selectedStatus.includes(activity.broker_status))
-    .map(activity => ({
-      broker_code: activity.broker_code,
-      stock_code: activity.stock_code, // The emiten being analyzed
-      broker_type: activity.broker_status, // Use broker_status as type for grouping/coloring
-      net_value: parseFloat(activity.net_value),
-      total_buy_volume: parseFloat(activity.total_buy_volume), // Use total_buy_volume for Y-axis
-    }));
+    .map(activity => {
+      const brokerInfo = getBrokerInfo(activity.broker_code);
+      return {
+        broker_code: activity.broker_code,
+        stock_code: activity.stock_code, // The emiten being analyzed
+        broker_type: brokerInfo.type, // Use our internal broker type
+        net_value: parseFloat(activity.net_value),
+        total_buy_volume: parseFloat(activity.total_buy_volume), // Use total_buy_volume for Y-axis
+      };
+    })
+    .filter(item => {
+      // Map 'Smartmoney' back to 'Bandar' to match the selectedStatus array from the frontend buttons
+      const statusToMatch = item.broker_type === 'Smartmoney' ? 'Bandar' : item.broker_type;
+      return selectedStatus.includes(statusToMatch);
+    });
 
   // Group data by broker_type for separate scatters
   const groupedData = chartData.reduce((acc, item) => {
-    const type = item.broker_type || 'Unknown';
+    const type = item.broker_type || 'Unknown'; // This will be 'Smartmoney', 'Foreign', 'Retail', 'Mix', 'Unknown'
     if (!acc[type]) {
       acc[type] = [];
     }
@@ -164,9 +171,9 @@ export default function BrokerFlowScatterChart({
           {Object.entries(groupedData).map(([brokerType, dataPoints]) => (
             <Scatter
               key={brokerType}
-              name={brokerType === 'Bandar' ? 'Smart Money' : brokerType}
+              name={brokerType === 'Smartmoney' ? 'Smart Money' : brokerType} // Adjust name for legend
               data={dataPoints}
-              fill={brokerTypeColors[brokerType]}
+              fill={brokerTypeColors[brokerType]} // Use the internal brokerType for colors
               opacity={0.8}
               shape="circle"
               line={false}
