@@ -105,7 +105,6 @@ export default function InsiderActivityCard({ emiten }: InsiderActivityCardProps
               style={{ padding: '0 0.5rem', fontSize: '0.75rem', width: '100px', textAlign: 'center', height: '100%' }}
               value={dateStart}
               onChange={(e) => setDateStart(e.target.value)}
-              onClick={(e) => e.currentTarget.showPicker()}
             />
             <span className="date-separator" style={{ margin: '0 1px', padding: 0 }}>→</span>
             <input
@@ -114,7 +113,6 @@ export default function InsiderActivityCard({ emiten }: InsiderActivityCardProps
               style={{ padding: '0 0.5rem', fontSize: '0.75rem', width: '100px', textAlign: 'center', height: '100%' }}
               value={dateEnd}
               onChange={(e) => setDateEnd(e.target.value)}
-              onClick={(e) => e.currentTarget.showPicker()}
             />
           </div>
           <select
