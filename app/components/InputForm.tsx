@@ -133,6 +133,8 @@ export default function InputForm({
             <button type="button" onClick={() => setDateRange(1, 'months')} className="quick-date-btn">1M</button>
             <button type="button" onClick={() => setDateRange(2, 'months')} className="quick-date-btn">2M</button>
             <button type="button" onClick={() => setDateRange(3, 'months')} className="quick-date-btn">3M</button>
+            <button type="button" onClick={() => setDateRange(6, 'months')} className="quick-date-btn">6M</button>
+            <button type="button" onClick={() => setDateRange(12, 'months')} className="quick-date-btn">1Y</button>
           </div>
         </div>
 
