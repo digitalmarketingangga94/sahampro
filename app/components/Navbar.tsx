@@ -13,7 +13,7 @@ const Navbar = () => {
       <div className="navbar-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div className="navbar-content">
-            <h1 className="navbar-title" style={{ fontSize: '1.5rem', marginBottom: '0' }}>RSY Calculator</h1>
+            <h1 className="navbar-title" style={{ fontSize: '1.5rem', marginBottom: '0' }}>RSY Analyze Stock</h1>
             <p className="navbar-subtitle" style={{ fontSize: '0.75rem' }}>Analyze stock targets based on broker summary</p>
           </div>
         </div>
@@ -32,7 +32,7 @@ const Navbar = () => {
                 transition: 'all 0.2s'
               }}
             >
-              Calculator
+              Analyze Stock
             </Link>
             <Link 
               href="/watchlist" 
