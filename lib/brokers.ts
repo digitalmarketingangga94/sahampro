@@ -67,7 +67,7 @@ export const BROKERS: Record<string, BrokerInfo> = {
   "HD": { code: "HD", name: "KGI Sekuritas Indonesia", type: "Foreign" },
   "MI": { code: "MI", name: "Victoria Sekuritas Indonesia", type: "Foreign" },
   "RX": { code: "RX", name: "Macquarie Sekuritas Indonesia", type: "Foreign" },
-  "TP": { code: "TP", name: "OCBC Sekuritas Indonesia", type: "Foreign" },
+  "TP": { code: "TP", name: "OCBC Sekuritas Indonesia", "type": "Foreign" },
   "YU": { code: "YU", name: "CGS International Sekuritas Indonesia", type: "Foreign" },
   "ZP": { code: "ZP", name: "Maybank Sekuritas Indonesia", type: "Foreign" },
 
@@ -89,11 +89,12 @@ export const BROKERS: Record<string, BrokerInfo> = {
   "YB": { code: "YB", name: "Yakin Bertumbuh Sekuritas", type: "Retail" },
   "YJ": { code: "YJ", name: "Lotus Andalan Sekuritas", type: "Retail" },
   "YO": { code: "YO", name: "Amantara Sekuritas Indonesia", type: "Retail" },
+  "CC": { code: "CC", name: "MANDIRI SEKURITAS", type: "Retail" }, // Changed from Mix to Retail
+  "PD": { code: "PD", name: "Indo Premier Sekuritas", type: "Retail" }, // Changed from Mix to Retail
 
   // Mix
   "BB": { code: "BB", name: "Verdhana Sekuritas Indonesia", type: "Mix" },
   "BS": { code: "BS", name: "Equity Sekuritas Indonesia", type: "Mix" },
-  "CC": { code: "CC", name: "MANDIRI SEKURITAS", type: "Mix" },
   "CP": { code: "CP", name: "KB Valbury Sekuritas", type: "Mix" },
   "EP": { code: "EP", name: "MNC Sekuritas", type: "Mix" },
   "ES": { code: "ES", name: "EKOKAPITAL SEKURITAS", type: "Mix" },
@@ -102,7 +103,6 @@ export const BROKERS: Record<string, BrokerInfo> = {
   "II": { code: "II", name: "Danatama Makmur Sekuritas", type: "Mix" },
   "KZ": { code: "KZ", name: "CLSA Sekuritas Indonesia", type: "Mix" },
   "MG": { code: "MG", name: "Semesta Indovest Sekuritas", type: "Mix" },
-  "PD": { code: "PD", name: "Indo Premier Sekuritas", type: "Mix" },
   "PG": { code: "PG", name: "Panca Global Sekuritas", type: "Mix" },
   "YP": { code: "YP", name: "Mirae Asset Sekuritas Indonesia", type: "Mix" },
 };
