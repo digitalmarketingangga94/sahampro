@@ -998,12 +998,6 @@ h3 {
   /* No hover transition for transform or bg */
 }
 
-/* Hide Date Picker Icon */
-.compact-input::-webkit-calendar-picker-indicator {
-  display: none;
-  -webkit-appearance: none;
-}
-
 /* Adjust date input text alignment if needed */
 .date-range-group .compact-input {
   text-align: center;
@@ -1392,7 +1386,7 @@ h3 {
   color: #667eea;
 }
 
-.broker-code-badge.whale {
+.broker-code-badge.foreign {
   background: rgba(56, 239, 125, 0.2);
   color: #38ef7d;
 }
@@ -1417,7 +1411,7 @@ h3 {
   color: #667eea;
 }
 
-.broker-type-label.whale {
+.broker-type-label.foreign {
   color: #38ef7d;
 }
 

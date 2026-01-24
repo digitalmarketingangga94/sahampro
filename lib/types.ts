@@ -20,32 +20,42 @@ export interface BrokerTopStat {
 }
 
 export interface BrokerDetector {
+  average: number;
+  avg: BrokerTopStat;
+  avg5?: BrokerTopStat; // Added based on example
+  broker_accdist: string;
+  number_broker_buysell: number;
   top1: BrokerTopStat;
   top3: BrokerTopStat;
   top5: BrokerTopStat;
-  avg: BrokerTopStat;
+  top10?: BrokerTopStat; // Added based on example
   total_buyer: number;
   total_seller: number;
-  number_broker_buysell: number;
-  broker_accdist: string;
-  volume: number;
   value: number;
-  average: number;
+  volume: number;
 }
 
 export interface BrokerBuyItem {
-  netbs_broker_code: string;
-  bval: string;
   blot: string;
+  blotv: string;
+  bval: string;
+  bvalv: string;
+  netbs_broker_code: string;
   netbs_buy_avg_price: string;
-  type: string;
+  netbs_date: string; // Added this property
+  netbs_stock_code: string; // Added this property
+  type: string; // Added this property
 }
 
 export interface BrokerSellItem {
   netbs_broker_code: string;
-  sval: string;
-  slot: string;
+  netbs_date: string;
   netbs_sell_avg_price: string;
+  netbs_stock_code: string; // Added this property
+  slot: string;
+  slotv: string;
+  sval: string;
+  svalv: string;
   type: string;
 }
 
@@ -275,7 +285,7 @@ export interface BrokerFlowDailyData {
 export interface BrokerFlowActivity {
   broker_code: string;
   stock_code: string;
-  broker_status: 'Bandar' | 'Whale' | 'Retail' | 'Mix';
+  broker_status: 'Bandar' | 'Foreign' | 'Retail' | 'Mix' | 'Whale'; // Added 'Whale'
   stock_name: string;
   net_value: string;
   total_buy_value: string;
@@ -387,3 +397,125 @@ export interface MarketMoversResponse {
 }
 
 export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency';
+
+// Trade Book Types
+export interface TradeBookTotal {
+  buy_lot: string;
+  sell_lot: string;
+  total_lot: string;
+  buy_frequency: string;
+  sell_frequency: string;
+  total_frequency: string;
+  buy_percentage: string;
+  sell_percentage: string;
+}
+
+export interface TradeBookResponse {
+  message: string;
+  data: {
+    book_total: TradeBookTotal;
+  };
+}
+
+// Insider Activity Types
+export interface InsiderValueDetail {
+  value: string;
+  percentage: string;
+  formatted_value: string;
+}
+
+export interface InsiderChangesDetail {
+  value: string;
+  percentage: string;
+  formatted_value: string;
+}
+
+export type ActionType = "ACTION_TYPE_UNSPECIFIED" | "ACTION_TYPE_BUY" | "ACTION_TYPE_SELL" | "ACTION_TYPE_WARRANT_EXERCISE" | "ACTION_TYPE_CONVERSION" | "ACTION_TYPE_RIGHTS_ISSUE" | "ACTION_TYPE_STOCK_SPLIT" | "ACTION_TYPE_REVERSE_STOCK_SPLIT" | "ACTION_TYPE_DIVIDEND" | "ACTION_TYPE_BONUS_SHARE" | "ACTION_TYPE_MERGER" | "ACTION_TYPE_ACQUISITION" | "ACTION_TYPE_DELISTING" | "ACTION_TYPE_OTHER";
+export type SourceType = "SOURCE_TYPE_UNSPECIFIED" | "SOURCE_TYPE_IDX" | "SOURCE_TYPE_KSEI";
+
+export interface InsiderDataSource {
+  label: string;
+  type: SourceType;
+}
+
+export interface InsiderBrokerDetail {
+  code: string;
+  group: string; // BROKER_GROUP_UNSPECIFIED etc.
+}
+
+export interface InsiderMovementItem {
+  id: string;
+  name: string;
+  symbol: string;
+  date: string; // "22 Jan 26"
+  previous: InsiderValueDetail;
+  current: InsiderValueDetail;
+  changes: InsiderChangesDetail;
+  marker: string;
+  is_posted: boolean;
+  cmh_id: string;
+  nationality: string; // NATIONALITY_TYPE_LOCAL
+  action_type: ActionType;
+  data_source: InsiderDataSource;
+  price_formatted: string;
+  broker_detail: InsiderBrokerDetail;
+  badges: string[]; // SHAREHOLDER_BADGE_DIREKTUR
+}
+
+export interface InsiderActivityResponse {
+  message: string;
+  data: {
+    is_more: boolean;
+    movement: InsiderMovementItem[];
+  };
+}
+
+// New types for Broker Activity Detail API (based on user's example)
+export interface BrokerOverallActivitySummary {
+  bandar_detector: BrokerDetector;
+  broker_summary: {
+    brokers_buy: BrokerBuyItem[];
+    brokers_sell: BrokerSellItem[];
+    symbol: string;
+  };
+  from: string;
+  to: string;
+  broker_code: string;
+  broker_name: string;
+}
+
+export interface BrokerOverallActivitySummaryResponse {
+  message: string;
+  data: BrokerOverallActivitySummary;
+}
+
+// New type for combined stock activity for a broker
+export interface BrokerStockActivity {
+  stock_code: string;
+  stock_name?: string; // Not directly in the provided example, but good to have
+  buy_value?: number;
+  buy_lot?: number;
+  buy_avg_price?: number;
+  sell_value?: number;
+  sell_lot?: number;
+  sell_avg_price?: number;
+  net_value?: number;
+  net_lot?: number;
+  broker_type?: 'Smartmoney' | 'Foreign' | 'Retail' | 'Mix' | 'Unknown'; // Added broker_type
+}
+
+// New type for granular broker activity per stock (for scatter plot)
+export interface BrokerStockActivityPerBroker {
+  broker_code: string;
+  stock_code: string;
+  stock_name?: string;
+  broker_type: 'Smartmoney' | 'Foreign' | 'Retail' | 'Mix' | 'Unknown';
+  net_value: number;
+  net_lot: number;
+  buy_value: number;
+  sell_value: number;
+  buy_lot: number;
+  sell_lot: number;
+  buy_avg_price: number;
+  sell_avg_price: number;
+}

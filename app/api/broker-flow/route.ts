@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const emiten = searchParams.get('emiten');
   const lookbackDays = searchParams.get('lookback_days') || '7';
-  const brokerStatus = searchParams.get('broker_status') || 'Bandar,Whale,Retail,Mix';
+  let brokerStatus = searchParams.get('broker_status') || 'Bandar,Foreign,Retail,Mix'; // Default to match frontend
 
   if (!emiten) {
     return NextResponse.json(
@@ -21,7 +21,14 @@ export async function GET(request: NextRequest) {
     url.searchParams.set('sort_by', 'consistency');
     url.searchParams.set('mode', 'accum');
     url.searchParams.set('lookback_days', lookbackDays);
-    url.searchParams.set('broker_status', brokerStatus);
+    
+    // Map 'Foreign' from frontend to 'Whale' for the external API
+    let externalBrokerStatus = brokerStatus.split(',')
+      .map(status => status === 'Foreign' ? 'Whale' : status)
+      .join(',');
+    
+    url.searchParams.set('broker_status', externalBrokerStatus);
+
     url.searchParams.set('search', emiten.toLowerCase());
 
     const response = await fetch(url.toString(), {
@@ -37,6 +44,14 @@ export async function GET(request: NextRequest) {
     }
 
     const data: BrokerFlowResponse = await response.json();
+
+    // Map 'Whale' from external API response back to 'Foreign' for the frontend
+    if (data && data.activities) {
+      data.activities = data.activities.map(activity => ({
+        ...activity,
+        broker_status: activity.broker_status === 'Whale' ? 'Foreign' : activity.broker_status
+      }));
+    }
 
     return NextResponse.json({
       success: true,

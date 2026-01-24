@@ -1,4 +1,4 @@
-export function getDefaultDate(): string {
+export function getLatestTradingDate(): string {
   const today = new Date();
   const dayOfWeek = today.getDay();
   
@@ -11,4 +11,10 @@ export function getDefaultDate(): string {
   }
   
   return today.toISOString().split('T')[0];
+}
+
+export function getDateNDaysAgo(n: number, referenceDate: string = getLatestTradingDate()): string {
+  const date = new Date(referenceDate);
+  date.setDate(date.getDate() - n);
+  return date.toISOString().split('T')[0];
 }

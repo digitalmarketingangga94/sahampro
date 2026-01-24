@@ -1,8 +1,8 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse } from './types';
 import { getSessionValue, upsertSession } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
-const STOCKBIT_AUTH_URL = 'https://stockbit.com';
+const STOCKBIT_FINDATA_VIEW_URL = 'https://exodus.stockbit.com/findata-view'; // New base URL for findata-view
 
 // Custom error for token expiry - allows UI to detect and show refresh prompt
 export class TokenExpiredError extends Error {
@@ -18,7 +18,8 @@ let tokenLastFetched: number = 0;
 const TOKEN_CACHE_DURATION = 60000; // 1 minute
 
 // Cache sector data to reduce API calls
-const sectorCache = new Map<string, { sector: string; timestamp: number }>();
+// Updated type to include 'name'
+const sectorCache = new Map<string, { sector: string; name: string; timestamp: number }>();
 const SECTOR_CACHE_DURATION = 3600000; // 1 hour
 
 // Cache for sectors list
@@ -52,7 +53,7 @@ async function getAuthToken(): Promise<string> {
   cachedToken = token;
   tokenLastFetched = now;
 
-  return token;
+  return cachedToken;
 }
 
 /**
@@ -137,13 +138,13 @@ export async function fetchEmitenInfo(emiten: string): Promise<EmitenInfoRespons
   const now = Date.now();
   
   if (cached && (now - cached.timestamp) < SECTOR_CACHE_DURATION) {
-    // Return cached data in the expected format
+    // Return cached data in the expected format, including the cached name
     return {
       data: {
         sector: cached.sector,
         sub_sector: '',
         symbol: emiten,
-        name: '',
+        name: cached.name, // Use cached name
         price: '0',
         change: '0',
         percentage: 0,
@@ -163,10 +164,11 @@ export async function fetchEmitenInfo(emiten: string): Promise<EmitenInfoRespons
 
   const data: EmitenInfoResponse = await response.json();
   
-  // Cache the sector data
-  if (data.data?.sector) {
+  // Cache the sector and name data
+  if (data.data?.sector && data.data?.name) {
     sectorCache.set(emiten.toUpperCase(), {
       sector: data.data.sector,
+      name: data.data.name, // Store the name
       timestamp: now,
     });
   }
@@ -303,17 +305,19 @@ export function getBrokerSummary(marketDetectorData: MarketDetectorResponse): Br
   // Provide safe defaults if data is missing
   return {
     detector: {
+      average: detector?.average || 0,
+      avg: detector?.avg || { vol: 0, percent: 0, amount: 0, accdist: '-' },
+      avg5: detector?.avg5 || { vol: 0, percent: 0, amount: 0, accdist: '-' }, // Added avg5
+      broker_accdist: detector?.broker_accdist || '-',
+      number_broker_buysell: detector?.number_broker_buysell || 0,
       top1: detector?.top1 || { vol: 0, percent: 0, amount: 0, accdist: '-' },
       top3: detector?.top3 || { vol: 0, percent: 0, amount: 0, accdist: '-' },
       top5: detector?.top5 || { vol: 0, percent: 0, amount: 0, accdist: '-' },
-      avg: detector?.avg || { vol: 0, percent: 0, amount: 0, accdist: '-' },
+      top10: detector?.top10 || { vol: 0, percent: 0, amount: 0, accdist: '-' }, // Added top10
       total_buyer: detector?.total_buyer || 0,
       total_seller: detector?.total_seller || 0,
-      number_broker_buysell: detector?.number_broker_buysell || 0,
-      broker_accdist: detector?.broker_accdist || '-',
-      volume: detector?.volume || 0,
       value: detector?.value || 0,
-      average: detector?.average || 0,
+      volume: detector?.volume || 0,
     },
     topBuyers: brokerSummary?.brokers_buy?.slice(0, 4) || [],
     topSellers: brokerSummary?.brokers_sell?.slice(0, 4) || [],
@@ -359,6 +363,31 @@ export async function fetchKeyStats(emiten: string): Promise<KeyStatsData> {
 }
 
 /**
+ * Fetch Trade Book data for a specific symbol
+ */
+export async function fetchTradeBook(symbol: string): Promise<TradeBookTotal | null> {
+  const url = new URL(`${STOCKBIT_BASE_URL}/order-trade/trade-book`);
+  url.searchParams.append('symbol', symbol);
+  url.searchParams.append('group_by', 'GROUP_BY_TIME');
+  url.searchParams.append('time_interval', '10m'); // Using 10m as per example
+
+  try {
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: await getHeaders(),
+    });
+
+    await handleApiResponse(response, `Trade Book API (${symbol})`);
+
+    const json: TradeBookResponse = await response.json();
+    return json.data?.book_total || null;
+  } catch (error) {
+    console.error(`Error fetching trade book for ${symbol}:`, error);
+    return null; // Return null on error to not block market movers
+  }
+}
+
+/**
  * Fetch Market Movers data (Top Gainer, Loser, Value, Volume, Frequency)
  */
 export async function fetchMarketMovers(type: MarketMoverType, limit: number = 20): Promise<MarketMoverItem[]> {
@@ -401,4 +430,67 @@ export async function fetchMarketMovers(type: MarketMoverType, limit: number = 2
   }));
 
   return mappedMovers;
+}
+
+/**
+ * Fetch Insider Activity data
+ */
+export async function fetchInsiderActivity(
+  emiten: string,
+  dateStart: string,
+  dateEnd: string,
+  actionType: ActionType = "ACTION_TYPE_UNSPECIFIED",
+  sourceType: SourceType = "SOURCE_TYPE_UNSPECIFIED",
+  page: number = 1,
+  limit: number = 20
+): Promise<InsiderActivityResponse> {
+  const url = new URL(`${STOCKBIT_BASE_URL}/insider/company/majorholder`);
+  url.searchParams.append('symbol', emiten); // Assuming 'symbol' is a valid parameter for filtering
+  url.searchParams.append('date_start', dateStart);
+  url.searchParams.append('date_end', dateEnd);
+  url.searchParams.append('page', page.toString());
+  url.searchParams.append('limit', limit.toString());
+  url.searchParams.append('action_type', actionType);
+  url.searchParams.append('source_type', sourceType);
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: await getHeaders(),
+  });
+
+  await handleApiResponse(response, `Insider Activity API (${emiten})`);
+
+  return response.json();
+}
+
+/**
+ * Fetch Broker Activity Detail for a specific broker
+ */
+export async function fetchBrokerActivityDetail(
+  brokerCode: string,
+  fromDate: string,
+  toDate: string,
+  page: number = 1, // Page and limit are likely ignored by this endpoint, but kept for consistency
+  limit: number = 50,
+  transactionType: string = 'TRANSACTION_TYPE_NET',
+  marketBoard: string = 'MARKET_BOARD_REGULER',
+  investorType: string = 'INVESTOR_TYPE_ALL'
+): Promise<BrokerOverallActivitySummaryResponse> { // Changed return type
+  const url = new URL(`${STOCKBIT_FINDATA_VIEW_URL}/marketdetectors/activity/${brokerCode}/detail`);
+  url.searchParams.append('page', page.toString());
+  url.searchParams.append('limit', limit.toString());
+  url.searchParams.append('from', fromDate);
+  url.searchParams.append('to', toDate);
+  url.searchParams.append('transaction_type', transactionType);
+  url.searchParams.append('market_board', marketBoard);
+  url.searchParams.append('investor_type', investorType);
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: await getHeaders(),
+  });
+
+  await handleApiResponse(response, `Broker Activity Detail API (${brokerCode})`);
+
+  return response.json();
 }

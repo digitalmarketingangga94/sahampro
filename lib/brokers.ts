@@ -1,4 +1,4 @@
-export type BrokerType = 'Smartmoney' | 'Whale' | 'Retail' | 'Mix' | 'Unknown';
+export type BrokerType = 'Smartmoney' | 'Foreign' | 'Retail' | 'Mix' | 'Unknown';
 
 export interface BrokerInfo {
   code: string;
@@ -54,22 +54,22 @@ export const BROKERS: Record<string, BrokerInfo> = {
   "XA": { code: "XA", name: "NH Korindo Sekuritas Indonesia", type: "Smartmoney" },
   "ZR": { code: "ZR", name: "Bumiputera Sekuritas", type: "Smartmoney" },
 
-  // Whale
-  "AG": { code: "AG", name: "Kiwoom Sekuritas Indonesia", type: "Whale" },
-  "AH": { code: "AH", name: "Shinhan Sekuritas Indonesia", type: "Whale" },
-  "AI": { code: "AI", name: "UOB Kay Hian Sekuritas", type: "Whale" },
-  "AK": { code: "AK", name: "UBS Sekuritas Indonesia", type: "Whale" },
-  "BK": { code: "BK", name: "J.P. Morgan Sekuritas Indonesia", type: "Whale" },
-  "BQ": { code: "BQ", name: "Korea Investment and Sekuritas Indonesia", type: "Whale" },
-  "DP": { code: "DP", name: "DBS Vickers Sekuritas Indonesia", type: "Whale" },
-  "FS": { code: "FS", name: "Yuanta Sekuritas Indonesia", type: "Whale" },
-  "GW": { code: "GW", name: "HSBC Sekuritas Indonesia", type: "Whale" },
-  "HD": { code: "HD", name: "KGI Sekuritas Indonesia", type: "Whale" },
-  "MI": { code: "MI", name: "Victoria Sekuritas Indonesia", type: "Whale" },
-  "RX": { code: "RX", name: "Macquarie Sekuritas Indonesia", type: "Whale" },
-  "TP": { code: "TP", name: "OCBC Sekuritas Indonesia", type: "Whale" },
-  "YU": { code: "YU", name: "CGS International Sekuritas Indonesia", type: "Whale" },
-  "ZP": { code: "ZP", name: "Maybank Sekuritas Indonesia", type: "Whale" },
+  // Foreign
+  "AG": { code: "AG", name: "Kiwoom Sekuritas Indonesia", type: "Foreign" },
+  "AH": { code: "AH", name: "Shinhan Sekuritas Indonesia", type: "Foreign" },
+  "AI": { code: "AI", name: "UOB Kay Hian Sekuritas", type: "Foreign" },
+  "AK": { code: "AK", name: "UBS Sekuritas Indonesia", type: "Foreign" },
+  "BK": { code: "BK", name: "J.P. Morgan Sekuritas Indonesia", type: "Foreign" },
+  "BQ": { code: "BQ", name: "Korea Investment and Sekuritas Indonesia", type: "Foreign" },
+  "DP": { code: "DP", name: "DBS Vickers Sekuritas Indonesia", type: "Foreign" },
+  "FS": { code: "FS", name: "Yuanta Sekuritas Indonesia", type: "Foreign" },
+  "GW": { code: "GW", name: "HSBC Sekuritas Indonesia", type: "Foreign" },
+  "HD": { code: "HD", name: "KGI Sekuritas Indonesia", type: "Foreign" },
+  "MI": { code: "MI", name: "Victoria Sekuritas Indonesia", type: "Foreign" },
+  "RX": { code: "RX", name: "Macquarie Sekuritas Indonesia", type: "Foreign" },
+  "TP": { code: "TP", name: "OCBC Sekuritas Indonesia", type: "Foreign" },
+  "YU": { code: "YU", name: "CGS International Sekuritas Indonesia", type: "Foreign" },
+  "ZP": { code: "ZP", name: "Maybank Sekuritas Indonesia", type: "Foreign" },
 
   // Retail
   "AD": { code: "AD", name: "OSO Sekuritas Indonesia", type: "Retail" },

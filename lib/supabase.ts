@@ -482,3 +482,27 @@ export async function getLatestBackgroundJobLog(jobName: string) {
 
   return data || null;
 }
+
+/**
+ * Get all unique emiten codes from stock_queries table
+ */
+export async function getUniqueEmitens(): Promise<string[]> {
+  // Define the expected type for each row returned by the query
+  type EmitenRow = { emiten: string };
+
+  const { data, error } = await supabase
+    .from('stock_queries')
+    .select('distinct emiten');
+
+  if (error) {
+    console.error('Error fetching unique emitens from Supabase:', error);
+    throw error;
+  }
+
+  // Explicitly assert the type of 'data' to guide TypeScript
+  // Use 'unknown' as an intermediate step to bypass strict type checking
+  const typedEmitens = data as unknown as EmitenRow[] | null;
+
+  console.log('Unique emitens fetched from Supabase:', typedEmitens);
+  return typedEmitens?.map(item => item.emiten) || [];
+}

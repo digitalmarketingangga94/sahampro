@@ -3,18 +3,18 @@
 import { useState, useEffect } from 'react';
 import type { BrokerFlowResponse, BrokerFlowActivity, BrokerFlowDailyData } from '@/lib/types';
 import { getBrokerInfo } from '@/lib/brokers';
+import BrokerFlowScatterChart from './BrokerFlowScatterChart'; // Import the new scatter chart component
+import { Table, LineChart } from 'lucide-react'; // Import icons
 
 interface BrokerFlowCardProps {
   emiten: string;
 }
 
-type LookbackDays = 1 | 7 | 14 | 21;
-
 // Format large numbers (e.g., 24322664000 -> "+24.3 B")
 function formatNetValue(value: string): string {
   const num = parseFloat(value);
   const absNum = Math.abs(num);
-  const sign = num >= 0 ? '+' : '-';
+  const sign = num >= 0 ? '+' : '-' ;
   
   if (absNum >= 1e12) {
     return `${sign}${(absNum / 1e12).toFixed(1)} T`;
@@ -92,8 +92,9 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
   const [data, setData] = useState<BrokerFlowResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lookbackDays, setLookbackDays] = useState<LookbackDays>(7);
-  const [selectedStatus, setSelectedStatus] = useState<string[]>(['Bandar', 'Whale', 'Retail', 'Mix']);
+  const [lookbackDays, setLookbackDays] = useState<number>(7); // Keep as number
+  const [selectedStatus, setSelectedStatus] = useState<string[]>(['Bandar', 'Foreign', 'Retail', 'Mix']);
+  const [viewMode, setViewMode] = useState<'table' | 'chart'>('table'); // New state for view mode
 
   useEffect(() => {
     if (!emiten) return;
@@ -122,10 +123,17 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
     fetchData();
   }, [emiten, lookbackDays, selectedStatus]);
 
-  const filterOptions: LookbackDays[] = [1, 7, 14, 21];
+  const filterOptions = [
+    { label: '1D', value: 1 },
+    { label: '7D', value: 7 },
+    { label: '14D', value: 14 },
+    { label: '1M', value: 30 }, // Approximate 1 month as 30 days
+    { label: '2M', value: 60 }, // Approximate 2 months as 60 days
+    { label: '3M', value: 90 }, // Approximate 3 months as 90 days
+  ];
   const statusOptions = [
     { id: 'Bandar', label: 'Smart Money' },
-    { id: 'Whale', label: 'Whale' },
+    { id: 'Foreign', label: 'Foreign' },
     { id: 'Retail', label: 'Retail' },
     { id: 'Mix', label: 'Mix' }
   ];
@@ -163,62 +171,85 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
 
           {/* Time Filters */}
           <div className="broker-flow-filters">
-            {filterOptions.map((days) => (
+            {filterOptions.map((opt) => (
               <button
-                key={days}
-                className={`broker-flow-filter-btn ${lookbackDays === days ? 'active' : ''}`}
-                onClick={() => setLookbackDays(days)}
+                key={opt.label}
+                className={`broker-flow-filter-btn ${lookbackDays === opt.value ? 'active' : ''}`}
+                onClick={() => setLookbackDays(opt.value)}
               >
-                {days}D
+                {opt.label}
               </button>
             ))}
+          </div>
+
+          {/* View Mode Toggle */}
+          <div className="broker-flow-filters" style={{ marginLeft: '8px' }}>
+            <button
+              className={`broker-flow-filter-btn ${viewMode === 'table' ? 'active' : ''}`}
+              onClick={() => setViewMode('table')}
+              title="Table View"
+            >
+              <Table size={14} />
+            </button>
+            <button
+              className={`broker-flow-filter-btn ${viewMode === 'chart' ? 'active' : ''}`}
+              onClick={() => setViewMode('chart')}
+              title="Chart View"
+            >
+              <LineChart size={14} />
+            </button>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      {loading && (
-        <div style={{ padding: '2rem', textAlign: 'center' }}>
-          <div className="spinner" style={{ margin: '0 auto', width: '24px', height: '24px' }}></div>
-        </div>
-      )}
-
-      {error && (
-        <div style={{ padding: '1rem', color: '#f5576c', fontSize: '0.8rem' }}>
-          {error}
-        </div>
-      )}
-
-      {!loading && !error && data && (
-        <div className="broker-flow-content">
-          {data.activities.length === 0 ? (
-            <div style={{ padding: '1rem', textAlign: 'center', color: '#888' }}>
-              No broker activity found for {emiten}
-            </div>
-          ) : (
-            <table className="broker-flow-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>BROKER</th>
-                  <th>DAILY HEATMAP</th>
-                  <th>NET VALUE</th>
-                  <th>CONSISTENCY</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.activities.map((activity, idx) => (
-                  <BrokerFlowRow 
-                    key={`${activity.broker_code}-${idx}`}
-                    activity={activity} 
-                    index={idx + 1}
-                    tradingDates={data.trading_dates}
-                  />
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+      {viewMode === 'table' ? (
+        loading ? (
+          <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <div className="spinner" style={{ margin: '0 auto', width: '24px', height: '24px' }}></div>
+          </div>
+        ) : error ? (
+          <div style={{ padding: '1rem', color: '#f5576c', fontSize: '0.8rem' }}>
+            {error}
+          </div>
+        ) : data && (
+          <div className="broker-flow-content">
+            {data.activities.length === 0 ? (
+              <div style={{ padding: '1rem', textAlign: 'center', color: '#888' }}>
+                No broker activity found for {emiten}
+              </div>
+            ) : (
+              <table className="broker-flow-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>BROKER</th>
+                    <th>DAILY HEATMAP</th>
+                    <th>NET VALUE</th>
+                    <th>CONSISTENCY</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.activities.map((activity, idx) => (
+                    <BrokerFlowRow 
+                      key={`${activity.broker_code}-${idx}`}
+                      activity={activity} 
+                      index={idx + 1}
+                      tradingDates={data.trading_dates}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )
+      ) : (
+        <BrokerFlowScatterChart
+          data={data}
+          loading={loading}
+          error={error}
+          selectedStatus={selectedStatus}
+        />
       )}
     </div>
   );

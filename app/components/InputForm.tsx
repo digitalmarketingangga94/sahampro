@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import type { StockInput } from '@/lib/types';
-import { getDefaultDate } from '@/lib/utils';
+import { getLatestTradingDate } from '@/lib/utils';
 import { CheckCircle2, XCircle, MinusCircle } from 'lucide-react';
 
 interface InputFormProps {
   onSubmit: (data: StockInput) => void;
   loading: boolean;
-  initialEmiten?: string | null;
+  initialEmiten?: string | null; // Reverted type
   fromDate: string;
   toDate: string;
   onDateChange: (fromDate: string, toDate: string) => void;
@@ -37,14 +37,16 @@ export default function InputForm({
   storyStatus,
   hasResult
 }: InputFormProps) {
-  const [emiten, setEmiten] = useState('SOCI');
+  const [emiten, setEmiten] = useState(initialEmiten || ''); // Reverted default state
   const [currentFlag, setCurrentFlag] = useState<'OK' | 'NG' | 'Neutral' | null>(null);
 
   useEffect(() => {
-    if (initialEmiten) {
+    // Only update if initialEmiten is explicitly provided (can be empty string)
+    // and it's different from the current internal state to avoid unnecessary re-renders
+    if (initialEmiten !== undefined && initialEmiten !== null && initialEmiten.toUpperCase() !== emiten.toUpperCase()) {
       setEmiten(initialEmiten.toUpperCase());
     }
-  }, [initialEmiten]);
+  }, [initialEmiten]); // Reverted dependencies
 
   // Fetch current flag when emiten changes
   useEffect(() => {
@@ -71,16 +73,18 @@ export default function InputForm({
     onSubmit({ emiten, fromDate, toDate });
   };
 
-  const setDateRange = (days: number) => {
+  const setDateRange = (value: number, unit: 'days' | 'months') => {
     const end = new Date();
     const start = new Date();
 
-    // If days is 0 (1D), it means just today for both
-    if (days === 0) {
-      // both are today, already default
-      // but maybe we want to force reset to today
-    } else {
-      start.setDate(end.getDate() - days);
+    if (unit === 'days') {
+      start.setDate(end.getDate() - value + 1); // +1 to include the current day in the range
+    } else if (unit === 'months') {
+      start.setMonth(end.getMonth() - value);
+      // Adjust day if it goes past the end of the month (e.g., Jan 31 - 1 month = Feb 31 -> Feb 28)
+      if (start.getDate() !== end.getDate()) {
+        start.setDate(0); // Set to last day of previous month
+      }
     }
 
     // Format YYYY-MM-DD
@@ -123,9 +127,12 @@ export default function InputForm({
             <h3 style={{ textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.85rem' }}>Analyze Stock</h3>
           </div>
           <div className="quick-dates">
-            <button type="button" onClick={() => setDateRange(0)} className="quick-date-btn">1D</button>
-            <button type="button" onClick={() => setDateRange(7)} className="quick-date-btn">1W</button>
-            <button type="button" onClick={() => setDateRange(30)} className="quick-date-btn">1M</button>
+            <button type="button" onClick={() => setDateRange(1, 'days')} className="quick-date-btn">1D</button>
+            <button type="button" onClick={() => setDateRange(7, 'days')} className="quick-date-btn">7D</button>
+            <button type="button" onClick={() => setDateRange(14, 'days')} className="quick-date-btn">14D</button>
+            <button type="button" onClick={() => setDateRange(1, 'months')} className="quick-date-btn">1M</button>
+            <button type="button" onClick={() => setDateRange(2, 'months')} className="quick-date-btn">2M</button>
+            <button type="button" onClick={() => setDateRange(3, 'months')} className="quick-date-btn">3M</button>
           </div>
         </div>
 
@@ -184,7 +191,6 @@ export default function InputForm({
                 style={{ padding: '0', fontSize: '0.75rem', width: '95px', textAlign: 'center' }}
                 value={fromDate}
                 onChange={(e) => onDateChange(e.target.value, toDate)}
-                onClick={(e) => e.currentTarget.showPicker()}
                 required
               />
               <span className="date-separator" style={{ margin: '0 1px', padding: 0 }}>→</span>
@@ -195,7 +201,6 @@ export default function InputForm({
                 style={{ padding: '0', fontSize: '0.75rem', width: '95px', textAlign: 'center' }}
                 value={toDate}
                 onChange={(e) => onDateChange(fromDate, e.target.value)}
-                onClick={(e) => e.currentTarget.showPicker()}
                 required
               />
             </div>
