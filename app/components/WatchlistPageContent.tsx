@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { WatchlistItem, WatchlistGroup } from '@/lib/types';
+import type { WatchlistItem, WatchlistGroup, ApiResponse, WatchlistResponse } from '@/lib/types'; // Import ApiResponse
 import { CheckCircle2, XCircle, MinusCircle } from 'lucide-react';
 
 interface WatchlistPageContentProps {
@@ -25,11 +25,14 @@ export default function WatchlistPageContent({ onSelectSymbol }: WatchlistPageCo
       setError(null);
       try {
         const res = await fetch('/api/watchlist/groups');
-        const json = await res.json();
+        const json: ApiResponse<WatchlistGroup[]> = await res.json(); // Use ApiResponse type
         
         if (!json.success) {
-          if (json.error && (json.error.includes('token') || json.error.includes('auth'))) {
-            setError(json.error);
+          // Check for 401 status explicitly if available, otherwise rely on error message
+          if (res.status === 401) {
+            setError('🔴 Session Expired: Please login to Stockbit via the extension and wait for connection.');
+          } else {
+            setError(json.error || 'Failed to load watchlist groups');
           }
           return;
         }
@@ -64,10 +67,15 @@ export default function WatchlistPageContent({ onSelectSymbol }: WatchlistPageCo
       setError(null);
       try {
         const response = await fetch(`/api/watchlist?groupId=${selectedGroupId}`);
-        const json = await response.json();
+        const json: ApiResponse<WatchlistResponse> = await response.json(); // Use ApiResponse type
 
         if (!json.success) {
-          throw new Error(json.error || 'Failed to fetch watchlist');
+          if (response.status === 401) {
+            setError('🔴 Session Expired: Please login to Stockbit via the extension and wait for connection.');
+          } else {
+            throw new Error(json.error || 'Failed to fetch watchlist');
+          }
+          return;
         }
 
         const payload = json.data;
@@ -150,10 +158,10 @@ export default function WatchlistPageContent({ onSelectSymbol }: WatchlistPageCo
           textAlign: 'center'
         }}>
           <div style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>
-            {error.includes('token') || error.includes('auth') ? '🔴 Session Expired' : '❌ Error'}
+            {error.includes('Session Expired') ? '🔴 Session Expired' : '❌ Error'}
           </div>
           <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', lineHeight: '1.4' }}>
-            {error.includes('token') || error.includes('auth') 
+            {error.includes('Session Expired') 
               ? 'Please login to Stockbit via the extension and wait for connection.' 
               : error}
           </div>

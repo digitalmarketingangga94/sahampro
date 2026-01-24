@@ -118,9 +118,10 @@ export interface StockAnalysisResult {
   sector?: string;
 }
 
-export interface ApiResponse {
+// Make ApiResponse generic
+export interface ApiResponse<T = any> {
   success: boolean;
-  data?: StockAnalysisResult;
+  data?: T;
   error?: string;
 }
 
