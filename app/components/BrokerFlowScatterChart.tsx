@@ -56,8 +56,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <p style={{ color: 'var(--text-secondary)' }}>Broker Name: {brokerInfo.name}</p>
         <p style={{ color: 'var(--text-secondary)' }}>Broker Type: {data.broker_type}</p>
         <p style={{ color: data.net_value >= 0 ? '#38ef7d' : '#f5576c' }}>Net Value: {formatChartValue(data.net_value)}</p>
-        <p style={{ color: '#38ef7d' }}>Total Buy Volume: {formatChartValue(data.total_buy_volume)}</p>
-        {/* Removed net_lot and sell_volume from tooltip as they are not directly available or derivable as volume */}
+        <p style={{ color: '#38ef7d' }}>Buy Value: {formatChartValue(data.buy_value)}</p>
+        <p style={{ color: '#f5576c' }}>Sell Value: {formatChartValue(data.sell_value)}</p>
       </div>
     );
   }
@@ -107,12 +107,17 @@ export default function BrokerFlowScatterChart({
   const chartData = data.activities
     .map(activity => {
       const brokerInfo = getBrokerInfo(activity.broker_code);
+      const netValue = parseFloat(activity.net_value);
+      const totalBuyValue = parseFloat(activity.total_buy_value);
+      const sellValue = totalBuyValue - netValue; // Calculate sell_value
+
       return {
         broker_code: activity.broker_code,
         stock_code: activity.stock_code, // The emiten being analyzed
         broker_type: brokerInfo.type, // Use our internal broker type
-        net_value: parseFloat(activity.net_value),
-        total_buy_volume: parseFloat(activity.total_buy_volume), // Use total_buy_volume for Y-axis
+        net_value: netValue,
+        buy_value: totalBuyValue, // Renamed for clarity in chart data
+        sell_value: sellValue, // Added calculated sell_value
       };
     })
     .filter(item => {
@@ -156,14 +161,14 @@ export default function BrokerFlowScatterChart({
           </XAxis>
           <YAxis
             type="number"
-            dataKey="total_buy_volume" // Y-axis: Total Buy Volume
-            name="Total Buy Volume"
+            dataKey="buy_value" // Y-axis: Total Buy Value (IDR)
+            name="Total Buy Value"
             tickFormatter={formatChartValue}
             tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
             axisLine={{ stroke: 'var(--border-color)' }}
             tickLine={{ stroke: 'var(--border-color)' }}
           >
-            <Label value="Total Buy Volume (Lot)" angle={-90} offset={-10} position="insideLeft" fill="var(--text-secondary)" fontSize={12} />
+            <Label value="Total Buy Value (IDR)" angle={-90} offset={-10} position="insideLeft" fill="var(--text-secondary)" fontSize={12} />
           </YAxis>
           <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '0.75rem' }} />
