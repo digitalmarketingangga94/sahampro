@@ -9,6 +9,14 @@ interface WatchlistPageContentProps {
   onSelectSymbol?: (symbol: string) => void; // New prop
 }
 
+// Helper to format large numbers (e.g., 1234567890 -> 1.23B)
+const formatCompactNumber = (num: number): string => {
+  if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(2) + 'B';
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(2) + 'M';
+  if (num >= 1_000) return (num / 1_000).toFixed(2) + 'K';
+  return num.toLocaleString();
+};
+
 export default function WatchlistPageContent({ onSelectSymbol }: WatchlistPageContentProps) { // Accept new prop
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [groups, setGroups] = useState<WatchlistGroup[]>([]);
@@ -244,69 +252,75 @@ export default function WatchlistPageContent({ onSelectSymbol }: WatchlistPageCo
         </div>
       )}
 
-      <div
-        className="watchlist-items-container"
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.25rem',
-          maxHeight: 'calc(100vh - 160px)',
-          overflowY: 'auto'
-        }}
-      >
-        {watchlist.map((item, index) => {
-          const percentValue = parseFloat(item.percent) || 0;
-          const isPositive = percentValue >= 0;
+      {watchlist.length > 0 && (
+        <div style={{ overflowX: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', minWidth: '600px' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <th style={{ padding: '0.75rem 0.5rem', textAlign: 'left', color: 'var(--text-secondary)', fontWeight: 600 }}>Symbol</th>
+                <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontWeight: 600 }}>Price</th>
+                <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontWeight: 600 }}>Change (%)</th>
+                <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontWeight: 600 }}>Volume</th>
+                <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontWeight: 600 }}>Value</th>
+                <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: 'var(--text-secondary)', fontWeight: 600 }}>Freq</th>
+              </tr>
+            </thead>
+            <tbody>
+              {watchlist.map((item, index) => {
+                const percentValue = parseFloat(item.percent) || 0;
+                const isPositive = percentValue >= 0;
 
-          return (
-            <div
-              key={item.company_id || index}
-              className="watchlist-item"
-              onClick={() => handleStockClick(item.symbol || item.company_code)}
-              style={{ padding: '0.65rem 0.75rem' }}
-            >
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{item.symbol || item.company_code}</div>
-                  {item.flag === 'OK' && (
-                    <CheckCircle2 size={12} color="#3b82f6" fill="rgba(59, 130, 246, 0.2)" />
-                  )}
-                  {item.flag === 'NG' && (
-                    <XCircle size={12} color="#f97316" fill="rgba(249, 115, 22, 0.2)" />
-                  )}
-                  {item.flag === 'Neutral' && (
-                    <MinusCircle size={12} color="var(--text-secondary)" />
-                  )}
-                </div>
-                <div style={{
-                  fontSize: '0.7rem',
-                  color: '#999',
-                  marginTop: '2px',
-                  maxWidth: '140px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {item.sector || item.company_name}
-                </div>
-              </div>
-              <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>
-                  {item.formatted_price || item.last_price?.toLocaleString() || '-'}
-                </div>
-                <div style={{
-                  fontSize: '0.7rem',
-                  color: isPositive ? 'var(--accent-success)' : 'var(--accent-warning)',
-                  marginTop: '1px',
-                  fontWeight: 500
-                }}>
-                  {isPositive ? '+' : ''}{item.percent}%
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                return (
+                  <tr
+                    key={item.company_id || index}
+                    className="watchlist-item"
+                    style={{ borderBottom: index < watchlist.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}
+                  >
+                    <td 
+                      style={{ padding: '0.65rem 0.5rem', cursor: 'pointer' }}
+                      onClick={() => handleStockClick(item.symbol || item.company_code)}
+                    >
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--accent-primary)' }}>{item.symbol || item.company_code}</div>
+                      <div style={{
+                        fontSize: '0.7rem',
+                        color: '#999',
+                        marginTop: '2px',
+                        maxWidth: '100px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {item.sector || item.company_name}
+                      </div>
+                    </td>
+                    <td style={{ padding: '0.65rem 0.5rem', textAlign: 'right', fontWeight: 600, fontSize: '0.9rem' }}>
+                      {item.last_price?.toLocaleString() || '-'}
+                    </td>
+                    <td style={{ 
+                      padding: '0.65rem 0.5rem', 
+                      textAlign: 'right', 
+                      fontSize: '0.8rem',
+                      color: isPositive ? 'var(--accent-success)' : 'var(--accent-warning)',
+                      fontWeight: 500
+                    }}>
+                      {isPositive ? '+' : ''}{item.percent}%
+                    </td>
+                    <td style={{ padding: '0.65rem 0.5rem', textAlign: 'right', fontSize: '0.8rem' }}>
+                      {formatCompactNumber(item.volume)}
+                    </td>
+                    <td style={{ padding: '0.65rem 0.5rem', textAlign: 'right', fontSize: '0.8rem' }}>
+                      {formatCompactNumber(item.value)}
+                    </td>
+                    <td style={{ padding: '0.65rem 0.5rem', textAlign: 'right', fontSize: '0.8rem' }}>
+                      {formatCompactNumber(item.frequency)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

@@ -145,6 +145,7 @@ export interface WatchlistItem {
   change_percentage: number;
   percent: string;      // Percentage from API (e.g., "-1.23")
   volume: number;
+  value: number; // Added this property
   frequency: number;
   sector?: string;      // Sector information from emiten info API
   formatted_price?: string;
