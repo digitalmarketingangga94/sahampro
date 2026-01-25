@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { BrokerFlowResponse, BrokerFlowActivity } from '@/lib/types';
 import { getBrokerInfo, BrokerType } from '@/lib/brokers'; // Import BrokerType
-import { fetchBrokerActivityDetail } from '@/lib/stockbit';
 
 // Helper to map frontend status IDs to internal BrokerType
 const mapStatusIdToBrokerType = (statusId: string): BrokerType | null => {
@@ -78,37 +77,44 @@ export async function GET(request: NextRequest) {
       data.activities = filteredActivities;
     }
 
-    // Enhance activities with actual netbs_buy_avg_price from Stockbit API
+    // Enhance activities with actual netbs_buy_avg_price from Stockbit market detectors API
     if (data && data.activities) {
+      // Calculate date range (last 30 days)
+      const toDate = new Date().toISOString().split('T')[0];
+      const fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      
       for (let i = 0; i < data.activities.length; i++) {
         const activity = data.activities[i];
         try {
-          // Fetch broker activity detail to get the average buy price
-          const brokerActivity = await fetchBrokerActivityDetail(
-            activity.broker_code,
-            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days ago
-            new Date().toISOString().split('T')[0], // today
-            1, // page
-            10, // limit
-            'TRANSACTION_TYPE_NET',
-            'MARKET_BOARD_REGULER',
-            'INVESTOR_TYPE_ALL'
-          );
+          // Fetch market detector data for the specific stock
+          const marketDetectorUrl = `https://exodus.stockbit.com/marketdetectors/${activity.stock_code}?from=${fromDate}&to=${toDate}&transaction_type=TRANSACTION_TYPE_NET&market_board=MARKET_BOARD_REGULER&investor_type=INVESTOR_TYPE_ALL&limit=100`;
+          
+          const response = await fetch(marketDetectorUrl, {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+            },
+            cache: 'no-store',
+          });
 
-          // Extract the average buy price from the broker activity detail
-          if (brokerActivity.data?.broker_summary?.brokers_buy) {
-            const matchingBuyer = brokerActivity.data.broker_summary.brokers_buy.find(
-              (item: any) => item.netbs_stock_code === activity.stock_code
-            );
-            if (matchingBuyer && matchingBuyer.netbs_buy_avg_price) {
-              data.activities[i] = {
-                ...data.activities[i],
-                netbs_buy_avg_price: matchingBuyer.netbs_buy_avg_price
-              };
+          if (response.ok) {
+            const marketData = await response.json();
+            
+            // Extract the average buy price from the broker summary for this specific broker
+            if (marketData.data?.broker_summary?.brokers_buy) {
+              const matchingBuyer = marketData.data.broker_summary.brokers_buy.find(
+                (item: any) => item.netbs_broker_code === activity.broker_code
+              );
+              if (matchingBuyer && matchingBuyer.netbs_buy_avg_price) {
+                data.activities[i] = {
+                  ...data.activities[i],
+                  netbs_buy_avg_price: matchingBuyer.netbs_buy_avg_price
+                };
+              }
             }
           }
         } catch (error) {
-          console.warn(`Failed to fetch broker activity detail for ${activity.broker_code}:`, error);
+          console.warn(`Failed to fetch market detector data for ${activity.stock_code}:`, error);
           // Keep the original netbs_buy_avg_price if fetch fails
         }
       }
