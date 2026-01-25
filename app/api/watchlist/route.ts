@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchWatchlist, fetchEmitenInfo, TokenExpiredError } from '@/lib/stockbit'; // Import TokenExpiredError
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import type { ApiResponse, WatchlistItem, WatchlistResponse } from '@/lib/types'; // Import WatchlistItem and WatchlistResponse
 
 export async function GET(request: NextRequest) {
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const symbols = items.map((item) => (item.symbol || item.company_code).toUpperCase());
 
     // Fetch flags from Supabase
-    const { data: flags, error: flagError } = await supabase
+    const { data: flags, error: flagError } = await getSupabase()
       .from('emiten_flags')
       .select('emiten, flag')
       .in('emiten', symbols);

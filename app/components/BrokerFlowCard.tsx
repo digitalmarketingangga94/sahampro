@@ -226,6 +226,7 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
                     <th>BROKER</th>
                     <th>DAILY HEATMAP</th>
                     <th>NET VALUE</th>
+                    <th>BUY AVG PRICE</th>
                     <th>CONSISTENCY</th>
                   </tr>
                 </thead>
@@ -294,6 +295,9 @@ function BrokerFlowRow({
       </td>
       <td className={`net-value ${parseFloat(activity.net_value) >= 0 ? 'positive' : 'negative'}`}>
         {formatNetValue(activity.net_value)}
+      </td>
+      <td className="buy-avg-price">
+        {activity.netbs_buy_avg_price || '-'}
       </td>
       <td className="consistency">
         <span className="consistency-badge">

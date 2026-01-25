@@ -1896,6 +1896,13 @@ h3 {
   text-align: center;
 }
 
+.broker-flow-table .buy-avg-price {
+  text-align: right;
+  font-family: 'Inter', monospace;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
 .consistency-badge {
   background: rgba(102, 126, 234, 0.15);
   color: #667eea;

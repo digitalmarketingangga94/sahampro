@@ -1,9 +1,14 @@
+
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export function getSupabase() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase env missing');
+  }
+  return createClient(supabaseUrl, supabaseAnonKey);
+}
 
 /**
  * Save stock query to database
@@ -29,6 +34,8 @@ export async function saveStockQuery(data: {
   target_realistis?: number;
   target_max?: number;
 }) {
+
+  const supabase = getSupabase();
   const { data: result, error } = await supabase
     .from('stock_queries')
     .upsert([data], { onConflict: 'from_date,emiten' })
@@ -46,6 +53,8 @@ export async function saveStockQuery(data: {
  * Get session value by key
  */
 export async function getSessionValue(key: string): Promise<string | null> {
+
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('session')
     .select('value')
@@ -64,6 +73,7 @@ export async function upsertSession(
   value: string, 
   expiresAt?: Date
 ) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('session')
     .upsert(
@@ -109,6 +119,8 @@ export async function saveWatchlistAnalysis(data: {
   status?: string;
   error_message?: string;
 }) {
+
+  const supabase = getSupabase();
   const { data: result, error } = await supabase
     .from('stock_queries')
     .upsert([data], { onConflict: 'from_date,emiten' })
@@ -136,6 +148,8 @@ export async function getWatchlistAnalysisHistory(filters?: {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }) {
+
+  const supabase = getSupabase();
   let query = supabase
     .from('stock_queries')
     .select('*', { count: 'exact' });
@@ -196,7 +210,9 @@ export async function getWatchlistAnalysisHistory(filters?: {
 /**
  * Get latest stock query for a specific emiten
  */
+
 export async function getLatestStockQuery(emiten: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('stock_queries')
     .select('*')
@@ -213,7 +229,9 @@ export async function getLatestStockQuery(emiten: string) {
 /**
  * Update the most recent previous day's real price for an emiten
  */
+
 export async function updatePreviousDayRealPrice(emiten: string, currentDate: string, price: number) {
+  const supabase = getSupabase();
   // 1. Find the latest successful record before currentDate
   const { data: record, error: findError } = await supabase
     .from('stock_queries')
@@ -249,7 +267,9 @@ export async function updatePreviousDayRealPrice(emiten: string, currentDate: st
 /**
  * Create a new agent story record with pending status
  */
+
 export async function createAgentStory(emiten: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('agent_stories')
     .insert({ emiten, status: 'pending' })
@@ -267,6 +287,7 @@ export async function createAgentStory(emiten: string) {
 /**
  * Update agent story with result or error
  */
+
 export async function updateAgentStory(id: number, data: {
   status: 'processing' | 'completed' | 'error';
   matriks_story?: object[];
@@ -277,6 +298,7 @@ export async function updateAgentStory(id: number, data: {
   kesimpulan?: string;
   error_message?: string;
 }) {
+  const supabase = getSupabase();
   const { data: result, error } = await supabase
     .from('agent_stories')
     .update(data)
@@ -295,7 +317,9 @@ export async function updateAgentStory(id: number, data: {
 /**
  * Get latest agent story for an emiten
  */
+
 export async function getAgentStoryByEmiten(emiten: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('agent_stories')
     .select('*')
@@ -314,7 +338,9 @@ export async function getAgentStoryByEmiten(emiten: string) {
 /**
  * Get all agent stories for an emiten
  */
+
 export async function getAgentStoriesByEmiten(emiten: string, limit: number = 20) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('agent_stories')
     .select('*')
@@ -334,6 +360,7 @@ export async function getAgentStoriesByEmiten(emiten: string, limit: number = 20
  * Create a new background job log entry
  */
 export async function createBackgroundJobLog(jobName: string, totalItems: number = 0) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('background_job_logs')
     .insert({
@@ -370,6 +397,8 @@ export async function appendBackgroundJobLogEntry(
     ...entry,
   };
 
+  const supabase = getSupabase();
+  
   // Use raw SQL to append to JSONB array for atomic operation
   const { error } = await supabase.rpc('append_job_log_entry', {
     p_job_id: jobId,
@@ -409,6 +438,7 @@ export async function updateBackgroundJobLog(
     metadata?: Record<string, unknown>;
   }
 ) {
+  const supabase = getSupabase();
   const { data: result, error } = await supabase
     .from('background_job_logs')
     .update({
@@ -436,6 +466,7 @@ export async function getBackgroundJobLogs(filters?: {
   limit?: number;
   offset?: number;
 }) {
+  const supabase = getSupabase();
   let query = supabase
     .from('background_job_logs')
     .select('*', { count: 'exact' })
@@ -468,6 +499,7 @@ export async function getBackgroundJobLogs(filters?: {
  * Get the latest job log for a specific job name
  */
 export async function getLatestBackgroundJobLog(jobName: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('background_job_logs')
     .select('*')
@@ -490,6 +522,7 @@ export async function getUniqueEmitens(): Promise<string[]> {
   // Define the expected type for each row returned by the query
   type EmitenRow = { emiten: string };
 
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('stock_queries')
     .select('distinct emiten');
