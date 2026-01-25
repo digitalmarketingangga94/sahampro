@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { BrokerFlowResponse, BrokerFlowActivity } from '@/lib/types';
 import { getBrokerInfo, BrokerType } from '@/lib/brokers'; // Import BrokerType
+import { fetchBrokerActivityDetail } from '@/lib/stockbit';
 
 // Helper to map frontend status IDs to internal BrokerType
 const mapStatusIdToBrokerType = (statusId: string): BrokerType | null => {
@@ -57,10 +58,11 @@ export async function GET(request: NextRequest) {
 
     if (data && data.activities) {
       // First, map 'Whale' from external API response back to 'Foreign' for consistency
+      // We'll update the netbs_buy_avg_price with a more appropriate value later
       data.activities = data.activities.map(activity => ({
         ...activity,
         broker_status: activity.broker_status === 'Whale' ? 'Foreign' : activity.broker_status,
-        netbs_buy_avg_price: "284.2499506850978" // Adding the requested field
+        netbs_buy_avg_price: activity.current_price // Using current price as placeholder, will be updated below
       }));
 
       // Now, filter activities based on our internal broker definitions
@@ -74,6 +76,42 @@ export async function GET(request: NextRequest) {
       });
 
       data.activities = filteredActivities;
+    }
+
+    // Enhance activities with actual netbs_buy_avg_price from Stockbit API
+    if (data && data.activities) {
+      for (let i = 0; i < data.activities.length; i++) {
+        const activity = data.activities[i];
+        try {
+          // Fetch broker activity detail to get the average buy price
+          const brokerActivity = await fetchBrokerActivityDetail(
+            activity.broker_code,
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days ago
+            new Date().toISOString().split('T')[0], // today
+            1, // page
+            10, // limit
+            'TRANSACTION_TYPE_NET',
+            'MARKET_BOARD_REGULER',
+            'INVESTOR_TYPE_ALL'
+          );
+
+          // Extract the average buy price from the broker activity detail
+          if (brokerActivity.data?.broker_summary?.brokers_buy) {
+            const matchingBuyer = brokerActivity.data.broker_summary.brokers_buy.find(
+              (item: any) => item.netbs_stock_code === activity.stock_code
+            );
+            if (matchingBuyer && matchingBuyer.netbs_buy_avg_price) {
+              data.activities[i] = {
+                ...data.activities[i],
+                netbs_buy_avg_price: matchingBuyer.netbs_buy_avg_price
+              };
+            }
+          }
+        } catch (error) {
+          console.warn(`Failed to fetch broker activity detail for ${activity.broker_code}:`, error);
+          // Keep the original netbs_buy_avg_price if fetch fails
+        }
+      }
     }
 
     return NextResponse.json({
