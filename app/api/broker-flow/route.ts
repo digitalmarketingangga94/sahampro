@@ -57,11 +57,9 @@ export async function GET(request: NextRequest) {
 
     if (data && data.activities) {
       // First, map 'Whale' from external API response back to 'Foreign' for consistency
-      // We'll update the netbs_buy_avg_price with a more appropriate value later
       data.activities = data.activities.map(activity => ({
         ...activity,
-        broker_status: activity.broker_status === 'Whale' ? 'Foreign' : activity.broker_status,
-        netbs_buy_avg_price: activity.current_price // Using current price as placeholder, will be updated below
+        broker_status: activity.broker_status === 'Whale' ? 'Foreign' : activity.broker_status
       }));
 
       // Now, filter activities based on our internal broker definitions
@@ -75,49 +73,6 @@ export async function GET(request: NextRequest) {
       });
 
       data.activities = filteredActivities;
-    }
-
-    // Enhance activities with actual netbs_buy_avg_price from Stockbit market detectors API
-    if (data && data.activities) {
-      // Calculate date range (last 30 days)
-      const toDate = new Date().toISOString().split('T')[0];
-      const fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      
-      for (let i = 0; i < data.activities.length; i++) {
-        const activity = data.activities[i];
-        try {
-          // Fetch market detector data for the specific stock
-          const marketDetectorUrl = `https://exodus.stockbit.com/marketdetectors/${activity.stock_code}?from=${fromDate}&to=${toDate}&transaction_type=TRANSACTION_TYPE_NET&market_board=MARKET_BOARD_REGULER&investor_type=INVESTOR_TYPE_ALL&limit=100`;
-          
-          const response = await fetch(marketDetectorUrl, {
-            method: 'GET',
-            headers: {
-              'Accept': 'application/json',
-            },
-            cache: 'no-store',
-          });
-
-          if (response.ok) {
-            const marketData = await response.json();
-            
-            // Extract the average buy price from the broker summary for this specific broker
-            if (marketData.data?.broker_summary?.brokers_buy) {
-              const matchingBuyer = marketData.data.broker_summary.brokers_buy.find(
-                (item: any) => item.netbs_broker_code === activity.broker_code
-              );
-              if (matchingBuyer && matchingBuyer.netbs_buy_avg_price) {
-                data.activities[i] = {
-                  ...data.activities[i],
-                  netbs_buy_avg_price: matchingBuyer.netbs_buy_avg_price
-                };
-              }
-            }
-          }
-        } catch (error) {
-          console.warn(`Failed to fetch market detector data for ${activity.stock_code}:`, error);
-          // Keep the original netbs_buy_avg_price if fetch fails
-        }
-      }
     }
 
     return NextResponse.json({

@@ -58,7 +58,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <p style={{ color: data.net_value >= 0 ? '#38ef7d' : '#f5576c' }}>Net Value: {formatChartValue(data.net_value)}</p>
         <p style={{ color: '#38ef7d' }}>Buy Value: {formatChartValue(data.buy_value)}</p>
         <p style={{ color: '#f5576c' }}>Sell Value: {formatChartValue(data.sell_value)}</p>
-        <p style={{ color: 'var(--text-secondary)' }}>Avg Buy Price: {data.netbs_buy_avg_price || '-'}</p>
       </div>
     );
   }
@@ -119,7 +118,6 @@ export default function BrokerFlowScatterChart({
         net_value: netValue,
         buy_value: totalBuyValue, // Renamed for clarity in chart data
         sell_value: sellValue, // Added calculated sell_value
-        netbs_buy_avg_price: activity.netbs_buy_avg_price, // Include the new field
       };
     })
     .filter(item => {

@@ -297,7 +297,6 @@ export interface BrokerFlowActivity {
   daily_data: BrokerFlowDailyData[];
   current_price: string;
   float_pl_pct: string;
-  netbs_buy_avg_price?: string;
 }
 
 export interface BrokerFlowResponse {
