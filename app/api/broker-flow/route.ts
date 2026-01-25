@@ -57,10 +57,22 @@ export async function GET(request: NextRequest) {
 
     if (data && data.activities) {
       // First, map 'Whale' from external API response back to 'Foreign' for consistency
-      data.activities = data.activities.map(activity => ({
-        ...activity,
-        broker_status: activity.broker_status === 'Whale' ? 'Foreign' : activity.broker_status
-      }));
+      data.activities = data.activities.map(activity => {
+        const totalBuyValue = parseFloat(activity.total_buy_value);
+        const totalBuyVolume = parseFloat(activity.total_buy_volume);
+        let buyAvgPrice = 0;
+
+        if (totalBuyVolume > 0) {
+          // Calculate average buy price: total value / (total volume in lots * 100 shares/lot)
+          buyAvgPrice = totalBuyValue / (totalBuyVolume * 100);
+        }
+
+        return {
+          ...activity,
+          broker_status: activity.broker_status === 'Whale' ? 'Foreign' : activity.broker_status,
+          buy_avg_price: Math.round(buyAvgPrice), // Round to nearest integer
+        };
+      });
 
       // Now, filter activities based on our internal broker definitions
       const selectedInternalBrokerTypes = brokerStatusParam.split(',')

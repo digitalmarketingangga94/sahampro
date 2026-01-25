@@ -297,6 +297,7 @@ export interface BrokerFlowActivity {
   daily_data: BrokerFlowDailyData[];
   current_price: string;
   float_pl_pct: string;
+  buy_avg_price?: number; // New field for calculated average buy price
 }
 
 export interface BrokerFlowResponse {
