@@ -1,8 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import { Suspense } from 'react';
 import Calculator from './components/Calculator';
-// import WatchlistPageContent from './components/WatchlistPageContent'; // Removed import
+
+// Loading component for suspense boundary
+const CalculatorLoading = () => (
+  <div className="app-main">
+    <div className="text-center mt-8">
+      <div className="spinner" style={{ margin: '0 auto' }}></div>
+      <p>Loading calculator...</p>
+    </div>
+  </div>
+);
 
 export default function Home() {
   const [selectedSymbolFromSidebar, setSelectedSymbolFromSidebar] = useState<string | null>(null);
@@ -10,12 +20,10 @@ export default function Home() {
   return (
     <div className="app-layout">
       <div className="app-main">
-        <Calculator selectedSymbolFromSidebar={selectedSymbolFromSidebar} />
+        <Suspense fallback={<CalculatorLoading />}>
+          <Calculator selectedSymbolFromSidebar={selectedSymbolFromSidebar} />
+        </Suspense>
       </div>
-      {/* Removed sidebar content as per request */}
-      {/* <div className="app-sidebar">
-        <WatchlistPageContent onSelectSymbol={setSelectedSymbolFromSidebar} />
-      </div> */}
     </div>
   );
 }
