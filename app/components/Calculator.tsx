@@ -376,7 +376,7 @@ export default function Calculator({ selectedSymbolFromSidebar }: CalculatorProp
       )}
 
       {result && (
-        <div style={{ marginTop: '2rem' }}>
+        <div style={{ marginTop: '2rem' }} className="fade-in">
           {result.isFromHistory && result.historyDate && (
             <div style={{
               marginBottom: '1.5rem',

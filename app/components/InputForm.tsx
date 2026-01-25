@@ -116,7 +116,7 @@ export default function InputForm({
   };
 
   return (
-    <div className="glass-card-static compact-form">
+    <div className="glass-card-static compact-form fade-in">
       <form onSubmit={handleSubmit}>
         <div className="compact-form-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
