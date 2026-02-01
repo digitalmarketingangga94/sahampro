@@ -221,9 +221,7 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
             ) : (
               <table className="broker-flow-table">
                 <thead>
-                  <tr>
-                    <th>#</th><th>BROKER</th><th>DAILY HEATMAP</th><th>NET VALUE</th><th>BUY AVG PRICE</th> {/* New column header */}<th>CONSISTENCY</th>
-                  </tr>
+                  <tr><th>#</th><th>BROKER</th><th>DAILY HEATMAP</th><th>NET VALUE</th><th>BUY AVG PRICE</th><th>CONSISTENCY</th></tr>
                 </thead>
                 <tbody>
                   {data.activities.map((activity, idx) => (
