@@ -5,7 +5,7 @@ import type { ActionType, SourceType } from '@/lib/types';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const emiten = searchParams.get('emiten')?.toUpperCase();
+    const emiten = searchParams.get('emiten')?.toUpperCase(); // This can be undefined
     const dateStart = searchParams.get('dateStart');
     const dateEnd = searchParams.get('dateEnd');
     const actionType = (searchParams.get('actionType') || 'ACTION_TYPE_UNSPECIFIED') as ActionType;
@@ -13,15 +13,16 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    if (!emiten || !dateStart || !dateEnd) {
+    // Only dateStart and dateEnd are strictly required
+    if (!dateStart || !dateEnd) {
       return NextResponse.json(
-        { success: false, error: 'Missing required parameters: emiten, dateStart, dateEnd' },
+        { success: false, error: 'Missing required parameters: dateStart, dateEnd' },
         { status: 400 }
       );
     }
 
     const insiderActivity = await fetchInsiderActivity(
-      emiten,
+      emiten, // Pass emiten as string | undefined
       dateStart,
       dateEnd,
       actionType,

@@ -437,7 +437,7 @@ export async function fetchMarketMovers(type: MarketMoverType, limit: number = 2
  * Fetch Insider Activity data
  */
 export async function fetchInsiderActivity(
-  emiten: string,
+  emiten: string | undefined, // Changed to be optional
   dateStart: string,
   dateEnd: string,
   actionType: ActionType = "ACTION_TYPE_UNSPECIFIED",
@@ -446,7 +446,9 @@ export async function fetchInsiderActivity(
   limit: number = 20
 ): Promise<InsiderActivityResponse> {
   const url = new URL(`${STOCKBIT_BASE_URL}/insider/company/majorholder`);
-  url.searchParams.append('symbol', emiten); // Assuming 'symbol' is a valid parameter for filtering
+  if (emiten) { // Only append if emiten is provided
+    url.searchParams.append('symbol', emiten);
+  }
   url.searchParams.append('date_start', dateStart);
   url.searchParams.append('date_end', dateEnd);
   url.searchParams.append('page', page.toString());
@@ -459,7 +461,7 @@ export async function fetchInsiderActivity(
     headers: await getHeaders(),
   });
 
-  await handleApiResponse(response, `Insider Activity API (${emiten})`);
+  await handleApiResponse(response, `Insider Activity API (${emiten || 'All Stocks'})`);
 
   return response.json();
 }
