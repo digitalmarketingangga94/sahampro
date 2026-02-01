@@ -459,7 +459,7 @@ export default function Calculator({ selectedSymbolFromSidebar }: CalculatorProp
 
           {/* Insider Activity Section - Full Width */}
           <div style={{ gridColumn: '1 / -1', marginTop: '1.5rem', width: '100%' }}>
-            <InsiderActivityCard emiten={result.input.emiten} />
+            <InsiderActivityCard />
           </div>
 
           {/* Agent Story Section - Full Width */}

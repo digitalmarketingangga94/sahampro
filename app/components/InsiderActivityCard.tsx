@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { InsiderMovementItem, ActionType, SourceType } from '@/lib/types';
 import { getLatestTradingDate, getDateNDaysAgo } from '@/lib/utils';
-import { CalendarDays, Filter, ArrowDownUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, Filter, ArrowDownUp, ChevronLeft, ChevronRight, ChevronDown, Search } from 'lucide-react';
 
 interface InsiderActivityCardProps {
-  emiten: string;
+  // emiten: string; // Removed emiten prop, now managed internally
 }
 
 const actionTypeOptions: { value: ActionType; label: string }[] = [
@@ -27,7 +27,7 @@ const actionTypeOptions: { value: ActionType; label: string }[] = [
 ];
 
 const sourceTypeOptions: { value: SourceType; label: string }[] = [
-  { value: "SOURCE_TYPE_UNSPECIFIED", label: "All Sources" },
+  { value: "SOURCE_TYPE_UNSPECIFIED", label: "ALL" },
   { value: "SOURCE_TYPE_IDX", label: "IDX" },
   { value: "SOURCE_TYPE_KSEI", label: "KSEI" },
 ];
@@ -52,27 +52,56 @@ const formatDate = (dateStr: string): string => {
   return dateStr;
 };
 
-export default function InsiderActivityCard({ emiten }: InsiderActivityCardProps) {
+export default function InsiderActivityCard() { // Removed emiten prop
   const [data, setData] = useState<InsiderMovementItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dateEnd, setDateEnd] = useState(getLatestTradingDate());
   const [dateStart, setDateStart] = useState(getDateNDaysAgo(30, getLatestTradingDate())); // Default to 30 days ago from latest trading date
   const [actionType, setActionType] = useState<ActionType>("ACTION_TYPE_UNSPECIFIED");
-  const [sourceType, setSourceType] = useState<SourceType>("SOURCE_TYPE_UNSPECIFIED");
+  const [sourceType, setSourceType] = useState<SourceType>("SOURCE_TYPE_UNSPECIFIED"); // Now controlled by tabs
   const [page, setPage] = useState(1);
   const [isMore, setIsMore] = useState(false);
   const limit = 20;
 
+  // New states for emiten selection
+  const [selectedEmiten, setSelectedEmiten] = useState<string>('BBCA'); // Default emiten
+  const [allEmitens, setAllEmitens] = useState<string[]>([]);
+  const [showEmitenSelect, setShowEmitenSelect] = useState(false);
+  const [emitenSearchTerm, setEmitenSearchTerm] = useState('');
+  const emitenSelectRef = useRef<HTMLDivElement>(null);
+
+
+  // Fetch unique emitens on mount
   useEffect(() => {
-    if (!emiten) return;
+    const fetchUniqueEmitens = async () => {
+      try {
+        const res = await fetch('/api/unique-emitens');
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          const sortedEmitens = json.data.sort();
+          setAllEmitens(sortedEmitens);
+          // Set default emiten if 'BBCA' is not in the list, or if list is empty
+          if (!sortedEmitens.includes(selectedEmiten) && sortedEmitens.length > 0) {
+            setSelectedEmiten(sortedEmitens[0]);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching unique emitens:', err);
+      }
+    };
+    fetchUniqueEmitens();
+  }, []); // Run once on mount
+
+  useEffect(() => {
+    if (!selectedEmiten) return; // Only fetch if an emiten is selected
 
     const fetchInsiderActivity = async () => {
       setLoading(true);
       setError(null);
       try {
         const response = await fetch(
-          `/api/insider-activity?emiten=${emiten}&dateStart=${dateStart}&dateEnd=${dateEnd}&actionType=${actionType}&sourceType=${sourceType}&page=${page}&limit=${limit}`
+          `/api/insider-activity?emiten=${selectedEmiten}&dateStart=${dateStart}&dateEnd=${dateEnd}&actionType=${actionType}&sourceType=${sourceType}&page=${page}&limit=${limit}`
         );
         const json = await response.json();
 
@@ -89,22 +118,126 @@ export default function InsiderActivityCard({ emiten }: InsiderActivityCardProps
     };
 
     fetchInsiderActivity();
-  }, [emiten, dateStart, dateEnd, actionType, sourceType, page]);
+  }, [selectedEmiten, dateStart, dateEnd, actionType, sourceType, page]);
+
+  // Close emiten dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emitenSelectRef.current && !emitenSelectRef.current.contains(event.target as Node)) {
+        setShowEmitenSelect(false);
+        setEmitenSearchTerm('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredEmitenOptions = allEmitens.filter(emitenCode => 
+    emitenCode.toLowerCase().includes(emitenSearchTerm.toLowerCase())
+  );
 
   return (
     <div className="glass-card-static" style={{ padding: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
         <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal' }}>
-          Insider Activity ({emiten.toUpperCase()})
+          Insider Activity
         </h3>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          {/* Emiten Select Dropdown */}
+          <div style={{ position: 'relative' }} ref={emitenSelectRef}>
+            <button
+              type="button"
+              className="input-field compact-input"
+              onClick={() => setShowEmitenSelect(!showEmitenSelect)}
+              style={{ 
+                width: '120px', 
+                height: '32px', 
+                padding: '0 0.5rem', 
+                fontSize: '0.75rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                cursor: 'pointer'
+              }}
+            >
+              <span>{selectedEmiten || 'All Stocks'}</span>
+              <ChevronDown size={14} />
+            </button>
+            {showEmitenSelect && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                minWidth: '180px',
+                zIndex: 1000,
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                marginTop: '4px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                boxShadow: 'var(--shadow-md)'
+              }}>
+                <div style={{ padding: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <Search size={14} style={{ position: 'absolute', left: '8px', color: 'var(--text-muted)' }} />
+                    <input
+                      type="text"
+                      placeholder="Search emiten..."
+                      value={emitenSearchTerm}
+                      onChange={(e) => setEmitenSearchTerm(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        width: '100%',
+                        padding: '0.4rem 0.4rem 0.4rem 30px',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '6px',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.75rem',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                </div>
+                {filteredEmitenOptions.length > 0 ? (
+                  filteredEmitenOptions.map(emitenCode => (
+                    <div
+                      key={emitenCode}
+                      onClick={() => {
+                        setSelectedEmiten(emitenCode);
+                        setShowEmitenSelect(false);
+                        setEmitenSearchTerm('');
+                        setPage(1); // Reset page on emiten change
+                      }}
+                      style={{
+                        padding: '0.6rem 0.8rem',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        color: selectedEmiten === emitenCode ? 'var(--accent-primary)' : 'var(--text-primary)',
+                        background: selectedEmiten === emitenCode ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
+                        transition: 'background 0.1s ease'
+                      }}
+                    >
+                      {emitenCode}
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ padding: '0.6rem 0.8rem', fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+                    No matching emitens.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="date-range-group" style={{ height: '32px', borderRadius: '8px' }}>
             <input
               type="date"
               className="input-field compact-input"
               style={{ padding: '0 0.5rem', fontSize: '0.75rem', width: '100px', textAlign: 'center', height: '100%' }}
               value={dateStart}
-              onChange={(e) => setDateStart(e.target.value)}
+              onChange={(e) => { setDateStart(e.target.value); setPage(1); }}
             />
             <span className="date-separator" style={{ margin: '0 1px', padding: 0 }}>→</span>
             <input
@@ -112,12 +245,12 @@ export default function InsiderActivityCard({ emiten }: InsiderActivityCardProps
               className="input-field compact-input"
               style={{ padding: '0 0.5rem', fontSize: '0.75rem', width: '100px', textAlign: 'center', height: '100%' }}
               value={dateEnd}
-              onChange={(e) => setDateEnd(e.target.value)}
+              onChange={(e) => { setDateEnd(e.target.value); setPage(1); }}
             />
           </div>
           <select
             value={actionType}
-            onChange={(e) => setActionType(e.target.value as ActionType)}
+            onChange={(e) => { setActionType(e.target.value as ActionType); setPage(1); }}
             className="input-field compact-input"
             style={{ width: '120px', height: '32px', padding: '0 0.5rem', fontSize: '0.75rem' }}
           >
@@ -125,17 +258,21 @@ export default function InsiderActivityCard({ emiten }: InsiderActivityCardProps
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </select>
-          <select
-            value={sourceType}
-            onChange={(e) => setSourceType(e.target.value as SourceType)}
-            className="input-field compact-input"
-            style={{ width: '100px', height: '32px', padding: '0 0.5rem', fontSize: '0.75rem' }}
-          >
-            {sourceTypeOptions.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
         </div>
+      </div>
+
+      {/* Source Type Tabs */}
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '4px' }}>
+        {sourceTypeOptions.map(option => (
+          <button
+            key={option.value}
+            className={`broker-flow-filter-btn ${sourceType === option.value ? 'active' : ''}`}
+            onClick={() => { setSourceType(option.value); setPage(1); }}
+            style={{ flex: 1, fontSize: '0.8rem', padding: '6px 12px' }}
+          >
+            {option.label}
+          </button>
+        ))}
       </div>
 
       {loading ? (
@@ -148,20 +285,24 @@ export default function InsiderActivityCard({ emiten }: InsiderActivityCardProps
         </div>
       ) : data.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)' }}>
-          No insider activity found for {emiten.toUpperCase()} in the selected period.
+          No insider activity found for {selectedEmiten.toUpperCase()} in the selected period.
         </div>
       ) : (
         <>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', minWidth: '800px' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Date</th>
-                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Holder</th>
+                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Code</th>
+                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Name</th>
                   <th style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Action</th>
                   <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Shares Traded</th>
-                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Current %</th>
+                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Current</th>
+                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Previous</th>
                   <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Price</th>
+                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Broker</th>
+                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Type</th>
                 </tr>
               </thead>
               <tbody>
@@ -169,15 +310,15 @@ export default function InsiderActivityCard({ emiten }: InsiderActivityCardProps
                   <tr key={`${item.id}-${index}`} style={{ borderBottom: index < data.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
                     <td style={{ padding: '0.5rem 0.25rem', color: 'var(--text-secondary)' }}>
                       {formatDate(item.date)}
-                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{item.data_source.type.replace('SOURCE_TYPE_', '')}</div>
+                    </td>
+                    <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                      {item.symbol}
                     </td>
                     <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                       {item.name}
-                      {item.badges && item.badges.length > 0 && (
-                        <div style={{ fontSize: '0.65rem', color: 'var(--accent-primary)', opacity: 0.8 }}>
-                          {item.badges.map(b => b.replace('SHAREHOLDER_BADGE_', '')).join(', ')}
-                        </div>
-                      )}
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                        Sumber: {item.data_source.type.replace('SOURCE_TYPE_', '')}
+                      </div>
                     </td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
                       <span style={{
@@ -196,18 +337,30 @@ export default function InsiderActivityCard({ emiten }: InsiderActivityCardProps
                       <div style={{ fontWeight: 600, color: item.changes.value.startsWith('-') ? 'var(--accent-warning)' : 'var(--accent-success)' }}>
                         {formatNumber(item.changes.value)}
                       </div>
-                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                      <div style={{ fontSize: '0.65rem', color: item.changes.percentage.startsWith('-') ? 'var(--accent-warning)' : 'var(--accent-success)' }}>
                         {item.changes.percentage}%
                       </div>
                     </td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>
-                      <div style={{ fontWeight: 600 }}>{item.current.percentage}%</div>
-                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                        Prev: {item.previous.percentage}%
+                      <div style={{ fontWeight: 600 }}>{formatNumber(item.current.value)}</div>
+                      <div style={{ fontSize: '0.65rem', color: item.current.percentage.startsWith('-') ? 'var(--accent-warning)' : 'var(--accent-success)' }}>
+                        {item.current.percentage}%
+                      </div>
+                    </td>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>
+                      <div style={{ fontWeight: 600 }}>{formatNumber(item.previous.value)}</div>
+                      <div style={{ fontSize: '0.65rem', color: item.previous.percentage.startsWith('-') ? 'var(--accent-warning)' : 'var(--accent-success)' }}>
+                        {item.previous.percentage}%
                       </div>
                     </td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>
                       {formatNumber(item.price_formatted)}
+                    </td>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'left' }}>
+                      {item.broker_detail?.code || '-'}
+                    </td>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'left' }}>
+                      {item.nationality?.replace('NATIONALITY_TYPE_', '').charAt(0) || '-'}
                     </td>
                   </tr>
                 ))}
