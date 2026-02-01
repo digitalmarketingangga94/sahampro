@@ -221,7 +221,7 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
             ) : (
               <table className="broker-flow-table">
                 <thead>
-                  <tr><th>#</th><th>BROKER</th><th>DAILY HEATMAP</th><th>NET VALUE</th><th>BUY AVG PRICE</th><th>CONSISTENCY</th></tr>
+                  <tr><th>#</th><th>BROKER</th><th>DAILY HEATMAP</th><th>NET VALUE</th><th>CONSISTENCY</th></tr>
                 </thead>
                 <tbody>
                   {data.activities.map((activity, idx) => (
@@ -288,9 +288,6 @@ function BrokerFlowRow({
       </td>
       <td className={`net-value ${parseFloat(activity.net_value) >= 0 ? 'positive' : 'negative'}`}>
         {formatNetValue(activity.net_value)}
-      </td>
-      <td style={{ textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums', fontSize: '0.9rem' }}>
-        {activity.buy_avg_price ? activity.buy_avg_price.toLocaleString() : '-'}
       </td>
       <td className="consistency">
         <span className="consistency-badge">
