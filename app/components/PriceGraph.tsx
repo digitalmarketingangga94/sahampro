@@ -29,18 +29,7 @@ export default function PriceGraph({ ticker }: PriceGraphProps) {
       "locale": "en",
       "allow_symbol_change": true,
       "calendar": false,
-      "support_host": "https://www.tradingview.com",
-      "studies": [ // Menambahkan indikator Stoch RSI
-        {
-          "id": "StochRSI@tv-basicstudies",
-          "inputs": {
-            "K": 3,
-            "D": 3,
-            "RSI Length": 14,
-            "Stoch Length": 14
-          }
-        }
-      ]
+      "support_host": "https://www.tradingview.com"
     });
 
     container.current.appendChild(script);
