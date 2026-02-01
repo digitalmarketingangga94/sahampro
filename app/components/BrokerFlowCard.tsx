@@ -221,13 +221,7 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
             ) : (
               <table className="broker-flow-table">
                 <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>BROKER</th>
-                    <th>DAILY HEATMAP</th>
-                    <th style={{ textAlign: 'center' }}>NET VALUE</th> {/* Centered header */}
-                    <th style={{ textAlign: 'center' }}>CONSISTENCY</th> {/* Centered header */}
-                  </tr>
+                  <tr><th>#</th><th>BROKER</th><th>DAILY HEATMAP</th><th style={{ textAlign: 'center' }}>NET VALUE</th><th style={{ textAlign: 'center' }}>CONSISTENCY</th></tr>
                 </thead>
                 <tbody>
                   {data.activities.map((activity, idx) => (
@@ -292,10 +286,10 @@ function BrokerFlowRow({
       <td className="heatmap-cell">
         <DailyHeatmap dailyData={activity.daily_data} tradingDates={tradingDates} />
       </td>
-      <td className={`net-value ${parseFloat(activity.net_value) >= 0 ? 'positive' : 'negative'}`} style={{ textAlign: 'center' }}> {/* Centered data */}
+      <td className={`net-value ${parseFloat(activity.net_value) >= 0 ? 'positive' : 'negative'}`} style={{ textAlign: 'center' }}>
         {formatNetValue(activity.net_value)}
       </td>
-      <td className="consistency" style={{ textAlign: 'center' }}> {/* Centered data */}
+      <td className="consistency" style={{ textAlign: 'center' }}>
         <span className="consistency-badge">
           {activity.buy_days}/{activity.active_days}
         </span>
