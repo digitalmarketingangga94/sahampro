@@ -52,6 +52,23 @@ const formatDate = (dateStr: string): string => {
   return dateStr;
 };
 
+// Debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export default function InsiderActivityCard() {
   const [data, setData] = useState<InsiderMovementItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,35 +83,33 @@ export default function InsiderActivityCard() {
 
   // New states for emiten selection
   const [selectedEmiten, setSelectedEmiten] = useState<string | null>(null); // Changed to allow null for 'All Stocks'
-  const [allEmitens, setAllEmitens] = useState<string[]>([]);
+  const [allEmitenOptions, setAllEmitenOptions] = useState<{ code: string; name: string }[]>([]); // Stores {code, name}
   const [showEmitenSelect, setShowEmitenSelect] = useState(false);
   const [emitenSearchTerm, setEmitenSearchTerm] = useState('');
+  const debouncedEmitenSearchTerm = useDebounce(emitenSearchTerm, 500); // Debounce search term
   const emitenSelectRef = useRef<HTMLDivElement>(null);
 
 
-  // Fetch unique emitens on mount
+  // Fetch emitens based on search term
   useEffect(() => {
-    const fetchUniqueEmitens = async () => {
+    const fetchSearchedEmitens = async () => {
+      if (debouncedEmitenSearchTerm.length < 2) { // Only search if 2 or more characters
+        setAllEmitenOptions([]);
+        return;
+      }
       try {
-        const res = await fetch('/api/unique-emitens');
+        const res = await fetch(`/api/search-stocks?keyword=${debouncedEmitenSearchTerm}`);
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {
-          const sortedEmitens = json.data.sort();
-          setAllEmitens(sortedEmitens);
-          // Set default emiten to null (All Stocks) if no specific emiten is pre-selected
-          if (selectedEmiten === null && sortedEmitens.length > 0) {
-            setSelectedEmiten(null); // Explicitly keep as null for 'All Stocks'
-          } else if (!sortedEmitens.includes(selectedEmiten || '') && sortedEmitens.length > 0) {
-            // If a previous selectedEmiten is no longer valid, default to null
-            setSelectedEmiten(null);
-          }
+          setAllEmitenOptions(json.data);
         }
       } catch (err) {
-        console.error('Error fetching unique emitens:', err);
+        console.error('Error fetching searched emitens:', err);
+        setAllEmitenOptions([]);
       }
     };
-    fetchUniqueEmitens();
-  }, []); // Run once on mount
+    fetchSearchedEmitens();
+  }, [debouncedEmitenSearchTerm]); // Trigger when debounced search term changes
 
   useEffect(() => {
     // Only fetch if date range is valid
@@ -145,10 +160,6 @@ export default function InsiderActivityCard() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredEmitenOptions = allEmitens.filter(emitenCode => 
-    emitenCode.toLowerCase().includes(emitenSearchTerm.toLowerCase())
-  );
-
   return (
     <div className="glass-card-static" style={{ padding: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
@@ -163,7 +174,7 @@ export default function InsiderActivityCard() {
               className="input-field compact-input"
               onClick={() => setShowEmitenSelect(!showEmitenSelect)}
               style={{ 
-                width: '120px', 
+                width: '180px', // Increased width to accommodate name
                 height: '32px', 
                 padding: '0 0.5rem', 
                 fontSize: '0.75rem',
@@ -181,7 +192,7 @@ export default function InsiderActivityCard() {
                 position: 'absolute',
                 top: '100%',
                 left: 0,
-                minWidth: '180px',
+                minWidth: '250px', // Increased min-width for search results
                 zIndex: 1000,
                 background: 'var(--bg-secondary)',
                 border: '1px solid var(--border-color)',
@@ -232,12 +243,12 @@ export default function InsiderActivityCard() {
                 >
                   All Stocks
                 </div>
-                {filteredEmitenOptions.length > 0 ? (
-                  filteredEmitenOptions.map(emitenCode => (
+                {allEmitenOptions.length > 0 ? (
+                  allEmitenOptions.map(emitenOption => (
                     <div
-                      key={emitenCode}
+                      key={emitenOption.code}
                       onClick={() => {
-                        setSelectedEmiten(emitenCode);
+                        setSelectedEmiten(emitenOption.code);
                         setShowEmitenSelect(false);
                         setEmitenSearchTerm('');
                         setPage(1); // Reset page on emiten change
@@ -246,18 +257,20 @@ export default function InsiderActivityCard() {
                         padding: '0.6rem 0.8rem',
                         fontSize: '0.75rem',
                         cursor: 'pointer',
-                        color: selectedEmiten === emitenCode ? 'var(--accent-primary)' : 'var(--text-primary)',
-                        background: selectedEmiten === emitenCode ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
+                        color: selectedEmiten === emitenOption.code ? 'var(--accent-primary)' : 'var(--text-primary)',
+                        background: selectedEmiten === emitenOption.code ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
                         transition: 'background 0.1s ease'
                       }}
                     >
-                      {emitenCode}
+                      {emitenOption.code} - {emitenOption.name}
                     </div>
                   ))
                 ) : (
-                  <div style={{ padding: '0.6rem 0.8rem', fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-                    No matching emitens.
-                  </div>
+                  debouncedEmitenSearchTerm.length >= 2 && (
+                    <div style={{ padding: '0.6rem 0.8rem', fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+                      No matching stocks found.
+                    </div>
+                  )
                 )}
               </div>
             )}

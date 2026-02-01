@@ -148,7 +148,6 @@ export interface WatchlistItem {
   frequency: number;
   sector?: string;      // Sector information from emiten info API
   formatted_price?: string;
-  formatted_change_point?: string;
   formatted_change_percentage?: string;
   flag?: 'OK' | 'NG' | 'Neutral' | null;
 }
@@ -520,4 +519,24 @@ export interface BrokerStockActivityPerBroker {
   sell_lot: number;
   buy_avg_price: number;
   sell_avg_price: number;
+}
+
+// New types for Stockbit Search API
+export interface StockbitSearchCompanyItem {
+  id: string;
+  name: string;
+  symbol_2: string; // This is the stock code
+  desc: string; // Company description
+  type: string; // e.g., "Saham", "Waran"
+  is_tradeable: boolean;
+}
+
+export interface StockbitSearchResponse {
+  message: string;
+  data: {
+    company: StockbitSearchCompanyItem[];
+    pagination: {
+      has_more_companies: boolean;
+    };
+  };
 }

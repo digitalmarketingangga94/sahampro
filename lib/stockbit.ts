@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem } from './types';
 import { getSessionValue, upsertSession } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -496,4 +496,29 @@ export async function fetchBrokerActivityDetail(
   await handleApiResponse(response, `Broker Activity Detail API (${brokerCode})`);
 
   return response.json();
+}
+
+/**
+ * Fetch stock search results from Stockbit.
+ */
+export async function fetchStockbitSearch(keyword: string, limit: number = 10): Promise<StockbitSearchCompanyItem[]> {
+  if (!keyword) return [];
+
+  const url = new URL(`${STOCKBIT_BASE_URL}/search`);
+  url.searchParams.append('keyword', keyword);
+  url.searchParams.append('page', '1');
+  url.searchParams.append('type', 'company'); // Filter for company type
+  url.searchParams.append('limit', limit.toString());
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: await getHeaders(),
+  });
+
+  await handleApiResponse(response, `Stockbit Search API (${keyword})`);
+
+  const json: StockbitSearchResponse = await response.json();
+  
+  // Filter for tradeable stocks of type "Saham"
+  return json.data.company.filter(item => item.is_tradeable && item.type === 'Saham');
 }
