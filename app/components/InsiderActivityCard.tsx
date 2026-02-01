@@ -6,7 +6,7 @@ import { getLatestTradingDate, getDateNDaysAgo } from '@/lib/utils';
 import { CalendarDays, Filter, ArrowDownUp, ChevronLeft, ChevronRight, ChevronDown, Search } from 'lucide-react';
 
 interface InsiderActivityCardProps {
-  // emiten: string; // Removed emiten prop, now managed internally
+  emitenProp?: string; // New prop to receive emiten from parent
 }
 
 const actionTypeOptions: { value: ActionType; label: string }[] = [
@@ -69,31 +69,40 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-export default function InsiderActivityCard() {
+export default function InsiderActivityCard({ emitenProp }: InsiderActivityCardProps) {
   const [data, setData] = useState<InsiderMovementItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dateEnd, setDateEnd] = useState('2026-02-01'); // Set default to Feb 01, 2026
-  const [dateStart, setDateStart] = useState('2026-01-01'); // Set default to Jan 01, 2026
+  
+  // Default dates to last 3 months from latest trading date
+  const defaultEndDate = getLatestTradingDate();
+  const defaultStartDate = getDateNDaysAgo(90, defaultEndDate);
+
+  const [dateEnd, setDateEnd] = useState(defaultEndDate);
+  const [dateStart, setDateStart] = useState(defaultStartDate);
   const [actionType, setActionType] = useState<ActionType>("ACTION_TYPE_UNSPECIFIED");
   const [sourceType, setSourceType] = useState<SourceType>("SOURCE_TYPE_UNSPECIFIED");
   const [page, setPage] = useState(1);
   const [isMore, setIsMore] = useState(false);
   const limit = 20;
 
-  // New states for emiten selection
-  const [selectedEmiten, setSelectedEmiten] = useState<string | null>(null); // Changed to allow null for 'All Stocks'
-  const [allEmitenOptions, setAllEmitenOptions] = useState<{ code: string; name: string }[]>([]); // Stores {code, name}
+  // States for emiten selection (only used if emitenProp is NOT provided)
+  const [selectedEmiten, setSelectedEmiten] = useState<string | null>(null); 
+  const [allEmitenOptions, setAllEmitenOptions] = useState<{ code: string; name: string }[]>([]);
   const [showEmitenSelect, setShowEmitenSelect] = useState(false);
   const [emitenSearchTerm, setEmitenSearchTerm] = useState('');
-  const debouncedEmitenSearchTerm = useDebounce(emitenSearchTerm, 500); // Debounce search term
+  const debouncedEmitenSearchTerm = useDebounce(emitenSearchTerm, 500);
   const emitenSelectRef = useRef<HTMLDivElement>(null);
 
+  // Determine if the component is operating in 'standalone' mode (no emitenProp)
+  const isStandalone = emitenProp === undefined;
 
-  // Fetch emitens based on search term
+  // Effect to fetch searched emitens (only in standalone mode)
   useEffect(() => {
+    if (!isStandalone) return; // Only run if in standalone mode
+
     const fetchSearchedEmitens = async () => {
-      if (debouncedEmitenSearchTerm.length < 2) { // Only search if 2 or more characters
+      if (debouncedEmitenSearchTerm.length < 2) {
         setAllEmitenOptions([]);
         return;
       }
@@ -109,7 +118,7 @@ export default function InsiderActivityCard() {
       }
     };
     fetchSearchedEmitens();
-  }, [debouncedEmitenSearchTerm]); // Trigger when debounced search term changes
+  }, [debouncedEmitenSearchTerm, isStandalone]);
 
   useEffect(() => {
     // Only fetch if date range is valid
@@ -120,8 +129,11 @@ export default function InsiderActivityCard() {
       setError(null);
       try {
         const params = new URLSearchParams();
-        if (selectedEmiten) { // Only add emiten parameter if a specific emiten is selected
-          params.append('emiten', selectedEmiten);
+        // Use emitenProp if available, otherwise use internal selectedEmiten
+        const currentEmitenForApi = isStandalone ? selectedEmiten : emitenProp;
+
+        if (currentEmitenForApi) {
+          params.append('emiten', currentEmitenForApi);
         }
         params.append('dateStart', dateStart);
         params.append('dateEnd', dateEnd);
@@ -145,11 +157,15 @@ export default function InsiderActivityCard() {
       }
     };
 
+    // Trigger fetch when relevant dependencies change
+    // For standalone mode: selectedEmiten, date range, action/source type, page
+    // For integrated mode: emitenProp, date range, action/source type, page
     fetchInsiderActivity();
-  }, [selectedEmiten, dateStart, dateEnd, actionType, sourceType, page]);
+  }, [emitenProp, selectedEmiten, dateStart, dateEnd, actionType, sourceType, page, isStandalone]);
 
-  // Close emiten dropdown when clicking outside
+  // Close emiten dropdown when clicking outside (only in standalone mode)
   useEffect(() => {
+    if (!isStandalone) return;
     const handleClickOutside = (event: MouseEvent) => {
       if (emitenSelectRef.current && !emitenSelectRef.current.contains(event.target as Node)) {
         setShowEmitenSelect(false);
@@ -158,123 +174,125 @@ export default function InsiderActivityCard() {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isStandalone]);
 
   return (
     <div className="glass-card-static" style={{ padding: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
         <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal' }}>
-          Insider Activity
+          Insider Activity {isStandalone ? '' : `(${emitenProp?.toUpperCase()})`}
         </h3>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          {/* Emiten Select Dropdown */}
-          <div style={{ position: 'relative' }} ref={emitenSelectRef}>
-            <button
-              type="button"
-              className="input-field compact-input"
-              onClick={() => setShowEmitenSelect(!showEmitenSelect)}
-              style={{ 
-                width: '180px', // Increased width to accommodate name
-                height: '32px', 
-                padding: '0 0.5rem', 
-                fontSize: '0.75rem',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                cursor: 'pointer'
-              }}
-            >
-              <span>{selectedEmiten ? selectedEmiten : 'All Stocks'}</span> {/* Display 'All Stocks' when null */}
-              <ChevronDown size={14} />
-            </button>
-            {showEmitenSelect && (
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                minWidth: '250px', // Increased min-width for search results
-                zIndex: 1000,
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                marginTop: '4px',
-                maxHeight: '200px',
-                overflowY: 'auto',
-                boxShadow: 'var(--shadow-md)'
-              }}>
-                <div style={{ padding: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>
-                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                    <Search size={14} style={{ position: 'absolute', left: '8px', color: 'var(--text-muted)' }} />
-                    <input
-                      type="text"
-                      placeholder="Search emiten..."
-                      value={emitenSearchTerm}
-                      onChange={(e) => setEmitenSearchTerm(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                      style={{
-                        width: '100%',
-                        padding: '0.4rem 0.4rem 0.4rem 30px',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '6px',
-                        color: 'var(--text-primary)',
-                        fontSize: '0.75rem',
-                        outline: 'none'
-                      }}
-                    />
+          {/* Emiten Select Dropdown (only visible in standalone mode) */}
+          {isStandalone && (
+            <div style={{ position: 'relative' }} ref={emitenSelectRef}>
+              <button
+                type="button"
+                className="input-field compact-input"
+                onClick={() => setShowEmitenSelect(!showEmitenSelect)}
+                style={{ 
+                  width: '180px', // Increased width to accommodate name
+                  height: '32px', 
+                  padding: '0 0.5rem', 
+                  fontSize: '0.75rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <span>{selectedEmiten ? selectedEmiten : 'All Stocks'}</span> {/* Display 'All Stocks' when null */}
+                <ChevronDown size={14} />
+              </button>
+              {showEmitenSelect && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  minWidth: '250px', // Increased min-width for search results
+                  zIndex: 1000,
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  marginTop: '4px',
+                  maxHeight: '200px',
+                  overflowY: 'auto',
+                  boxShadow: 'var(--shadow-md)'
+                }}>
+                  <div style={{ padding: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <Search size={14} style={{ position: 'absolute', left: '8px', color: 'var(--text-muted)' }} />
+                      <input
+                        type="text"
+                        placeholder="Search emiten..."
+                        value={emitenSearchTerm}
+                        onChange={(e) => setEmitenSearchTerm(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          width: '100%',
+                          padding: '0.4rem 0.4rem 0.4rem 30px',
+                          background: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: '6px',
+                          color: 'var(--text-primary)',
+                          fontSize: '0.75rem',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
                   </div>
+                  {/* Option for All Stocks */}
+                  <div
+                    onClick={() => {
+                      setSelectedEmiten(null); // Set to null for 'All Stocks'
+                      setShowEmitenSelect(false);
+                      setEmitenSearchTerm('');
+                      setPage(1); // Reset page on emiten change
+                    }}
+                    style={{
+                      padding: '0.6rem 0.8rem',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      color: selectedEmiten === null ? 'var(--accent-primary)' : 'var(--text-primary)',
+                      background: selectedEmiten === null ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
+                      transition: 'background 0.1s ease'
+                    }}
+                  >
+                    All Stocks
+                  </div>
+                  {allEmitenOptions.length > 0 ? (
+                    allEmitenOptions.map(emitenOption => (
+                      <div
+                        key={emitenOption.code}
+                        onClick={() => {
+                          setSelectedEmiten(emitenOption.code);
+                          setShowEmitenSelect(false);
+                          setEmitenSearchTerm('');
+                          setPage(1); // Reset page on emiten change
+                        }}
+                        style={{
+                          padding: '0.6rem 0.8rem',
+                          fontSize: '0.75rem',
+                          cursor: 'pointer',
+                          color: selectedEmiten === emitenOption.code ? 'var(--accent-primary)' : 'var(--text-primary)',
+                          background: selectedEmiten === emitenOption.code ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
+                          transition: 'background 0.1s ease'
+                        }}
+                      >
+                        {emitenOption.code} - {emitenOption.name}
+                      </div>
+                    ))
+                  ) : (
+                    debouncedEmitenSearchTerm.length >= 2 && (
+                      <div style={{ padding: '0.6rem 0.8rem', fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+                        No matching stocks found.
+                      </div>
+                    )
+                  )}
                 </div>
-                {/* Option for All Stocks */}
-                <div
-                  onClick={() => {
-                    setSelectedEmiten(null); // Set to null for 'All Stocks'
-                    setShowEmitenSelect(false);
-                    setEmitenSearchTerm('');
-                    setPage(1); // Reset page on emiten change
-                  }}
-                  style={{
-                    padding: '0.6rem 0.8rem',
-                    fontSize: '0.75rem',
-                    cursor: 'pointer',
-                    color: selectedEmiten === null ? 'var(--accent-primary)' : 'var(--text-primary)',
-                    background: selectedEmiten === null ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
-                    transition: 'background 0.1s ease'
-                  }}
-                >
-                  All Stocks
-                </div>
-                {allEmitenOptions.length > 0 ? (
-                  allEmitenOptions.map(emitenOption => (
-                    <div
-                      key={emitenOption.code}
-                      onClick={() => {
-                        setSelectedEmiten(emitenOption.code);
-                        setShowEmitenSelect(false);
-                        setEmitenSearchTerm('');
-                        setPage(1); // Reset page on emiten change
-                      }}
-                      style={{
-                        padding: '0.6rem 0.8rem',
-                        fontSize: '0.75rem',
-                        cursor: 'pointer',
-                        color: selectedEmiten === emitenOption.code ? 'var(--accent-primary)' : 'var(--text-primary)',
-                        background: selectedEmiten === emitenOption.code ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
-                        transition: 'background 0.1s ease'
-                      }}
-                    >
-                      {emitenOption.code} - {emitenOption.name}
-                    </div>
-                  ))
-                ) : (
-                  debouncedEmitenSearchTerm.length >= 2 && (
-                    <div style={{ padding: '0.6rem 0.8rem', fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-                      No matching stocks found.
-                    </div>
-                  )
-                )}
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           <div className="date-range-group" style={{ height: '32px', borderRadius: '8px' }}>
             <input
@@ -330,7 +348,7 @@ export default function InsiderActivityCard() {
         </div>
       ) : data.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)' }}>
-          No insider activity found for {selectedEmiten ? selectedEmiten.toUpperCase() : 'All Stocks'} in the selected period.
+          No insider activity found for {isStandalone ? (selectedEmiten ? selectedEmiten.toUpperCase() : 'All Stocks') : emitenProp?.toUpperCase()} in the selected period.
         </div>
       ) : (
         <>

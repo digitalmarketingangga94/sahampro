@@ -457,9 +457,9 @@ export default function Calculator({ selectedSymbolFromSidebar }: CalculatorProp
             <BrokerFlowCard emiten={result.input.emiten} />
           </div>
 
-          {/* Insider Activity Section - Full Width */}
+          {/* Insider Activity Stock Section - Full Width */}
           <div style={{ gridColumn: '1 / -1', marginTop: '1.5rem', width: '100%' }}>
-            <InsiderActivityCard />
+            <InsiderActivityCard emitenProp={result.input.emiten} /> {/* Pass emitenProp here */}
           </div>
 
           {/* Agent Story Section - Full Width */}
