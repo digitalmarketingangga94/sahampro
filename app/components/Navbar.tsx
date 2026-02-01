@@ -35,6 +35,20 @@ const Navbar = () => {
               Analyze Stock
             </Link>
             <Link 
+              href="/insider-activity" 
+              style={{
+                textDecoration: 'none',
+                color: pathname === '/insider-activity' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                fontWeight: pathname === '/insider-activity' ? 600 : 400,
+                fontSize: '0.9rem',
+                borderBottom: pathname === '/insider-activity' ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                paddingBottom: '2px',
+                transition: 'all 0.2s'
+              }}
+            >
+              Insider Activity
+            </Link>
+            <Link 
               href="/broker-activity" 
               style={{
                 textDecoration: 'none',
