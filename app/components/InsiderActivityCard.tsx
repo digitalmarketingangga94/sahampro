@@ -52,20 +52,20 @@ const formatDate = (dateStr: string): string => {
   return dateStr;
 };
 
-export default function InsiderActivityCard() { // Removed emiten prop
+export default function InsiderActivityCard() {
   const [data, setData] = useState<InsiderMovementItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dateEnd, setDateEnd] = useState(getLatestTradingDate());
-  const [dateStart, setDateStart] = useState(getDateNDaysAgo(30, getLatestTradingDate())); // Default to 30 days ago from latest trading date
+  const [dateStart, setDateStart] = useState(getDateNDaysAgo(30, getLatestTradingDate()));
   const [actionType, setActionType] = useState<ActionType>("ACTION_TYPE_UNSPECIFIED");
-  const [sourceType, setSourceType] = useState<SourceType>("SOURCE_TYPE_UNSPECIFIED"); // Now controlled by tabs
+  const [sourceType, setSourceType] = useState<SourceType>("SOURCE_TYPE_UNSPECIFIED");
   const [page, setPage] = useState(1);
   const [isMore, setIsMore] = useState(false);
   const limit = 20;
 
   // New states for emiten selection
-  const [selectedEmiten, setSelectedEmiten] = useState<string>('BBCA'); // Default emiten
+  const [selectedEmiten, setSelectedEmiten] = useState<string | null>(null); // Changed to allow null for 'All Stocks'
   const [allEmitens, setAllEmitens] = useState<string[]>([]);
   const [showEmitenSelect, setShowEmitenSelect] = useState(false);
   const [emitenSearchTerm, setEmitenSearchTerm] = useState('');
@@ -81,9 +81,12 @@ export default function InsiderActivityCard() { // Removed emiten prop
         if (json.success && Array.isArray(json.data)) {
           const sortedEmitens = json.data.sort();
           setAllEmitens(sortedEmitens);
-          // Set default emiten if 'BBCA' is not in the list, or if list is empty
-          if (!sortedEmitens.includes(selectedEmiten) && sortedEmitens.length > 0) {
-            setSelectedEmiten(sortedEmitens[0]);
+          // Set default emiten to null (All Stocks) if no specific emiten is pre-selected
+          if (selectedEmiten === null && sortedEmitens.length > 0) {
+            setSelectedEmiten(null); // Explicitly keep as null for 'All Stocks'
+          } else if (!sortedEmitens.includes(selectedEmiten || '') && sortedEmitens.length > 0) {
+            // If a previous selectedEmiten is no longer valid, default to null
+            setSelectedEmiten(null);
           }
         }
       } catch (err) {
@@ -94,15 +97,25 @@ export default function InsiderActivityCard() { // Removed emiten prop
   }, []); // Run once on mount
 
   useEffect(() => {
-    if (!selectedEmiten) return; // Only fetch if an emiten is selected
+    // Only fetch if date range is valid
+    if (!dateStart || !dateEnd) return;
 
     const fetchInsiderActivity = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(
-          `/api/insider-activity?emiten=${selectedEmiten}&dateStart=${dateStart}&dateEnd=${dateEnd}&actionType=${actionType}&sourceType=${sourceType}&page=${page}&limit=${limit}`
-        );
+        const params = new URLSearchParams();
+        if (selectedEmiten) { // Only add emiten parameter if a specific emiten is selected
+          params.append('emiten', selectedEmiten);
+        }
+        params.append('dateStart', dateStart);
+        params.append('dateEnd', dateEnd);
+        params.append('actionType', actionType);
+        params.append('sourceType', sourceType);
+        params.append('page', page.toString());
+        params.append('limit', limit.toString());
+
+        const response = await fetch(`/api/insider-activity?${params.toString()}`);
         const json = await response.json();
 
         if (!json.success) {
@@ -160,7 +173,7 @@ export default function InsiderActivityCard() { // Removed emiten prop
                 cursor: 'pointer'
               }}
             >
-              <span>{selectedEmiten || 'All Stocks'}</span>
+              <span>{selectedEmiten ? selectedEmiten : 'All Stocks'}</span> {/* Display 'All Stocks' when null */}
               <ChevronDown size={14} />
             </button>
             {showEmitenSelect && (
@@ -199,6 +212,25 @@ export default function InsiderActivityCard() { // Removed emiten prop
                       }}
                     />
                   </div>
+                </div>
+                {/* Option for All Stocks */}
+                <div
+                  onClick={() => {
+                    setSelectedEmiten(null); // Set to null for 'All Stocks'
+                    setShowEmitenSelect(false);
+                    setEmitenSearchTerm('');
+                    setPage(1); // Reset page on emiten change
+                  }}
+                  style={{
+                    padding: '0.6rem 0.8rem',
+                    fontSize: '0.75rem',
+                    cursor: 'pointer',
+                    color: selectedEmiten === null ? 'var(--accent-primary)' : 'var(--text-primary)',
+                    background: selectedEmiten === null ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
+                    transition: 'background 0.1s ease'
+                  }}
+                >
+                  All Stocks
                 </div>
                 {filteredEmitenOptions.length > 0 ? (
                   filteredEmitenOptions.map(emitenCode => (
@@ -285,7 +317,7 @@ export default function InsiderActivityCard() { // Removed emiten prop
         </div>
       ) : data.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)' }}>
-          No insider activity found for {selectedEmiten.toUpperCase()} in the selected period.
+          No insider activity found for {selectedEmiten ? selectedEmiten.toUpperCase() : 'All Stocks'} in the selected period.
         </div>
       ) : (
         <>
