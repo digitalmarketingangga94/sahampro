@@ -56,8 +56,8 @@ export default function InsiderActivityCard() {
   const [data, setData] = useState<InsiderMovementItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dateEnd, setDateEnd] = useState(getLatestTradingDate());
-  const [dateStart, setDateStart] = useState(getDateNDaysAgo(30, getLatestTradingDate()));
+  const [dateEnd, setDateEnd] = useState('2026-02-01'); // Set default to Feb 01, 2026
+  const [dateStart, setDateStart] = useState('2026-01-01'); // Set default to Jan 01, 2026
   const [actionType, setActionType] = useState<ActionType>("ACTION_TYPE_UNSPECIFIED");
   const [sourceType, setSourceType] = useState<SourceType>("SOURCE_TYPE_UNSPECIFIED");
   const [page, setPage] = useState(1);
