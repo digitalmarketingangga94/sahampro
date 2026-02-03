@@ -24,6 +24,14 @@ const formatCompactNumber = (numStr: string): string => {
   return num.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 };
 
+type SortColumnId = number | 'symbol'; // 'symbol' for the company symbol, number for column IDs
+type SortDirection = 'asc' | 'desc';
+
+interface SortConfig {
+  column: SortColumnId | null;
+  direction: SortDirection;
+}
+
 export default function StockScreenerTable({ templateId, title }: StockScreenerTableProps) {
   const [screenerData, setScreenerData] = useState<ScreenerCalc[]>([]);
   const [columns, setColumns] = useState<ScreenerColumn[]>([]);
@@ -32,6 +40,7 @@ export default function StockScreenerTable({ templateId, title }: StockScreenerT
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRows, setTotalRows] = useState(0);
   const [perPage, setPerPage] = useState(25);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ column: null, direction: 'asc' }); // Default sort config
   const router = useRouter();
 
   useEffect(() => {
@@ -60,6 +69,50 @@ export default function StockScreenerTable({ templateId, title }: StockScreenerT
     fetchScreenerData();
   }, [templateId, currentPage, perPage, title]);
 
+  const handleSort = (columnId: SortColumnId) => {
+    let direction: SortDirection = 'asc';
+    if (sortConfig.column === columnId && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ column: columnId, direction });
+  };
+
+  const getSortIndicator = (columnId: SortColumnId) => {
+    if (sortConfig.column === columnId) {
+      return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+    }
+    return '';
+  };
+
+  const sortedScreenerData = [...screenerData].sort((a, b) => {
+    if (sortConfig.column === null) return 0;
+
+    let aValue: any;
+    let bValue: any;
+
+    if (sortConfig.column === 'symbol') {
+      aValue = a.company.symbol;
+      bValue = b.company.symbol;
+    } else {
+      const aItem = a.results.find(res => res.id === sortConfig.column);
+      const bItem = b.results.find(res => res.id === sortConfig.column);
+      aValue = aItem ? parseFloat(aItem.raw) : -Infinity; // Use raw for numeric sort
+      bValue = bItem ? parseFloat(bItem.raw) : -Infinity;
+    }
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortConfig.direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    } else {
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    }
+  });
+
   const handleSymbolClick = (symbol: string) => {
     router.push(`/?symbol=${symbol}`); // Navigate to the main analysis page
   };
@@ -85,17 +138,26 @@ export default function StockScreenerTable({ templateId, title }: StockScreenerT
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Symbol</th>
+                  <th
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('symbol')}
+                  >
+                    Symbol {getSortIndicator('symbol')}
+                  </th>
                   {columns.map(col => (
-                    <th key={col.id} style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>
-                      {col.name}
+                    <th
+                      key={col.id}
+                      style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                      onClick={() => handleSort(col.id)}
+                    >
+                      {col.name} {getSortIndicator(col.id)}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {screenerData.map((item, index) => (
-                  <tr key={item.company.symbol} style={{ borderBottom: index < screenerData.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+                {sortedScreenerData.map((item, index) => (
+                  <tr key={item.company.symbol} style={{ borderBottom: index < sortedScreenerData.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
                     <td
                       style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer' }}
                       onClick={() => handleSymbolClick(item.company.symbol)}
