@@ -402,19 +402,25 @@ export async function appendBackgroundJobLogEntry(
 export async function updateBackgroundJobLog(
   jobId: number,
   data: {
-    status: 'completed' | 'failed';
+    status?: 'running' | 'completed' | 'failed'; // Made optional and added 'running'
     success_count?: number;
     error_count?: number;
     error_message?: string;
     metadata?: Record<string, unknown>;
+    total_items?: number; // Added total_items to update options
   }
 ) {
+  const updatePayload: any = {
+    ...data,
+  };
+  // Only set completed_at if the job is actually completing or failing
+  if (data.status === 'completed' || data.status === 'failed') {
+    updatePayload.completed_at = new Date().toISOString();
+  }
+
   const { data: result, error } = await supabase
     .from('background_job_logs')
-    .update({
-      ...data,
-      completed_at: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq('id', jobId)
     .select()
     .single();
@@ -505,4 +511,29 @@ export async function getUniqueEmitens(): Promise<string[]> {
 
   console.log('Unique emitens fetched from Supabase:', typedEmitens);
   return typedEmitens?.map(item => item.emiten) || [];
+}
+
+/**
+ * Save daily screener result to database
+ */
+export async function saveDailyScreenerResult(data: {
+  template_id: string;
+  emiten: string;
+  company_name?: string;
+  screener_data?: object[]; // Array of ScreenerResultItem
+  snapshot_date: string;
+  status?: string;
+  error_message?: string;
+}) {
+  const { data: result, error } = await supabase
+    .from('daily_screener_results')
+    .upsert([data], { onConflict: 'template_id,emiten,snapshot_date' })
+    .select();
+
+  if (error) {
+    console.error('Error saving daily screener result:', error);
+    throw error;
+  }
+
+  return result;
 }
