@@ -77,6 +77,20 @@ const Navbar = () => {
               Hot Stock
             </Link>
             <Link 
+              href="/net-foreign-buy" 
+              style={{
+                textDecoration: 'none',
+                color: pathname === '/net-foreign-buy' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                fontWeight: pathname === '/net-foreign-buy' ? 600 : 400,
+                fontSize: '0.9rem',
+                borderBottom: pathname === '/net-foreign-buy' ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                paddingBottom: '2px',
+                transition: 'all 0.2s'
+              }}
+            >
+              Net Foreign Buy
+            </Link>
+            <Link 
               href="/history" 
               style={{
                 textDecoration: 'none',

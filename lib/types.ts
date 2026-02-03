@@ -397,7 +397,7 @@ export interface MarketMoversResponse {
   };
 }
 
-export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency';
+export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency' | 'net-foreign-buy'; // Added 'net-foreign-buy'
 
 // Trade Book Types
 export interface TradeBookTotal {

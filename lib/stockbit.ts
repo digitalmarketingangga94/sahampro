@@ -389,7 +389,7 @@ export async function fetchTradeBook(symbol: string): Promise<TradeBookTotal | n
 }
 
 /**
- * Fetch Market Movers data (Top Gainer, Loser, Value, Volume, Frequency)
+ * Fetch Market Movers data (Top Gainer, Loser, Value, Volume, Frequency, Net Foreign Buy)
  */
 export async function fetchMarketMovers(type: MarketMoverType, limit: number = 20): Promise<MarketMoverItem[]> {
   const moverTypeMap: Record<MarketMoverType, string> = {
@@ -398,6 +398,7 @@ export async function fetchMarketMovers(type: MarketMoverType, limit: number = 2
     value: 'MOVER_TYPE_TOP_VALUE',
     volume: 'MOVER_TYPE_TOP_VOLUME',
     frequency: 'MOVER_TYPE_TOP_FREQUENCY',
+    'net-foreign-buy': 'MOVER_TYPE_NET_FOREIGN_BUY', // Added new type
   };
 
   const url = new URL(`${STOCKBIT_BASE_URL}/order-trade/market-mover`);

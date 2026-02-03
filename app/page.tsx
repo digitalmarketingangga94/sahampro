@@ -1,21 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import Calculator from './components/Calculator';
-// import WatchlistPageContent from './components/WatchlistPageContent'; // Removed import
+import { Suspense } from 'react';
+import CalculatorContent from './components/CalculatorContent'; // Import the new client component
 
 export default function Home() {
-  const [selectedSymbolFromSidebar, setSelectedSymbolFromSidebar] = useState<string | null>(null);
-
   return (
     <div className="app-layout">
       <div className="app-main">
-        <Calculator selectedSymbolFromSidebar={selectedSymbolFromSidebar} />
+        <Suspense fallback={
+          <div className="text-center" style={{ paddingTop: '4rem' }}>
+            <div className="spinner" style={{ margin: '0 auto' }}></div>
+            <p className="text-secondary mt-2">Loading analysis tools...</p>
+          </div>
+        }>
+          <CalculatorContent />
+        </Suspense>
       </div>
-      {/* Removed sidebar content as per request */}
-      {/* <div className="app-sidebar">
-        <WatchlistPageContent onSelectSymbol={setSelectedSymbolFromSidebar} />
-      </div> */}
     </div>
   );
 }

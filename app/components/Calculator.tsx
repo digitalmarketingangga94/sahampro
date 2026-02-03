@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
 import InputForm from './InputForm';
 import CompactResultCard from './CompactResultCard';
 import BrokerSummaryCard from './BrokerSummaryCard';
@@ -9,14 +8,17 @@ import KeyStatsCard from './KeyStatsCard';
 import AgentStoryCard from './AgentStoryCard';
 import PriceGraph from './PriceGraph';
 import BrokerFlowCard from './BrokerFlowCard';
-import InsiderActivityCard from './InsiderActivityCard'; // New import
-import GrahamFormulaCard from './GrahamFormulaCard'; // New import
+import InsiderActivityCard from './InsiderActivityCard';
+import GrahamFormulaCard from './GrahamFormulaCard';
 import html2canvas from 'html2canvas';
 import type { StockInput, StockAnalysisResult, KeyStatsData, AgentStoryResult } from '@/lib/types';
-import { getLatestTradingDate } from '@/lib/utils'; // Updated import
+import { getLatestTradingDate } from '@/lib/utils';
 
 interface CalculatorProps {
-  selectedSymbolFromSidebar?: string | null; // New prop
+  selectedSymbolFromSidebar?: string | null;
+  fromDate: string; // Now received as prop
+  toDate: string;   // Now received as prop
+  onDateChange: (fromDate: string, toDate: string) => void; // Now received as prop
 }
 
 // Helper function to format the result data for copying
@@ -60,8 +62,7 @@ function formatResultForCopy(result: StockAnalysisResult): string {
   return lines.join('\n');
 }
 
-export default function Calculator({ selectedSymbolFromSidebar }: CalculatorProps) {
-  const searchParams = useSearchParams();
+export default function Calculator({ selectedSymbolFromSidebar, fromDate, toDate, onDateChange }: CalculatorProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<StockAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -74,29 +75,22 @@ export default function Calculator({ selectedSymbolFromSidebar }: CalculatorProp
   const [storyStatus, setStoryStatus] = useState<'idle' | 'pending' | 'processing' | 'completed' | 'error'>('idle');
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Date state lifted from InputForm
-  const [fromDate, setFromDate] = useState(getLatestTradingDate());
-  const [toDate, setToDate] = useState(getLatestTradingDate());
-
   // State for the current emiten being analyzed, can be updated by URL or sidebar
-  const [currentEmiten, setCurrentEmiten] = useState<string>(searchParams.get('symbol') || 'SOCI');
+  const [currentEmiten, setCurrentEmiten] = useState<string>(selectedSymbolFromSidebar || 'SOCI'); // Initialize from prop
 
   // Effect to handle initial symbol from URL or sidebar, and trigger analysis
   useEffect(() => {
-    const symbolFromUrl = searchParams.get('symbol');
-    let newEmitenValue = symbolFromUrl ? symbolFromUrl.toUpperCase() : currentEmiten;
+    let newEmitenValue = selectedSymbolFromSidebar;
 
-    // Prioritize sidebar selection if present
-    if (selectedSymbolFromSidebar) {
-      newEmitenValue = selectedSymbolFromSidebar.toUpperCase();
+    if (newEmitenValue && newEmitenValue.toUpperCase() !== currentEmiten.toUpperCase()) {
+      setCurrentEmiten(newEmitenValue.toUpperCase());
+      handleSubmit({ emiten: newEmitenValue.toUpperCase(), fromDate, toDate });
+    } else if (!newEmitenValue && !currentEmiten) {
+      // If no symbol is provided initially, default to 'SOCI' or a sensible default
+      setCurrentEmiten('SOCI');
+      handleSubmit({ emiten: 'SOCI', fromDate, toDate });
     }
-
-    // Only update if the value is actually different
-    if (newEmitenValue !== currentEmiten) {
-      setCurrentEmiten(newEmitenValue);
-      handleSubmit({ emiten: newEmitenValue, fromDate, toDate });
-    }
-  }, [searchParams, selectedSymbolFromSidebar, currentEmiten, fromDate, toDate]);
+  }, [selectedSymbolFromSidebar, fromDate, toDate]); // Depend on selectedSymbolFromSidebar, fromDate, toDate
 
   // Cleanup polling on unmount
   useEffect(() => {
@@ -169,11 +163,6 @@ export default function Calculator({ selectedSymbolFromSidebar }: CalculatorProp
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDateChange = (newFrom: string, newTo: string) => {
-    setFromDate(newFrom);
-    setToDate(newTo);
   };
 
   const handleAnalyzeStory = async (isResuming: boolean = false) => {
@@ -348,7 +337,7 @@ export default function Calculator({ selectedSymbolFromSidebar }: CalculatorProp
         initialEmiten={currentEmiten}
         fromDate={fromDate}
         toDate={toDate}
-        onDateChange={handleDateChange}
+        onDateChange={onDateChange}
         onCopyText={handleCopy}
         onCopyImage={handleCopyImage}
         onAnalyzeAI={() => handleAnalyzeStory()}
@@ -459,11 +448,11 @@ export default function Calculator({ selectedSymbolFromSidebar }: CalculatorProp
 
           {/* Insider Activity Stock Section - Full Width */}
           <div style={{ gridColumn: '1 / -1', marginTop: '1.5rem', width: '100%' }}>
-            <InsiderActivityCard emitenProp={result.input.emiten} /> {/* Pass emitenProp here */}
+            <InsiderActivityCard emitenProp={result.input.emiten} />
           </div>
 
           {/* Agent Story Section - Full Width */}
-          <div style={{ gridColumn: '1 / -1', marginTop: '1.5rem', width: '100%' }}> {/* Adjusted margin-top */}
+          <div style={{ gridColumn: '1 / -1', marginTop: '1.5rem', width: '100%' }}>
             {(agentStories.length > 0 || storyStatus !== 'idle') && (
               <AgentStoryCard
                 stories={agentStories}
