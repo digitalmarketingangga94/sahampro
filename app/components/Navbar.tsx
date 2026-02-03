@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import JobStatusIndicator from './JobStatusIndicator';
-
+// import JobStatusIndicator from './JobStatusIndicator'; // Dihapus
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -105,9 +104,9 @@ const Navbar = () => {
               History
             </Link>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          {/* <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
             <JobStatusIndicator />
-          </div>
+          </div> */}
         </div>
       </div>
     </nav>
