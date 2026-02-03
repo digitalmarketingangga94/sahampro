@@ -39,7 +39,7 @@ export default function StockScreenerTable({ templateId, title }: StockScreenerT
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRows, setTotalRows] = useState(0);
-  const [perPage, setPerPage] = useState(25);
+  const [perPage, setPerPage] = useState(31); // Changed from 25 to 31
   const [sortConfig, setSortConfig] = useState<SortConfig>({ column: null, direction: 'asc' }); // Default sort config
   const router = useRouter();
 
