@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 // import JobStatusIndicator from './JobStatusIndicator'; // Dihapus
 
+
 const Navbar = () => {
   const pathname = usePathname();
 
@@ -19,6 +20,20 @@ const Navbar = () => {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <div className="nav-links" style={{ display: 'flex', gap: '1.5rem' }}>
+            <Link 
+              href="/stock-screener" 
+              style={{
+                textDecoration: 'none',
+                color: pathname === '/stock-screener' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                fontWeight: pathname === '/stock-screener' ? 600 : 400,
+                fontSize: '0.9rem',
+                borderBottom: pathname === '/stock-screener' ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                paddingBottom: '2px',
+                transition: 'all 0.2s'
+              }}
+            >
+              Stock Screener
+            </Link>
             <Link 
               href="/" 
               style={{

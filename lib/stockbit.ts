@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, StockScreenerResponse } from './types';
 import { getSessionValue, upsertSession } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -522,4 +522,23 @@ export async function fetchStockbitSearch(keyword: string, limit: number = 10): 
   
   // Filter for tradeable stocks of type "Saham"
   return json.data.company.filter(item => item.is_tradeable && item.type === 'Saham');
+}
+
+/**
+ * Fetch Stock Screener data from Stockbit.
+ */
+export async function fetchStockScreener(templateId: number | string, page: number = 1, limit: number = 25): Promise<StockScreenerResponse> {
+  const url = new URL(`${STOCKBIT_BASE_URL}/screener/templates/${templateId}`);
+  url.searchParams.append('type', 'TEMPLATE_TYPE_CUSTOM');
+  url.searchParams.append('page', page.toString());
+  url.searchParams.append('perpage', limit.toString());
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: await getHeaders(),
+  });
+
+  await handleApiResponse(response, `Stock Screener API (Template ID: ${templateId})`);
+
+  return response.json();
 }

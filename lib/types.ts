@@ -397,7 +397,7 @@ export interface MarketMoversResponse {
   };
 }
 
-export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency' | 'net-foreign-buy'; // Added 'net-foreign-buy'
+export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency' | 'net-foreign-buy';
 
 // Trade Book Types
 export interface TradeBookTotal {
@@ -539,4 +539,71 @@ export interface StockbitSearchResponse {
       has_more_companies: boolean;
     };
   };
+}
+
+// New types for Stock Screener API
+export interface ScreenerCompany {
+  country: string;
+  exchange: string;
+  id: string;
+  name: string;
+  symbol: string;
+  symbol_2: string;
+  symbol_3: string;
+  type: string;
+  badges: {
+    is_new: boolean;
+  };
+  icon_url: string;
+}
+
+export interface ScreenerResultItem {
+  display: string;
+  id: number;
+  item: string;
+  raw: string;
+}
+
+export interface ScreenerCalc {
+  company: ScreenerCompany;
+  results: ScreenerResultItem[];
+}
+
+export interface ScreenerRule {
+  item1: number;
+  item1_name: string;
+  item2: string;
+  item2_name: string;
+  multiplier: string;
+  operator: string;
+  type: string;
+}
+
+export interface ScreenerColumn {
+  coloring: string;
+  id: number;
+  name: string;
+  removable: string;
+}
+
+export interface StockScreenerResponse {
+  data: {
+    calcs: ScreenerCalc[];
+    rules: ScreenerRule[];
+    columns: ScreenerColumn[];
+    curpage: number;
+    favorite: boolean;
+    isguru: boolean;
+    order: number;
+    perpage: number;
+    screen_desc: string;
+    screen_name: string;
+    screenerid: number;
+    sequence: string[];
+    sort: string;
+    totalrows: number;
+    universe: string;
+    type: string;
+  };
+  message: string;
 }
