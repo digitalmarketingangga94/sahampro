@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ScreenerCalc, ScreenerColumn } from '@/lib/types';
-import { ChevronLeft, ChevronRight, FileSpreadsheet } from 'lucide-react'; // Import FileSpreadsheet icon
-import { exportScreenerToXLSX } from '@/lib/xlsxExport'; // Import the new export function
+import { ChevronLeft, ChevronRight } from 'lucide-react'; // Removed FileSpreadsheet icon
+// Removed import { exportScreenerToXLSX } from '@/lib/xlsxExport';
 
 interface StockScreenerTableProps {
   templateId: string;
@@ -120,9 +120,7 @@ export default function StockScreenerTable({ templateId, title }: StockScreenerT
 
   const totalPages = Math.ceil(totalRows / perPage);
 
-  const handleExport = () => {
-    exportScreenerToXLSX(screenerData, columns, title);
-  };
+  // Removed handleExport function
 
   return (
     <div className="glass-card-static" style={{ padding: '1rem' }}>
@@ -130,22 +128,7 @@ export default function StockScreenerTable({ templateId, title }: StockScreenerT
         <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal' }}>
           {title} ({totalRows} Saham)
         </h3>
-        <button
-          className="btn btn-primary"
-          onClick={handleExport}
-          style={{
-            padding: '0.5rem 1rem',
-            fontSize: '0.8rem',
-            background: 'linear-gradient(135deg, #28a745 0%, #218838 100%)', // Green gradient for XLSX
-            boxShadow: '0 4px 15px rgba(40, 167, 69, 0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}
-          disabled={screenerData.length === 0}
-        >
-          <FileSpreadsheet size={16} /> Export XLSX
-        </button>
+        {/* Removed Export XLSX button */}
       </div>
       {loading ? (
         <div style={{ textAlign: 'center', padding: '2rem 0' }}>
