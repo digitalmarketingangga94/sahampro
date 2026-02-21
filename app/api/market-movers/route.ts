@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') as MarketMoverType;
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    if (!type || !['gainer', 'loser', 'value', 'volume', 'frequency'].includes(type)) {
+    if (!type || !['gainer', 'loser', 'value', 'volume', 'frequency', 'net-foreign-buy'].includes(type)) {
       return NextResponse.json(
         { success: false, error: 'Invalid or missing "type" parameter' },
         { status: 400 }

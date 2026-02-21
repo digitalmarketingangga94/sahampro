@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
   Label,
-  LabelList, // Import LabelList
+  LabelList,
 } from 'recharts';
 import type { BrokerStockActivityPerBroker } from '@/lib/types';
 
@@ -19,9 +19,7 @@ interface BrokerActivityScatterChartProps {
   data: BrokerStockActivityPerBroker[];
   loading: boolean;
   error: string | null;
-  selectedBrokerCodes: string[];
-  fromDate: string;
-  toDate: string;
+  selectedBrokerTypes: string[];
 }
 
 // Helper to format large numbers for tooltips/labels
@@ -41,6 +39,7 @@ const formatChartValue = (value: number): string => {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload; // Access the original data object
+
     return (
       <div style={{
         background: 'rgba(30, 30, 45, 0.9)',
@@ -51,13 +50,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         color: 'var(--text-primary)',
         boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
       }}>
-        <p style={{ fontWeight: 600, marginBottom: '5px' }}>{data.stock_code} ({data.broker_code})</p>
-        {data.stock_name && data.stock_name !== data.stock_code && <p style={{ color: 'var(--text-secondary)', marginBottom: '5px' }}>{data.stock_name}</p>}
+        <p style={{ fontWeight: 600, marginBottom: '5px' }}>{data.broker_code} ({data.stock_code})</p>
+        <p style={{ color: 'var(--text-secondary)' }}>Stock Name: {data.stock_name || '-'}</p>
         <p style={{ color: 'var(--text-secondary)' }}>Broker Type: {data.broker_type}</p>
         <p style={{ color: data.net_value >= 0 ? '#38ef7d' : '#f5576c' }}>Net Value: {formatChartValue(data.net_value)}</p>
-        <p style={{ color: data.net_lot >= 0 ? '#38ef7d' : '#f5576c' }}>Net Lot: {formatChartValue(data.net_lot)}</p>
         <p style={{ color: '#38ef7d' }}>Buy Value: {formatChartValue(data.buy_value)}</p>
         <p style={{ color: '#f5576c' }}>Sell Value: {formatChartValue(data.sell_value)}</p>
+        <p style={{ color: 'var(--text-secondary)' }}>Buy Avg Price: {data.buy_avg_price?.toLocaleString() || '-'}</p>
+        <p style={{ color: 'var(--text-secondary)' }}>Sell Avg Price: {data.sell_avg_price?.toLocaleString() || '-'}</p>
       </div>
     );
   }
@@ -68,6 +68,7 @@ export default function BrokerActivityScatterChart({
   data,
   loading,
   error,
+  selectedBrokerTypes,
 }: BrokerActivityScatterChartProps) {
   if (loading) {
     return (
@@ -102,15 +103,18 @@ export default function BrokerActivityScatterChart({
     'Unknown': '#a0a0b8',    // Muted
   };
 
+  // Filter data based on selectedBrokerTypes
+  const filteredChartData = data.filter(item => selectedBrokerTypes.includes(item.broker_type));
+
   // Group data by broker_type for separate scatters
-  const groupedData = data.reduce((acc, item) => {
+  const groupedData = filteredChartData.reduce((acc, item) => {
     const type = item.broker_type || 'Unknown';
     if (!acc[type]) {
       acc[type] = [];
     }
     acc[type].push(item);
     return acc;
-  }, {} as { [key: string]: BrokerStockActivityPerBroker[] });
+  }, {} as { [key: string]: typeof filteredChartData });
 
   return (
     <div style={{ width: '100%', height: '500px' }}>
@@ -126,7 +130,7 @@ export default function BrokerActivityScatterChart({
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
           <XAxis
             type="number"
-            dataKey="net_value"
+            dataKey="net_value" // X-axis: Net Value
             name="Net Value"
             tickFormatter={formatChartValue}
             tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
@@ -137,14 +141,14 @@ export default function BrokerActivityScatterChart({
           </XAxis>
           <YAxis
             type="number"
-            dataKey="net_lot"
-            name="Net Lot"
+            dataKey="buy_value" // Y-axis: Total Buy Value (IDR)
+            name="Total Buy Value"
             tickFormatter={formatChartValue}
             tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
             axisLine={{ stroke: 'var(--border-color)' }}
             tickLine={{ stroke: 'var(--border-color)' }}
           >
-            <Label value="Net Lot" angle={-90} offset={-10} position="insideLeft" fill="var(--text-secondary)" fontSize={12} />
+            <Label value="Total Buy Value (IDR)" angle={-90} offset={-10} position="insideLeft" fill="var(--text-secondary)" fontSize={12} />
           </YAxis>
           <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '0.75rem' }} />
@@ -152,14 +156,14 @@ export default function BrokerActivityScatterChart({
           {Object.entries(groupedData).map(([brokerType, dataPoints]) => (
             <Scatter
               key={brokerType}
-              name={brokerType}
+              name={brokerType === 'Smartmoney' ? 'Smart Money' : brokerType} // Adjust name for legend
               data={dataPoints}
               fill={brokerTypeColors[brokerType]}
               opacity={0.8}
               shape="circle"
               line={false}
             >
-              <LabelList dataKey="broker_code" position="top" fill="#fff" fontSize={10} />
+              <LabelList dataKey="stock_code" position="top" fill="#fff" fontSize={10} />
             </Scatter>
           ))}
         </ScatterChart>

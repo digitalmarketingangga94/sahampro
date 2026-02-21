@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import JobStatusIndicator from './JobStatusIndicator';
+import { LineChart as LineChartIcon } from 'lucide-react';
 
 
 const Navbar = () => {
@@ -20,6 +20,7 @@ const Navbar = () => {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <div className="nav-links" style={{ display: 'flex', gap: '1.5rem' }}>
+            
             <Link 
               href="/" 
               style={{
@@ -34,6 +35,23 @@ const Navbar = () => {
             >
               Analyze Stock
             </Link>
+
+            {/* New Top Stock Link */}
+            <Link 
+              href="/top-stock" 
+              style={{
+                textDecoration: 'none',
+                color: pathname === '/top-stock' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                fontWeight: pathname === '/top-stock' ? 600 : 400,
+                fontSize: '0.9rem',
+                borderBottom: pathname === '/top-stock' ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                paddingBottom: '2px',
+                transition: 'all 0.2s'
+              }}
+            >
+              Top Stock
+            </Link>
+            
             <Link 
               href="/insider-activity" 
               style={{
@@ -62,6 +80,7 @@ const Navbar = () => {
             >
               Broker Activity
             </Link>
+            
             <Link 
               href="/hot-stock" 
               style={{
@@ -75,6 +94,20 @@ const Navbar = () => {
               }}
             >
               Hot Stock
+            </Link>
+            <Link 
+              href="/net-foreign-buy" 
+              style={{
+                textDecoration: 'none',
+                color: pathname === '/net-foreign-buy' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                fontWeight: pathname === '/net-foreign-buy' ? 600 : 400,
+                fontSize: '0.9rem',
+                borderBottom: pathname === '/net-foreign-buy' ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                paddingBottom: '2px',
+                transition: 'all 0.2s'
+              }}
+            >
+              Net Foreign Buy
             </Link>
             <Link 
               href="/history" 
@@ -91,9 +124,9 @@ const Navbar = () => {
               History
             </Link>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          {/* <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
             <JobStatusIndicator />
-          </div>
+          </div> */}
         </div>
       </div>
     </nav>

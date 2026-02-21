@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { BROKERS, BrokerInfo, BrokerType } from '@/lib/brokers';
 import { getLatestTradingDate, getDateNDaysAgo } from '@/lib/utils';
 import type { BrokerOverallActivitySummary, BrokerBuyItem, BrokerSellItem, BrokerStockActivityPerBroker } from '@/lib/types';
-import { ChevronLeft, ChevronRight, Search, Check, ChevronDown, Table, LineChart } from 'lucide-react'; // Import Table and LineChart icons
-import BrokerActivityScatterChart from './BrokerActivityScatterChart'; // Import the new scatter chart component
+import { ChevronLeft, ChevronRight, Search, Check, ChevronDown, Table, LineChart } from 'lucide-react';
+import BrokerActivityScatterChart from './BrokerActivityScatterChart';
 
 interface BrokerActivityDetailCardProps {
   initialBrokerCode?: string;
@@ -19,17 +19,18 @@ const formatNumber = (num: number | undefined): string => {
 const formatValueCompact = (value: number | undefined): string => {
   if (value === undefined || value === null) return '-';
   const absValue = Math.abs(value);
-  if (absValue >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
-  if (absValue >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (absValue >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-  return value.toLocaleString('id-ID');
+  const sign = value < 0 ? '-' : ''; // Only show '-' for negative values
+  if (absValue >= 1_000_000_000) return `${sign}${(absValue / 1_000_000_000).toFixed(1)}B`;
+  if (absValue >= 1_000_000) return `${sign}${(absValue / 1_000_000).toFixed(1)}M`;
+  if (absValue >= 1_000) return `${sign}${(absValue / 1_000).toFixed(1)}K`;
+  return `${sign}${absValue.toLocaleString('id-ID')}`;
 };
 
 export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerActivityDetailCardProps) {
-  const [selectedBrokerCodes, setSelectedBrokerCodes] = useState<string[]>(initialBrokerCode ? [initialBrokerCode] : ['ZP']);
+  const [selectedBrokerCodes, setSelectedBrokerCodes] = useState<string[]>(initialBrokerCode ? [initialBrokerCode] : ['AK']);
   const [fromDate, setFromDate] = useState(getLatestTradingDate());
   const [toDate, setToDate] = useState(getLatestTradingDate());
-  const [processedActivityData, setProcessedActivityData] = useState<BrokerStockActivityPerBroker[]>([]); // Changed type
+  const [processedActivityData, setProcessedActivityData] = useState<BrokerStockActivityPerBroker[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedBrokerTypes, setSelectedBrokerTypes] = useState<BrokerType[]>(['Smartmoney', 'Foreign', 'Retail', 'Mix']);
@@ -38,13 +39,11 @@ export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerAc
   const [viewMode, setViewMode] = useState<'table' | 'chart'>('table');
   const brokerSelectRef = useRef<HTMLDivElement>(null);
 
-  // New states for stock selection
   const [selectedStockCodes, setSelectedStockCodes] = useState<string[]>([]);
   const [showStockSelect, setShowStockSelect] = useState(false);
   const [stockSearchTerm, setStockSearchTerm] = useState('');
   const [allStockOptions, setAllStockOptions] = useState<{ code: string; name?: string }[]>([]);
   const stockSelectRef = useRef<HTMLDivElement>(null);
-
 
   const brokerOptions = Object.values(BROKERS ?? {}).sort((a, b) => a.code.localeCompare(b.code));
 
@@ -80,7 +79,6 @@ export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerAc
     fetchActivity();
   }, [selectedBrokerCodes, fromDate, toDate]);
 
-  // New useEffect to populate allStockOptions from processedActivityData
   useEffect(() => {
     const uniqueStocks = new Map<string, { code: string; name?: string }>();
     processedActivityData.forEach(item => {
@@ -91,8 +89,6 @@ export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerAc
     setAllStockOptions(Array.from(uniqueStocks.values()).sort((a, b) => a.code.localeCompare(b.code)));
   }, [processedActivityData]);
 
-
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (brokerSelectRef.current && !brokerSelectRef.current.contains(event.target as Node)) {
@@ -132,11 +128,16 @@ export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerAc
     );
   };
 
-  // Filter the data based on selectedBrokerTypes AND selectedStockCodes
   const filteredActivityData = processedActivityData.filter(item => 
     (item.broker_type && selectedBrokerTypes.includes(item.broker_type)) &&
     (selectedStockCodes.length === 0 || selectedStockCodes.includes(item.stock_code))
   );
+
+  const topBuyers = filteredActivityData.filter(item => (item.net_value || 0) > 0)
+    .sort((a, b) => (b.net_value || 0) - (a.net_value || 0));
+
+  const topSellers = filteredActivityData.filter(item => (item.net_value || 0) < 0)
+    .sort((a, b) => (a.net_value || 0) - (b.net_value || 0)); // Sort ascending for sellers
 
   const filteredBrokerOptions = brokerOptions.filter(broker => 
     broker.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -349,7 +350,6 @@ export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerAc
               onChange={(e) => {
                 setFromDate(e.target.value);
               }}
-              // Removed onClick={(e) => e.currentTarget.showPicker()}
             />
             <span className="date-separator" style={{ margin: '0 1px', padding: 0 }}>→</span>
             <input
@@ -360,7 +360,6 @@ export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerAc
               onChange={(e) => {
                 setToDate(e.target.value);
               }}
-              // Removed onClick={(e) => e.currentTarget.showPicker()}
             />
           </div>
           <button type="button" onClick={() => handleDateRangeChange(1)} className="quick-date-btn">1D</button>
@@ -390,77 +389,128 @@ export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerAc
         </div>
       </div>
 
-      {viewMode === 'table' ? (
-        loading ? (
-          <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-            <div className="spinner" style={{ width: '20px', height: '20px', margin: '0 auto' }}></div>
-          </div>
-        ) : error ? (
-          <div style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', padding: '1rem', textAlign: 'center' }}>
-            {error}
-          </div>
-        ) : filteredActivityData.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)' }}>
-            No activity found for the selected brokers and filters in the period.
-          </div>
-        ) : (
-          <>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', minWidth: '700px' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Broker</th>
-                    <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Symbol</th>
-                    <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>B.Val</th>
-                    <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>B.Lot</th>
-                    <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>B.Avg</th>
-                    <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>S.Val</th>
-                    <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>S.Lot</th>
-                    <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>S.Avg</th>
-                    <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: (filteredActivityData[0].net_value || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>Net Val</th>
-                    <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: (filteredActivityData[0].net_lot || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>Net Lot</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredActivityData.map((item, index) => (
-                    <tr key={`${item.broker_code}-${item.stock_code}-${index}`} style={{ borderBottom: index < filteredActivityData.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
-                      <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
-                        {item.broker_code}
-                        <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{item.broker_type}</div>
-                      </td>
-                      <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
-                        {item.stock_code}
-                        {item.stock_name && item.stock_name !== item.stock_code && (
-                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{item.stock_name}</div>
-                        )}
-                      </td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatValueCompact(item.buy_value)}</td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatValueCompact(item.buy_lot)}</td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatNumber(item.buy_avg_price)}</td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatValueCompact(item.sell_value)}</td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatValueCompact(item.sell_lot)}</td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatNumber(item.sell_avg_price)}</td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: (item.net_value || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
-                        {formatValueCompact(item.net_value)}
-                      </td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: (item.net_lot || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
-                        {formatValueCompact(item.net_lot)}
-                      </td>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+          <div className="spinner" style={{ width: '20px', height: '20px', margin: '0 auto' }}></div>
+        </div>
+      ) : error ? (
+        <div style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', padding: '1rem', textAlign: 'center' }}>
+          {error}
+        </div>
+      ) : viewMode === 'table' ? (
+        <>
+          {/* Top Buyers Table */}
+          <div style={{ marginBottom: '2rem' }}>
+            <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '1rem', fontWeight: 600 }}>
+              Top Buyers ({topBuyers.length} Stocks)
+            </h4>
+            {topBuyers.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)' }}>
+                No buying activity found for the selected brokers and filters.
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', minWidth: '700px' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Broker</th>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Symbol</th>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>B.Val</th>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>B.Lot</th>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>B.Avg</th>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--accent-success)' }}>Net Val</th>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--accent-success)' }}>Net Lot</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )
+                  </thead>
+                  <tbody>
+                    {topBuyers.map((item, index) => (
+                      <tr key={`${item.broker_code}-${item.stock_code}-${index}-buy`} style={{ borderBottom: index < topBuyers.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+                        <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                          {item.broker_code}
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{item.broker_type}</div>
+                        </td>
+                        <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                          {item.stock_code}
+                          {item.stock_name && item.stock_name !== item.stock_code && (
+                            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{item.stock_name}</div>
+                          )}
+                        </td>
+                        <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatValueCompact(item.buy_value)}</td>
+                        <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatValueCompact(item.buy_lot)}</td>
+                        <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatNumber(item.buy_avg_price)}</td>
+                        <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--accent-success)' }}>
+                          {formatValueCompact(item.net_value)}
+                        </td>
+                        <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--accent-success)' }}>
+                          {formatValueCompact(item.net_lot)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Top Sellers Table */}
+          <div>
+            <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '1rem', fontWeight: 600 }}>
+              Top Sellers ({topSellers.length} Stocks)
+            </h4>
+            {topSellers.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)' }}>
+                No selling activity found for the selected brokers and filters.
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', minWidth: '700px' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Broker</th>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Symbol</th>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>S.Val</th>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>S.Lot</th>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>S.Avg</th>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--accent-warning)' }}>Net Val</th>
+                      <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--accent-warning)' }}>Net Lot</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topSellers.map((item, index) => (
+                      <tr key={`${item.broker_code}-${item.stock_code}-${index}-sell`} style={{ borderBottom: index < topSellers.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+                        <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                          {item.broker_code}
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{item.broker_type}</div>
+                        </td>
+                        <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                          {item.stock_code}
+                          {item.stock_name && item.stock_name !== item.stock_code && (
+                            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{item.stock_name}</div>
+                          )}
+                        </td>
+                        <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatValueCompact(item.sell_value)}</td>
+                        <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatValueCompact(item.sell_lot)}</td>
+                        <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatNumber(item.sell_avg_price)}</td>
+                        <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--accent-warning)' }}>
+                          {formatValueCompact(item.net_value)}
+                        </td>
+                        <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--accent-warning)' }}>
+                          {formatValueCompact(item.net_lot)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
       ) : (
         <BrokerActivityScatterChart
           data={filteredActivityData}
           loading={loading}
           error={error}
-          selectedBrokerCodes={selectedBrokerCodes}
-          fromDate={fromDate}
-          toDate={toDate}
+          selectedBrokerTypes={selectedBrokerTypes}
         />
       )}
     </div>

@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import type { BrokerFlowResponse, BrokerFlowActivity, BrokerFlowDailyData } from '@/lib/types';
 import { getBrokerInfo } from '@/lib/brokers';
-import BrokerFlowScatterChart from './BrokerFlowScatterChart'; // Import the new scatter chart component
-import { Table, LineChart } from 'lucide-react'; // Import icons
+import BrokerFlowScatterChart from './BrokerFlowScatterChart'; // Re-added import
+import { Table, LineChart } from 'lucide-react'; // Re-added LineChart icon
 
 interface BrokerFlowCardProps {
   emiten: string;
@@ -94,7 +94,7 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
   const [error, setError] = useState<string | null>(null);
   const [lookbackDays, setLookbackDays] = useState<number>(7); // Keep as number
   const [selectedStatus, setSelectedStatus] = useState<string[]>(['Bandar', 'Foreign', 'Retail', 'Mix']);
-  const [viewMode, setViewMode] = useState<'table' | 'chart'>('table'); // New state for view mode
+  const [viewMode, setViewMode] = useState<'table' | 'chart'>('table'); // Re-added 'chart' option
 
   useEffect(() => {
     if (!emiten) return;

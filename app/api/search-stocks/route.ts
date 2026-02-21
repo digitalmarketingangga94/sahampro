@@ -13,10 +13,11 @@ export async function GET(request: NextRequest) {
 
     const searchResults = await fetchStockbitSearch(keyword, limit);
 
-    // Map to a simpler format for the frontend
+    // Map to a simpler format for the frontend, including icon_url
     const formattedResults = searchResults.map(item => ({
       code: item.symbol_2,
       name: item.name,
+      icon_url: item.icon_url, // Include icon_url
     }));
 
     return NextResponse.json({

@@ -397,7 +397,7 @@ export interface MarketMoversResponse {
   };
 }
 
-export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency';
+export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency' | 'net-foreign-buy';
 
 // Trade Book Types
 export interface TradeBookTotal {
@@ -529,6 +529,7 @@ export interface StockbitSearchCompanyItem {
   desc: string; // Company description
   type: string; // e.g., "Saham", "Waran"
   is_tradeable: boolean;
+  icon_url: string; // Added this property
 }
 
 export interface StockbitSearchResponse {
@@ -537,6 +538,49 @@ export interface StockbitSearchResponse {
     company: StockbitSearchCompanyItem[];
     pagination: {
       has_more_companies: boolean;
+    };
+  };
+}
+
+// New types for Top Stock API
+export interface TopStockValue {
+  raw: string;
+  formatted: string;
+}
+
+export interface TopStockItem {
+  rank: number;
+  code: string;
+  icon_url: string;
+  value: TopStockValue;
+  lot: TopStockValue;
+  average: TopStockValue;
+  foreign_value: TopStockValue;
+  frequency: TopStockValue;
+}
+
+export interface TopStockResponse {
+  message: string;
+  data: {
+    top_buy: TopStockItem[];
+    top_sell: TopStockItem[];
+    total: any[]; // Based on example, it's an empty array
+    response_info: {
+      page: number;
+      limit: number;
+      max_day_duration: number;
+      start_date: string;
+      end_date: string;
+      value_type: string;
+    };
+    display_option: {
+      banner_message: string;
+      foreign_value_column: boolean;
+      enabled_value_type: {
+        gross: boolean;
+        net: boolean;
+        total: boolean;
+      };
     };
   };
 }

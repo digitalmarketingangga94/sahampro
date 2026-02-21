@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse } from './types';
 import { getSessionValue, upsertSession } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -23,8 +23,10 @@ const sectorCache = new Map<string, { sector: string; name: string; timestamp: n
 const SECTOR_CACHE_DURATION = 3600000; // 1 hour
 
 // Cache for sectors list
-let sectorsListCache: { sectors: string[]; timestamp: number } | null = null;
+let sectorsListCache: { sectors: string[]; timestamp: number } | null = null; // Reverted to string[]
 const SECTORS_LIST_CACHE_DURATION = 86400000; // 24 hours
+
+// Removed Cache for sub-sectors list
 
 /**
  * Get JWT token from database or environment
@@ -179,7 +181,7 @@ export async function fetchEmitenInfo(emiten: string): Promise<EmitenInfoRespons
 /**
  * Fetch all sectors list
  */
-export async function fetchSectors(): Promise<string[]> {
+export async function fetchSectors(): Promise<string[]> { // Reverted return type to string[]
   const now = Date.now();
   
   // Check cache first
@@ -208,6 +210,7 @@ export async function fetchSectors(): Promise<string[]> {
   return sectors;
 }
 
+// Removed fetchSubSectors function
 
 /**
  * Fetch all watchlist groups
@@ -389,7 +392,7 @@ export async function fetchTradeBook(symbol: string): Promise<TradeBookTotal | n
 }
 
 /**
- * Fetch Market Movers data (Top Gainer, Loser, Value, Volume, Frequency)
+ * Fetch Market Movers data (Top Gainer, Loser, Value, Volume, Frequency, Net Foreign Buy)
  */
 export async function fetchMarketMovers(type: MarketMoverType, limit: number = 20): Promise<MarketMoverItem[]> {
   const moverTypeMap: Record<MarketMoverType, string> = {
@@ -398,6 +401,7 @@ export async function fetchMarketMovers(type: MarketMoverType, limit: number = 2
     value: 'MOVER_TYPE_TOP_VALUE',
     volume: 'MOVER_TYPE_TOP_VOLUME',
     frequency: 'MOVER_TYPE_TOP_FREQUENCY',
+    'net-foreign-buy': 'MOVER_TYPE_NET_FOREIGN_BUY', // Added new type
   };
 
   const url = new URL(`${STOCKBIT_BASE_URL}/order-trade/market-mover`);
@@ -519,6 +523,37 @@ export async function fetchStockbitSearch(keyword: string, limit: number = 10): 
 
   const json: StockbitSearchResponse = await response.json();
   
-  // Filter for tradeable stocks of type "Saham"
-  return json.data.company.filter(item => item.is_tradeable && item.type === 'Saham');
+  // Return all company items without further filtering
+  return json.data.company;
+}
+
+/**
+ * Fetch Top Stock data (Top Buy/Sell)
+ */
+export async function fetchTopStocks(
+  startDate: string,
+  endDate: string,
+  investorType: string = 'INVESTOR_TYPE_ALL',
+  marketType: string = 'MARKET_TYPE_REGULER',
+  valueType: string = 'VALUE_TYPE_NET',
+  page: number = 1,
+  limit: number = 100
+): Promise<TopStockResponse> {
+  const url = new URL(`${STOCKBIT_BASE_URL}/order-trade/top-stock`);
+  url.searchParams.append('start', startDate);
+  url.searchParams.append('end', endDate);
+  url.searchParams.append('investor_type', investorType);
+  url.searchParams.append('market_type', marketType);
+  url.searchParams.append('value_type', valueType);
+  url.searchParams.append('page', page.toString());
+  url.searchParams.append('limit', limit.toString());
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: await getHeaders(),
+  });
+
+  await handleApiResponse(response, `Top Stock API`);
+
+  return response.json();
 }

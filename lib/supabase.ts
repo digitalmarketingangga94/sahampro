@@ -402,19 +402,25 @@ export async function appendBackgroundJobLogEntry(
 export async function updateBackgroundJobLog(
   jobId: number,
   data: {
-    status: 'completed' | 'failed';
+    status?: 'running' | 'completed' | 'failed'; // Made optional and added 'running'
     success_count?: number;
     error_count?: number;
     error_message?: string;
     metadata?: Record<string, unknown>;
+    total_items?: number; // Added total_items to update options
   }
 ) {
+  const updatePayload: any = {
+    ...data,
+  };
+  // Only set completed_at if the job is actually completing or failing
+  if (data.status === 'completed' || data.status === 'failed') {
+    updatePayload.completed_at = new Date().toISOString();
+  }
+
   const { data: result, error } = await supabase
     .from('background_job_logs')
-    .update({
-      ...data,
-      completed_at: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq('id', jobId)
     .select()
     .single();
