@@ -56,8 +56,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <p style={{ color: 'var(--text-secondary)' }}>Broker Name: {brokerInfo.name}</p>
         <p style={{ color: 'var(--text-secondary)' }}>Broker Type: {data.broker_type}</p>
         <p style={{ color: data.net_value >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>Net Value: {formatChartValue(data.net_value)}</p>
-        <p style={{ color: 'var(--accent-success)' }}>Buy Value: {formatChartValue(data.buy_value)}</p>
-        <p style={{ color: 'var(--accent-warning)' }}>Sell Value: {formatChartValue(data.sell_value)}</p>
+        {data.net_value >= 0 ? (
+          <p style={{ color: 'var(--accent-success)' }}>Total Buy Value: {formatChartValue(data.buy_value)}</p>
+        ) : (
+          <p style={{ color: 'var(--accent-warning)' }}>Total Sell Value: {formatChartValue(Math.abs(data.sell_value))}</p>
+        )}
       </div>
     );
   }
@@ -84,7 +87,8 @@ type ChartDataItem = {
   broker_type: string;
   net_value: number;
   buy_value: number;
-  sell_value: number;
+  sell_value: number; // This is total_sell_value
+  y_value_for_chart: number; // New field for dynamic Y-axis
   percentage_of_total_net_value: number;
   r: number;
 };
@@ -134,15 +138,18 @@ export default function BrokerFlowScatterChart({
       const brokerInfo = getBrokerInfo(activity.broker_code);
       const netValue = parseFloat(activity.net_value);
       const totalBuyValue = parseFloat(activity.total_buy_value);
-      const sellValue = totalBuyValue - netValue; // Calculate sell_value
+      const totalSellValue = totalBuyValue - netValue; // Correct total_sell_value
+
+      const yValueForChart = netValue >= 0 ? totalBuyValue : -Math.abs(totalSellValue); // Negative for net sell to plot below
 
       return {
         broker_code: activity.broker_code,
         stock_code: activity.stock_code, // The emiten being analyzed
         broker_type: brokerInfo.type, // Use our internal broker type
         net_value: netValue,
-        buy_value: totalBuyValue, // Renamed for clarity in chart data
-        sell_value: sellValue, // Added calculated sell_value
+        buy_value: totalBuyValue,
+        sell_value: totalSellValue,
+        y_value_for_chart: yValueForChart,
       };
     })
     .filter(item => {
@@ -159,8 +166,8 @@ export default function BrokerFlowScatterChart({
   // Calculate total net value for these top 5 brokers
   const totalAbsoluteNetValue = top5Brokers.reduce((sum, item) => sum + Math.abs(item.net_value), 0);
 
-  // Find max buy_value for scaling circle size
-  const maxBuyValue = Math.max(...top5Brokers.map(item => item.buy_value), 1);
+  // Find max absolute y_value_for_chart for scaling circle size
+  const maxAbsoluteYValue = Math.max(...top5Brokers.map(item => Math.abs(item.y_value_for_chart)), 1);
   const baseRadius = 5; // Minimum radius
   const scalingFactor = 15; // Max additional radius
 
@@ -168,7 +175,7 @@ export default function BrokerFlowScatterChart({
   const chartDataWithDominanceAndRadius: ChartDataItem[] = top5Brokers.map(item => ({
     ...item,
     percentage_of_total_net_value: totalAbsoluteNetValue > 0 ? (Math.abs(item.net_value) / totalAbsoluteNetValue) * 100 : 0,
-    r: baseRadius + (item.buy_value / maxBuyValue) * scalingFactor, // Calculate radius
+    r: baseRadius + (Math.abs(item.y_value_for_chart) / maxAbsoluteYValue) * scalingFactor, // Calculate radius based on absolute Y value
   }));
 
   // Group data by broker_type for separate scatters
@@ -206,14 +213,14 @@ export default function BrokerFlowScatterChart({
           </XAxis>
           <YAxis
             type="number"
-            dataKey="buy_value" // Y-axis: Total Buy Value (IDR)
-            name="Total Buy Value"
+            dataKey="y_value_for_chart" // Y-axis: Total Buy/Sell Value
+            name="Total Buy/Sell Value"
             tickFormatter={formatChartValue}
             tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
             axisLine={{ stroke: 'var(--border-color)' }}
             tickLine={{ stroke: 'var(--border-color)' }}
           >
-            <Label value="Total Buy Value (IDR)" angle={-90} offset={-10} position="insideLeft" fill="var(--text-secondary)" fontSize={12} />
+            <Label value="Total Buy/Sell Value (IDR)" angle={-90} offset={-10} position="insideLeft" fill="var(--text-secondary)" fontSize={12} />
           </YAxis>
           <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '0.75rem' }} />
