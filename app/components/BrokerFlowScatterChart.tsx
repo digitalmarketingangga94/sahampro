@@ -64,6 +64,18 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+// Custom Label component to display broker code and dominant percentage
+const CustomBrokerFlowLabel = (props: any) => {
+  const { x, y, payload } = props;
+  const { broker_code, percentage_of_total_net_value } = payload;
+  const displayPercentage = percentage_of_total_net_value > 0.1 ? ` (${percentage_of_total_net_value.toFixed(1)}%)` : ''; // Only show if significant
+  return (
+    <text x={x} y={y} dy={-10} textAnchor="middle" fill="black" fontSize={10}>
+      {broker_code}{displayPercentage}
+    </text>
+  );
+};
+
 export default function BrokerFlowScatterChart({
   data,
   loading,
@@ -126,15 +138,30 @@ export default function BrokerFlowScatterChart({
       return selectedStatus.includes(statusToMatch);
     });
 
+  // Filter for accumulating brokers (net_value > 0), sort by net_value descending, and take top 5
+  const top5AccumulatingBrokers = chartData
+    .filter(item => item.net_value > 0) // Only accumulating brokers
+    .sort((a, b) => b.net_value - a.net_value) // Sort by net_value descending
+    .slice(0, 5); // Take top 5
+
+  // Calculate total net value for these top 5 brokers
+  const totalAbsoluteNetValue = top5AccumulatingBrokers.reduce((sum, item) => sum + Math.abs(item.net_value), 0);
+
+  // Add dominant percentage to each item in the top 5 list
+  const chartDataWithDominance = top5AccumulatingBrokers.map(item => ({
+    ...item,
+    percentage_of_total_net_value: totalAbsoluteNetValue > 0 ? (Math.abs(item.net_value) / totalAbsoluteNetValue) * 100 : 0,
+  }));
+
   // Group data by broker_type for separate scatters
-  const groupedData = chartData.reduce((acc, item) => {
-    const type = item.broker_type || 'Unknown'; // This will be 'Smartmoney', 'Foreign', 'Retail', 'Mix', 'Unknown'
+  const groupedData = chartDataWithDominance.reduce((acc, item) => {
+    const type = item.broker_type || 'Unknown';
     if (!acc[type]) {
       acc[type] = [];
     }
     acc[type].push(item);
     return acc;
-  }, {} as { [key: string]: typeof chartData });
+  }, {} as { [key: string]: typeof chartDataWithDominance });
 
   return (
     <div style={{ width: '100%', height: '500px' }}>
@@ -185,7 +212,7 @@ export default function BrokerFlowScatterChart({
               shape="circle"
               line={false}
             >
-              <LabelList dataKey="broker_code" position="top" fill="var(--text-primary)" fontSize={10} /> {/* Black text */}
+              <LabelList content={<CustomBrokerFlowLabel />} />
             </Scatter>
           ))}
         </ScatterChart>
