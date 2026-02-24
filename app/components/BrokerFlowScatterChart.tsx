@@ -40,7 +40,6 @@ const formatChartValue = (value: number): string => {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload; // Access the original data object
-    const brokerInfo = getBrokerInfo(data.broker_code);
 
     return (
       <div style={{
@@ -67,7 +66,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 // Custom Label component to display broker code and dominant percentage
 const CustomBrokerFlowLabel = (props: any) => {
   const { x, y, payload } = props;
-  const { broker_code, percentage_of_total_net_value } = payload.value;
+  // Fix: Access properties directly from payload, not payload.value
+  const { broker_code, percentage_of_total_net_value } = payload;
   const displayPercentage = percentage_of_total_net_value > 0.1 ? ` (${percentage_of_total_net_value.toFixed(1)}%)` : ''; // Only show if significant
   return (
     <text x={x} y={y} dy={-10} textAnchor="middle" fill="black" fontSize={10}>

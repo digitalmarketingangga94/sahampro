@@ -67,7 +67,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 // Custom Label component to display broker code and dominant percentage
 const CustomActivityLabel = (props: any) => {
   const { x, y, payload } = props;
-  const { broker_code, percentage_of_stock_net_value } = payload.value;
+  // Fix: Access properties directly from payload, not payload.value
+  const { broker_code, percentage_of_stock_net_value } = payload;
   const displayPercentage = percentage_of_stock_net_value > 0.1 ? ` (${percentage_of_stock_net_value.toFixed(1)}%)` : '';
   return (
     <text x={x} y={y} dy={-10} textAnchor="middle" fill="black" fontSize={10}>
@@ -121,7 +122,7 @@ export default function BrokerActivityScatterChart({
   );
 
   // Calculate total net value per stock across all filtered brokers
-  const totalNetValuePerStock = filteredChartData.reduce((acc: { [stockCode: string]: number }, item) => {
+  const totalNetValuePerStock: { [stockCode: string]: number } = filteredChartData.reduce((acc, item) => {
     acc[item.stock_code] = (acc[item.stock_code] || 0) + Math.abs(item.net_value);
     return acc;
   }, {});
