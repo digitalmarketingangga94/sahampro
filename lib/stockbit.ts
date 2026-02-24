@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse, SectorPerformanceItem } from './types';
 import { getSessionValue, upsertSession } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -556,4 +556,25 @@ export async function fetchTopStocks(
   await handleApiResponse(response, `Top Stock API`);
 
   return response.json();
+}
+
+/**
+ * Mock function for fetching sector performance data.
+ * In a real scenario, this would call a Stockbit API endpoint.
+ */
+export async function fetchSectorPerformance(): Promise<SectorPerformanceItem[]> {
+  // For now, we'll return static data matching the image
+  return [
+    { index: 'IDXTRANS', '30D': 21.06, '90D': 25.14, '120D': 25.13, 'W_AVG': 23.10 },
+    { index: 'IDXBASIC', '30D': 10.36, '90D': 26.14, '120D': 23.09, 'W_AVG': 17.64 },
+    { index: 'IDXCYCLIC', '30D': -8.83, '90D': 18.23, '120D': 28.98, 'W_AVG': 6.85 },
+    { index: 'IDXINDUST', '30D': -4.29, '90D': 13.45, '120D': 17.77, 'W_AVG': 5.45 },
+    { index: 'IDXENERGY', '30D': -2.75, '90D': 7.24, '120D': 17.82, 'W_AVG': 4.36 },
+    { index: 'IDXFINANCE', '30D': 5.80, '90D': 2.56, '120D': 3.23, 'W_AVG': 4.32 },
+    { index: 'IDXINFRA', '30D': -10.11, '90D': 4.24, '120D': 19.01, 'W_AVG': 0.02 },
+    { index: 'IDXNONCYC', '30D': 0.59, '90D': 1.99, '120D': -5.66, 'W_AVG': -0.24 },
+    { index: 'IDXHEALTH', '30D': -3.24, '90D': 1.32, '120D': -1.83, 'W_AVG': -1.59 },
+    { index: 'IDXPROPERT', '30D': -5.99, '90D': -4.62, '120D': -1.24, 'W_AVG': -4.63 },
+    { index: 'IDXTECHNO', '30D': -0.44, '90D': -13.03, '120D': -10.95, 'W_AVG': -6.32 },
+  ];
 }

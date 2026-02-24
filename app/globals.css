@@ -2199,3 +2199,62 @@ input:checked + .slider:before {
     flex: 1;
   }
 }
+
+/* Sector Performance Card */
+.sector-performance-card {
+  padding: 1rem;
+  font-size: 0.8rem;
+}
+
+.sector-performance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0.75rem;
+}
+
+.last-updated-info {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.sector-performance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.sector-performance-table th {
+  text-align: left;
+  padding: 0.5rem 0.25rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sector-performance-table th:not(:first-child) {
+  text-align: right;
+}
+
+.sector-performance-table .w-avg-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.sector-performance-table td {
+  padding: 0.5rem 0.25rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.sector-performance-table tr:hover {
+  background: rgba(0, 123, 255, 0.02);
+}

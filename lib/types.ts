@@ -530,3 +530,12 @@ export interface TopStockResponse {
   };
   message: string;
 }
+
+// Sector Performance Types
+export interface SectorPerformanceItem {
+  index: string;
+  '30D': number;
+  '90D': number;
+  '120D': number;
+  'W_AVG': number;
+}
