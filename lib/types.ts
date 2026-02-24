@@ -340,6 +340,8 @@ export interface MarketMoverItem {
   volume: number; // in shares
   frequency: number;
   net_foreign_buy?: number; // Assuming this is 'Net Foreign' from the image
+  dominant_broker_code?: string; // New: Code of the dominant net buyer broker
+  dominant_broker_net_value?: number; // New: Net value of the dominant net buyer broker
 }
 
 // Raw response structure for market movers
@@ -591,7 +593,7 @@ export interface BrokerScreenerResultItem {
   stock_name?: string;
   net_direction: 'All Net Buy' | 'All Net Sell' | 'Mixed';
   net_lot: number;
-  avg_per_day: number; // Changed from average_price to avg_per_day
+  avg_per_day: number;
   dominant_broker: string;
   dominant_percent: number;
 }

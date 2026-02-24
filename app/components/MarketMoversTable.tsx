@@ -11,14 +11,17 @@ interface MarketMoversTableProps {
 }
 
 // Helper to format large numbers (e.g., 1234567890 -> 1.23B)
-const formatCompactNumber = (num: number): string => {
-  if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(2) + 'B';
-  if (num >= 1_000_000) return (num / 1_000_000).toFixed(2) + 'M';
-  if (num >= 1_000) return (num / 1_000).toFixed(2) + 'K';
+const formatCompactNumber = (num: number | undefined): string => {
+  if (num === undefined || num === null) return '-';
+  const absNum = Math.abs(num);
+  const sign = num < 0 ? '-' : '';
+  if (absNum >= 1_000_000_000) return `${sign}${(absNum / 1_000_000_000).toFixed(2)}B`;
+  if (absNum >= 1_000_000) return `${sign}${(absNum / 1_000_000).toFixed(2)}M`;
+  if (absNum >= 1_000) return `${sign}${(absNum / 1_000).toFixed(2)}K`;
   return num.toLocaleString();
 };
 
-type SortColumn = 'last_price' | 'value' | 'volume' | 'frequency' | 'net_foreign_buy';
+type SortColumn = 'last_price' | 'value' | 'volume' | 'frequency' | 'net_foreign_buy' | 'dominant_broker_net_value';
 type SortDirection = 'asc' | 'desc';
 
 interface SortConfig {
@@ -92,7 +95,7 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
   return (
     <div className="glass-card-static" style={{ padding: '1rem' }}>
       <h3 style={{ marginBottom: '1rem', fontSize: '1rem', color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal' }}>
-        {title} ({movers.length} Saham) {/* Menambahkan jumlah saham di sini */}
+        {title} ({movers.length} Saham)
       </h3>
       {loading ? (
         <div style={{ textAlign: 'center', padding: '2rem 0' }}>
@@ -138,6 +141,14 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
                 >
                   Net Foreign {getSortIndicator('net_foreign_buy')}
                 </th>
+                {type === 'net-foreign-buy' && (
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('dominant_broker_net_value')}
+                  >
+                    Dominant Broker {getSortIndicator('dominant_broker_net_value')}
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -161,6 +172,20 @@ export default function MarketMoversTable({ type, title, limit = 10 }: MarketMov
                   <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: item.net_foreign_buy && item.net_foreign_buy >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
                     {item.net_foreign_buy ? formatCompactNumber(item.net_foreign_buy) : '-'}
                   </td>
+                  {type === 'net-foreign-buy' && (
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'left' }}>
+                      {item.dominant_broker_code ? (
+                        <span style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>
+                          {item.dominant_broker_code}
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                            ({formatCompactNumber(item.dominant_broker_net_value)})
+                          </div>
+                        </span>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
