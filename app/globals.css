@@ -1,11 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Colors - Dark Theme (Black and Blue) */
-  --bg-primary: #000000; /* Pure black */
-  --bg-secondary: #0a0a1a; /* Very dark blue */
-  --bg-card: rgba(10, 10, 26, 0.7); /* Transparent dark blue */
-  --bg-card-hover: rgba(15, 15, 35, 0.8); /* Slightly lighter transparent dark blue */
+  /* Colors - Light Theme (White and Blue) */
+  --bg-primary: #FFFFFF; /* Pure white */
+  --bg-secondary: #F8F9FA; /* Very light gray/off-white */
+  --bg-card: rgba(255, 255, 255, 0.8); /* Slightly transparent white */
+  --bg-card-hover: rgba(240, 242, 245, 0.9); /* Lighter gray for hover */
 
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, #007bff 0%, #0056b3 100%); /* Blue gradient */
@@ -13,9 +13,9 @@
   --gradient-warning: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); /* Yellow/Orange gradient */
 
   /* Text */
-  --text-primary: #ffffff; /* White */
-  --text-secondary: #a0b0c0; /* Light blue-gray */
-  --text-muted: #607080; /* Muted blue-gray */
+  --text-primary: #212529; /* Dark gray/black */
+  --text-secondary: #495057; /* Medium gray */
+  --text-muted: #6C757D; /* Lighter gray */
 
   /* Accent */
   --accent-primary: #007bff; /* Vibrant blue */
@@ -25,14 +25,14 @@
 
 
   /* Border */
-  --border-color: rgba(0, 123, 255, 0.2); /* Blue border */
+  --border-color: rgba(0, 123, 255, 0.1); /* Subtle blue border */
   --border-radius: 16px;
 
   /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
-  --shadow-glow: 0 0 40px rgba(0, 123, 255, 0.3); /* Blue glow */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+  --shadow-glow: 0 0 40px rgba(0, 123, 255, 0.15); /* Lighter blue glow */
 }
 
 * {
@@ -59,10 +59,10 @@ body::before {
   width: 100%;
   height: 100%;
   background:
-    radial-gradient(circle at 20% 50%, rgba(0, 123, 255, 0.1) 0%, transparent 50%), /* Blue accent */
-    radial-gradient(circle at 80% 80%, rgba(0, 86, 179, 0.1) 0%, transparent 50%); /* Darker blue accent */
+    radial-gradient(circle at 20% 50%, rgba(0, 123, 255, 0.05) 0%, transparent 50%), /* Blue accent */
+    radial-gradient(circle at 80% 80%, rgba(0, 86, 179, 0.05) 0%, transparent 50%); /* Darker blue accent */
   z-index: -1;
-  opacity: 0.6;
+  opacity: 0.4;
 }
 
 /* Container */
@@ -118,27 +118,27 @@ body::before {
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 123, 255, 0.05);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 123, 255, 0.1);
+  border-color: rgba(0, 123, 255, 0.2);
 }
 
 .btn-danger {
-  background: rgba(220, 53, 69, 0.15);
+  background: rgba(220, 53, 69, 0.1);
   color: var(--accent-warning);
-  border: 1px solid rgba(220, 53, 69, 0.3);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .btn-danger:hover {
-  background: rgba(220, 53, 69, 0.25);
-  border-color: rgba(220, 53, 69, 0.5);
+  background: rgba(220, 53, 69, 0.15);
+  border-color: rgba(220, 53, 69, 0.3);
 }
 
 .btn-outline {
@@ -151,7 +151,7 @@ body::before {
 .btn-outline:hover {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
-  background: rgba(0, 123, 255, 0.1);
+  background: rgba(0, 123, 255, 0.05);
 }
 
 
@@ -227,7 +227,7 @@ h3 {
   font-size: 1.125rem;
   font-weight: 600;
   margin-bottom: 0.75rem;
-  color: var(--text-secondary);
+  color: var(--text-primary); /* Changed to primary text for better visibility */
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -439,7 +439,7 @@ h3 {
 }
 
 .watchlist-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 123, 255, 0.02);
 }
 
 @media (max-width: 1024px) {
@@ -461,13 +461,13 @@ h3 {
 /* ===== Compact Card (Portrait Screenshot View) ===== */
 .compact-card {
   width: 360px;
-  background: #fafafa;
+  background: var(--bg-card); /* Changed to use variable */
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color); /* Changed to use variable */
   padding: 0.75rem 1rem;
   font-family: 'Inter', sans-serif;
   font-size: 0.8rem;
-  color: #333;
+  color: var(--text-primary); /* Changed to use variable */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
@@ -477,14 +477,14 @@ h3 {
   justify-content: space-between;
   align-items: center;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--border-color); /* Changed to use variable */
   margin-bottom: 0.5rem;
 }
 
 .compact-ticker {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #222;
+  color: var(--text-primary); /* Changed to use variable */
 }
 
 .compact-date {
@@ -492,7 +492,7 @@ h3 {
   align-items: center;
   gap: 0.25rem;
   font-size: 0.7rem;
-  color: #666;
+  color: var(--text-secondary); /* Changed to use variable */
 }
 
 .compact-date-icon {
@@ -501,7 +501,7 @@ h3 {
 
 .compact-section {
   margin-bottom: 0.5rem;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color); /* Changed to use variable */
   padding-top: 0.35rem;
 }
 
@@ -513,7 +513,7 @@ h3 {
 .compact-section-title {
   font-size: 0.65rem;
   font-weight: 600;
-  color: #888;
+  color: var(--text-muted); /* Changed to use variable */
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 0.35rem;
@@ -543,7 +543,7 @@ h3 {
 
 .compact-label {
   font-size: 0.6rem;
-  color: #888;
+  color: var(--text-muted); /* Changed to use variable */
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
@@ -551,7 +551,7 @@ h3 {
 .compact-value {
   font-size: 0.8rem;
   font-weight: 500;
-  color: #222;
+  color: var(--text-primary); /* Changed to use variable */
 }
 
 .compact-badge-primary {
@@ -566,8 +566,8 @@ h3 {
 
 .compact-badge-success {
   display: inline-block;
-  background: #d4edda;
-  color: #155724;
+  background: rgba(40, 167, 69, 0.1); /* Lighter green background */
+  color: var(--accent-success); /* Use accent green */
   padding: 3px 10px;
   border-radius: 4px;
   font-weight: 700;
@@ -576,8 +576,8 @@ h3 {
 
 .compact-badge-warning {
   display: inline-block;
-  background: #f8d7da;
-  color: #721c24;
+  background: rgba(220, 53, 69, 0.1); /* Lighter red background */
+  color: var(--accent-warning); /* Use accent red */
   padding: 3px 10px;
   border-radius: 4px;
   font-weight: 700;
@@ -611,8 +611,8 @@ h3 {
   display: flex;
   gap: 1px;
   margin: 0.75rem -1rem -0.75rem -1rem;
-  border-top: 1px solid #eee;
-  background: #eee;
+  border-top: 1px solid var(--border-color); /* Changed to use variable */
+  background: var(--bg-secondary); /* Changed to use variable */
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   overflow: hidden;
@@ -620,12 +620,12 @@ h3 {
 
 .compact-action-btn {
   flex: 1;
-  background: #fafafa;
+  background: var(--bg-secondary); /* Changed to use variable */
   border: none;
   padding: 10px;
   font-size: 0.75rem;
   font-weight: 500;
-  color: #666;
+  color: var(--text-secondary); /* Changed to use variable */
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -635,12 +635,12 @@ h3 {
 }
 
 .compact-action-btn:hover {
-  background: #f0f0f0;
-  color: #333;
+  background: var(--bg-card-hover); /* Changed to use variable */
+  color: var(--text-primary); /* Changed to use variable */
 }
 
 .compact-action-btn.active {
-  color: #007bff; /* Blue for active copy button */
+  color: var(--accent-primary); /* Blue for active copy button */
 }
 
 /* ===== Broker Summary Card ===== */
@@ -655,40 +655,37 @@ h3 {
 
 .broker-summary-card {
   width: 360px;
-  background: #fafafa;
+  background: var(--bg-card); /* Changed to use variable */
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color); /* Changed to use variable */
   padding: 0.75rem 1rem;
   font-family: 'Inter', sans-serif;
   font-size: 0.8rem;
-  color: #333;
+  color: var(--text-primary); /* Changed to use variable */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  height: 600px;
-  /* Matches compact-card shadow */
+  /* Removed fixed height to allow natural sizing */
 }
 
 /* ===== KeyStats Card ===== */
 .keystats-card {
   width: 360px;
-  background: #fafafa;
+  background: var(--bg-card); /* Changed to use variable */
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color); /* Changed to use variable */
   padding: 0.75rem 1rem;
   font-family: 'Inter', sans-serif;
   font-size: 0.8rem;
-  color: #333;
+  color: var(--text-primary); /* Changed to use variable */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  /* Scrollable Logic */
-  max-height: 600px;
-  /* Reduced to match BrokerSummary visual approx */
+  /* Removed max-height to allow natural sizing */
   overflow-y: auto;
   scrollbar-width: thin;
 }
 
 .broker-filters {
   display: flex;
-  background: #fff;
-  border: 1px solid #e5e5e5;
+  background: var(--bg-primary); /* Changed to use variable */
+  border: 1px solid var(--border-color); /* Changed to use variable */
   border-radius: 4px;
   margin-bottom: 0.75rem;
   overflow: hidden;
@@ -699,10 +696,10 @@ h3 {
   text-align: center;
   padding: 4px 8px;
   font-size: 0.75rem;
-  color: #555;
-  border-right: 1px solid #e5e5e5;
+  color: var(--text-secondary); /* Changed to use variable */
+  border-right: 1px solid var(--border-color); /* Changed to use variable */
   cursor: pointer;
-  background: #fff;
+  background: var(--bg-primary); /* Changed to use variable */
 }
 
 .broker-filter:last-child {
@@ -710,7 +707,7 @@ h3 {
 }
 
 .broker-filter:hover {
-  background: #f5f5f5;
+  background: var(--bg-secondary); /* Changed to use variable */
 }
 
 /* Broker Table Styles */
@@ -723,9 +720,9 @@ h3 {
 .broker-table th {
   text-align: right;
   padding: 4px;
-  color: #888;
+  color: var(--text-muted); /* Changed to use variable */
   font-weight: 500;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color); /* Changed to use variable */
   font-size: 0.7rem;
 }
 
@@ -735,21 +732,20 @@ h3 {
 
 .broker-table td {
   padding: 6px 4px;
-  text-align: right;
-  color: #333;
+  color: var(--text-primary); /* Changed to use variable */
 }
 
 .broker-table td.row-label {
   text-align: left;
   font-weight: 600;
-  color: #222;
+  color: var(--text-primary); /* Changed to use variable */
   white-space: nowrap;
 }
 
 .broker-table td.num {
   font-family: 'Inter', sans-serif;
   /* Ensure nums use Inter for consistency */
-  color: #444;
+  color: var(--text-secondary); /* Changed to use variable */
 }
 
 .broker-table td.num-wide {
@@ -760,7 +756,7 @@ h3 {
 /* Broker Detail Specifics */
 .broker-detail-table th {
   text-align: center;
-  color: #888;
+  color: var(--text-muted); /* Changed to use variable */
   font-size: 0.65rem;
   padding: 4px 2px;
 }
@@ -790,7 +786,7 @@ h3 {
 }
 
 .broker-detail-table tr {
-  border-bottom: 1px solid #f9f9f9;
+  border-bottom: 1px solid var(--border-color); /* Changed to use variable */
 }
 
 .broker-detail-table tr:last-child {
@@ -810,60 +806,30 @@ h3 {
 }
 
 .badge-acc {
-  background: #d4edda;
-  color: #155724;
-}
-
-.badge-neutral {
-  background: #e2e3e5;
-  color: #383d41;
-}
-
-.badge-dist {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.badge-small-dist {
-  background: #fff3cd;
-  /* Light orange/yellow */
-  color: #856404;
-  /* Darker text for readability if needed, or stick to a reddish tone */
-  background: #fca5a5;
-  /* Using tailwind-like red-300 for Small Dist based on image */
-  color: #7f1d1d;
-}
-
-/* Override for better match with image */
-.badge-small-dist {
-  background: #ff8a80;
-  /* Light Red */
-  color: #fff;
+  background: rgba(40, 167, 69, 0.1); /* Lighter green background */
+  color: var(--accent-success); /* Use accent green */
   font-weight: 600;
 }
 
-.badge-acc {
-  background: #81c784;
-  /* Light Green */
-  color: #fff;
-  font-weight: 600;
-  /* Normal Acc */
-}
-
 .badge-neutral {
-  background: #e0e0e0;
-  color: #616161;
+  background: rgba(108, 117, 125, 0.1); /* Lighter gray background */
+  color: var(--text-muted); /* Use muted text color */
 }
 
 .badge-dist {
-  background: #ffbcbc;
-  /* Pinkish Red */
-  color: #b71c1c;
+  background: rgba(220, 53, 69, 0.15); /* Slightly darker red background */
+  color: var(--accent-warning); /* Use accent warning color */
+}
+
+.badge-small-dist {
+  background: rgba(220, 53, 69, 0.1); /* Lighter red background */
+  color: var(--accent-warning); /* Use accent warning color */
+  font-weight: 600;
 }
 
 /* Stats table divider */
 .broker-stats-table tr:first-child td {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color); /* Changed to use variable */
   padding-bottom: 8px;
 }
 
@@ -888,8 +854,8 @@ h3 {
 
 .compact-form {
   padding: 0.75rem 1rem;
-  background: #0a0a1a; /* Dark blue */
-  border: 1px solid rgba(0, 123, 255, 0.2); /* Blue border */
+  background: var(--bg-card); /* Changed to use variable */
+  border: 1px solid var(--border-color); /* Changed to use variable */
 }
 
 .compact-form-header {
@@ -923,7 +889,7 @@ h3 {
 .quick-date-btn:hover {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
-  background: rgba(0, 123, 255, 0.1);
+  background: rgba(0, 123, 255, 0.05); /* Lighter blue tint on hover */
 }
 
 .compact-form-row {
@@ -967,7 +933,7 @@ h3 {
 
 .date-range-group .compact-input:focus {
   box-shadow: none;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 123, 255, 0.05); /* Blue tint on focus */
 }
 
 .date-separator {
@@ -1023,14 +989,13 @@ h3 {
     justify-content: center;
     margin-top: 0.5rem;
     padding-top: 0.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(0, 123, 255, 0.1); /* Changed to use variable */
   }
 }
 
 /* Static Glass Card (No Hover Effect, Darker Background) */
 .glass-card-static {
-  background: var(--bg-card-hover);
-  /* Use the darker hover color by default */
+  background: var(--bg-card); /* Changed to use variable */
   backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
@@ -1046,7 +1011,7 @@ h3 {
 
 /* ===== Navbar ===== */
 .navbar {
-  background: rgba(10, 10, 26, 0.95); /* Dark blue with transparency */
+  background: rgba(255, 255, 255, 0.95); /* White with transparency */
   border-bottom: 1px solid var(--border-color);
   padding: 0.75rem 0;
   position: sticky;
@@ -1119,19 +1084,19 @@ h3 {
 /* ===== KeyStats Card ===== */
 .keystats-card {
   width: 350px;
-  background: #fafafa;
+  background: var(--bg-card); /* Changed to use variable */
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color); /* Changed to use variable */
   padding: 0.75rem 1rem;
   font-family: 'Inter', sans-serif;
   font-size: 0.8rem;
-  color: #333;
+  color: var(--text-primary); /* Changed to use variable */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .keystats-section {
   margin-bottom: 0.5rem;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color); /* Changed to use variable */
   padding-top: 0.35rem;
 }
 
@@ -1143,7 +1108,7 @@ h3 {
 .keystats-section-title {
   font-size: 0.65rem;
   font-weight: 600;
-  color: #888;
+  color: var(--text-muted); /* Changed to use variable */
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 0.25rem;
@@ -1156,7 +1121,7 @@ h3 {
 }
 
 .keystats-table tr {
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--border-color); /* Changed to use variable */
 }
 
 .keystats-table tr:last-child {
@@ -1165,7 +1130,7 @@ h3 {
 
 .keystats-label {
   font-size: 0.7rem;
-  color: #666;
+  color: var(--text-secondary); /* Changed to use variable */
   padding: 3px 0;
   text-align: left;
   white-space: nowrap;
@@ -1177,7 +1142,7 @@ h3 {
 .keystats-value {
   font-size: 0.75rem;
   font-weight: 500;
-  color: #222;
+  color: var(--text-primary); /* Changed to use variable */
   padding: 3px 0;
   text-align: right;
   white-space: nowrap;
@@ -1194,13 +1159,13 @@ h3 {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 123, 255, 0.05); /* Blue tint */
   border: 1px solid var(--border-color);
   backdrop-filter: blur(10px);
 }
 
 .token-status-pill:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 123, 255, 0.1); /* Blue tint on hover */
   transform: translateY(-1px);
 }
 
@@ -1294,7 +1259,7 @@ h3 {
   width: 100%;
   padding: 0.75rem;
   margin-top: 1rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 123, 255, 0.05); /* Blue tint */
   border: 1px solid var(--border-color);
   border-radius: 8px;
   color: var(--text-primary);
@@ -1346,7 +1311,7 @@ h3 {
 .broker-flow-filters {
   display: flex;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 123, 255, 0.05); /* Blue tint */
   border-radius: 6px;
   padding: 2px;
 }
@@ -1396,11 +1361,11 @@ h3 {
 .broker-flow-table td {
   padding: 8px 6px;
   color: var(--text-primary);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(0, 123, 255, 0.03); /* Blue tint */
 }
 
 .broker-flow-table tr:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 123, 255, 0.02); /* Blue tint on hover */
 }
 
 .broker-flow-table .row-num {
@@ -1473,7 +1438,7 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 123, 255, 0.1); /* Blue tint */
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -1482,8 +1447,8 @@ h3 {
 
 .icon-action-btn:hover {
   transform: translateY(-1px);
-  border-color: rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(0, 123, 255, 0.3); /* Blue tint */
+  background: rgba(0, 123, 255, 0.1) !important; /* Blue tint */
 }
 
 .icon-action-btn:active {
@@ -1576,7 +1541,7 @@ h3 {
   gap: 8px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px rgba(0, 123, 255, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 123, 255, 0.1); /* Blue tint */
 }
 
 .chartbit-btn:hover {
@@ -1624,7 +1589,7 @@ h3 {
 
 .show-all-btn:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 123, 255, 0.05); /* Blue tint */
 }
 
 .job-logs-list {
@@ -1634,7 +1599,7 @@ h3 {
 }
 
 .job-log-item {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 123, 255, 0.03); /* Blue tint */
   border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
@@ -1642,12 +1607,12 @@ h3 {
 }
 
 .job-log-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 123, 255, 0.05); /* Blue tint */
+  border-color: rgba(0, 123, 255, 0.2); /* Blue tint */
 }
 
 .job-log-item.active {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 123, 255, 0.06); /* Blue tint */
   border-color: var(--accent-primary);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
@@ -1719,8 +1684,8 @@ h3 {
 }
 
 .job-log-details {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary); /* Changed to use variable */
   padding: 0.5rem;
 }
 
@@ -1749,7 +1714,7 @@ h3 {
 }
 
 .log-entries-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 123, 255, 0.1); /* Blue tint */
   border-radius: 4px;
 }
 
@@ -1794,7 +1759,7 @@ h3 {
 
 /* New styles for expandable sector table */
 .sector-row:hover {
-  background-color: rgba(255,255,255,0.05) !important;
+  background-color: rgba(0, 123, 255, 0.05) !important; /* Blue tint on hover */
 }
 
 .sub-sector-row {
@@ -1881,7 +1846,7 @@ h3 {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 123, 255, 0.1); /* Blue tint */
   -webkit-transition: .4s;
   transition: .4s;
   border-radius: 24px;
