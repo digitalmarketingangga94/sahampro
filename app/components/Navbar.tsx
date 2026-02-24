@@ -2,133 +2,146 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LineChart as LineChartIcon } from 'lucide-react';
+import { useState } from 'react'; // Import useState
+import { LineChart as LineChartIcon, Menu, X } from 'lucide-react'; // Import Menu and X icons
 
 
 const Navbar = () => {
   const pathname = usePathname();
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // State for mobile menu
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
 
   return (
     <nav className="navbar">
-      <div className="navbar-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="navbar-container">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div className="navbar-content">
-            <h1 className="navbar-title" style={{ fontSize: '1.5rem', marginBottom: '0' }}>RSY Analyze Stock</h1>
-            <p className="navbar-subtitle" style={{ fontSize: '0.75rem' }}>Analyze stock targets based on broker summary</p>
+            <h1 className="navbar-title">RSY Analyze Stock</h1>
+            <p className="navbar-subtitle">Analyze stock targets based on broker summary</p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div className="nav-links" style={{ display: 'flex', gap: '1.5rem' }}>
-            
+        {/* Desktop Navigation Links */}
+        <div className="nav-links-desktop">
+          <Link 
+            href="/" 
+            onClick={closeMenu}
+            className={pathname === '/' ? 'nav-link active' : 'nav-link'}
+          >
+            Analyze Stock
+          </Link>
+          <Link 
+            href="/broker-activity" 
+            onClick={closeMenu}
+            className={pathname === '/broker-activity' ? 'nav-link active' : 'nav-link'}
+          >
+            Broker Activity
+          </Link>
+          <Link 
+            href="/top-stock" 
+            onClick={closeMenu}
+            className={pathname === '/top-stock' ? 'nav-link active' : 'nav-link'}
+          >
+            Top Stock
+          </Link>
+          <Link 
+            href="/insider-activity" 
+            onClick={closeMenu}
+            className={pathname === '/insider-activity' ? 'nav-link active' : 'nav-link'}
+          >
+            Insider Activity
+          </Link>
+          <Link 
+            href="/hot-stock" 
+            onClick={closeMenu}
+            className={pathname === '/hot-stock' ? 'nav-link active' : 'nav-link'}
+          >
+            Hot Stock
+          </Link>
+          <Link 
+            href="/net-foreign-buy" 
+            onClick={closeMenu}
+            className={pathname === '/net-foreign-buy' ? 'nav-link active' : 'nav-link'}
+          >
+            Net Foreign Buy
+          </Link>
+          <Link 
+            href="/history" 
+            onClick={closeMenu}
+            className={pathname === '/history' ? 'nav-link active' : 'nav-link'}
+          >
+            History
+          </Link>
+        </div>
+
+        {/* Mobile Hamburger Icon */}
+        <button className="mobile-menu-button" onClick={toggleMenu}>
+          <Menu size={24} />
+        </button>
+
+        {/* Mobile Menu Overlay */}
+        <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`}>
+          <button className="mobile-menu-close-button" onClick={toggleMenu}>
+            <X size={24} />
+          </button>
+          <div className="mobile-nav-links">
             <Link 
               href="/" 
-              style={{
-                textDecoration: 'none',
-                color: pathname === '/' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: pathname === '/' ? 600 : 400,
-                fontSize: '0.9rem',
-                borderBottom: pathname === '/' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                paddingBottom: '2px',
-                transition: 'all 0.2s'
-              }}
+              onClick={closeMenu}
+              className={pathname === '/' ? 'nav-link active' : 'nav-link'}
             >
               Analyze Stock
             </Link>
-
-            {/* Moved Broker Activity here */}
             <Link 
               href="/broker-activity" 
-              style={{
-                textDecoration: 'none',
-                color: pathname === '/broker-activity' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: pathname === '/broker-activity' ? 600 : 400,
-                fontSize: '0.9rem',
-                borderBottom: pathname === '/broker-activity' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                paddingBottom: '2px',
-                transition: 'all 0.2s'
-              }}
+              onClick={closeMenu}
+              className={pathname === '/broker-activity' ? 'nav-link active' : 'nav-link'}
             >
               Broker Activity
             </Link>
-
-            {/* New Top Stock Link */}
             <Link 
               href="/top-stock" 
-              style={{
-                textDecoration: 'none',
-                color: pathname === '/top-stock' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: pathname === '/top-stock' ? 600 : 400,
-                fontSize: '0.9rem',
-                borderBottom: pathname === '/top-stock' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                paddingBottom: '2px',
-                transition: 'all 0.2s'
-              }}
+              onClick={closeMenu}
+              className={pathname === '/top-stock' ? 'nav-link active' : 'nav-link'}
             >
               Top Stock
             </Link>
-            
             <Link 
               href="/insider-activity" 
-              style={{
-                textDecoration: 'none',
-                color: pathname === '/insider-activity' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: pathname === '/insider-activity' ? 600 : 400,
-                fontSize: '0.9rem',
-                borderBottom: pathname === '/insider-activity' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                paddingBottom: '2px',
-                transition: 'all 0.2s'
-              }}
+              onClick={closeMenu}
+              className={pathname === '/insider-activity' ? 'nav-link active' : 'nav-link'}
             >
               Insider Activity
             </Link>
-            
             <Link 
               href="/hot-stock" 
-              style={{
-                textDecoration: 'none',
-                color: pathname === '/hot-stock' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: pathname === '/hot-stock' ? 600 : 400,
-                fontSize: '0.9rem',
-                borderBottom: pathname === '/hot-stock' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                paddingBottom: '2px',
-                transition: 'all 0.2s'
-              }}
+              onClick={closeMenu}
+              className={pathname === '/hot-stock' ? 'nav-link active' : 'nav-link'}
             >
               Hot Stock
             </Link>
             <Link 
               href="/net-foreign-buy" 
-              style={{
-                textDecoration: 'none',
-                color: pathname === '/net-foreign-buy' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: pathname === '/net-foreign-buy' ? 600 : 400,
-                fontSize: '0.9rem',
-                borderBottom: pathname === '/net-foreign-buy' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                paddingBottom: '2px',
-                transition: 'all 0.2s'
-              }}
+              onClick={closeMenu}
+              className={pathname === '/net-foreign-buy' ? 'nav-link active' : 'nav-link'}
             >
               Net Foreign Buy
             </Link>
             <Link 
               href="/history" 
-              style={{
-                textDecoration: 'none',
-                color: pathname === '/history' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: pathname === '/history' ? 600 : 400,
-                fontSize: '0.9rem',
-                borderBottom: pathname === '/history' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                paddingBottom: '2px',
-                transition: 'all 0.2s'
-              }}
+              onClick={closeMenu}
+              className={pathname === '/history' ? 'nav-link active' : 'nav-link'}
             >
               History
             </Link>
           </div>
-          {/* <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <JobStatusIndicator />
-          </div> */}
         </div>
       </div>
     </nav>
