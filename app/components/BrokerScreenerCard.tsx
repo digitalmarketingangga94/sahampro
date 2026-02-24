@@ -10,12 +10,14 @@ interface BrokerScreenerCardProps {}
 
 const formatNumber = (num: number | undefined): string => {
   if (num === undefined || num === null) return '-';
-  return num.toLocaleString('id-ID', { maximumFractionDigits: 0 });
+  // Allow up to 3 decimal places for Net Lot, but don't force them if not present
+  return num.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
 };
 
 const formatAvgPrice = (num: number | undefined): string => {
   if (num === undefined || num === null) return '-';
-  return num.toLocaleString('id-ID', { maximumFractionDigits: 0 }); // Format as integer price
+  // Always show 3 decimal places for Avg Price, as per image
+  return num.toLocaleString('id-ID', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 };
 
 type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'average_price' | 'dominant_broker' | 'dominant_percent';
@@ -337,7 +339,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                     Avg Price {getSortIndicator('average_price')}
                   </th>
                   <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('dominant_broker')}
                   >
                     Dominant Broker {getSortIndicator('dominant_broker')}
@@ -366,7 +368,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                     </td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatNumber(item.net_lot)}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatAvgPrice(item.average_price)}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'left' }}>{item.dominant_broker}</td>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{item.dominant_broker}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                         <span>{item.dominant_percent.toFixed(2)}%</span>

@@ -173,7 +173,7 @@ export async function GET(request: NextRequest) {
           stock_name: stockNameMap.get(stockCode),
           net_direction: netBuy ? 'All Net Buy' : 'All Net Sell',
           net_lot: totalNetLot,
-          average_price: Math.round(averagePrice), // Round the average price
+          average_price: averagePrice, // Removed Math.round()
           dominant_broker: dominantBroker,
           dominant_percent: isNaN(dominantPercent) ? 0 : dominantPercent,
         });
