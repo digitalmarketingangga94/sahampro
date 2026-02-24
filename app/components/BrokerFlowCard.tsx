@@ -235,7 +235,7 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
               <table className="broker-flow-table">
                 <thead>
                   <tr>
-                    <th>#</th><th>BROKER</th><th>DAILY HEATMAP</th>
+                    <th>BROKER</th><th>DAILY HEATMAP</th>
                     <th style={{ textAlign: 'center' }}>NET VALUE</th>
                     <th style={{ textAlign: 'center' }}>CONSISTENCY</th>
                     <th style={{ textAlign: 'center' }}>DOMINANT %</th> {/* New header */}
