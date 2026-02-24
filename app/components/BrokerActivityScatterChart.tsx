@@ -28,9 +28,9 @@ const formatChartValue = (value: number): string => {
   if (absValue >= 1e9) {
     return `${(value / 1e9).toFixed(1)}B`;
   } else if (absValue >= 1e6) {
-    return `${(value / 1e6).toFixed(1)}M`;
+    return `${(absValue / 1e6).toFixed(1)}M`;
   } else if (absValue >= 1e3) {
-    return `${(value / 1e3).toFixed(1)}K`;
+    return `${(absValue / 1e3).toFixed(1)}K`;
   }
   return value.toLocaleString();
 };
@@ -75,6 +75,12 @@ const CustomActivityLabel = (props: any) => {
       {broker_code}{displayPercentage}
     </text>
   );
+};
+
+// Define the type for items in chartDataWithDominanceAndRadius
+type ChartDataItemActivity = BrokerStockActivityPerBroker & {
+  percentage_of_stock_net_value: number;
+  r: number;
 };
 
 export default function BrokerActivityScatterChart({
@@ -125,25 +131,31 @@ export default function BrokerActivityScatterChart({
   const totalNetValuePerStock = filteredChartData.reduce((acc: { [stockCode: string]: number }, item) => {
     acc[item.stock_code] = (acc[item.stock_code] || 0) + Math.abs(item.net_value);
     return acc;
-  }, {});
+  }, {} as { [stockCode: string]: number }); // Explicitly type the initial accumulator
 
-  // Add dominant percentage to each item
-  const chartDataWithDominance = filteredChartData.map(item => ({
+  // Find max buy_value for scaling circle size
+  const maxBuyValue = Math.max(...filteredChartData.map(item => item.buy_value), 1);
+  const baseRadius = 5; // Minimum radius
+  const scalingFactor = 15; // Max additional radius
+
+  // Add dominant percentage and radius to each item
+  const chartDataWithDominanceAndRadius: ChartDataItemActivity[] = filteredChartData.map(item => ({
     ...item,
     percentage_of_stock_net_value: totalNetValuePerStock[item.stock_code] > 0
       ? (Math.abs(item.net_value) / totalNetValuePerStock[item.stock_code]) * 100
       : 0,
+    r: baseRadius + (item.buy_value / maxBuyValue) * scalingFactor, // Calculate radius
   }));
 
   // Group data by broker_type for separate scatters
-  const groupedData = chartDataWithDominance.reduce((acc, item) => {
+  const groupedData = chartDataWithDominanceAndRadius.reduce((acc, item) => {
     const type = item.broker_type || 'Unknown';
     if (!acc[type]) {
       acc[type] = [];
     }
     acc[type].push(item);
     return acc;
-  }, {} as { [key: string]: typeof chartDataWithDominance });
+  }, {} as { [key: string]: ChartDataItemActivity[] });
 
   return (
     <div style={{ width: '100%', height: '500px' }}>
@@ -193,6 +205,7 @@ export default function BrokerActivityScatterChart({
               opacity={0.8}
               shape="circle"
               line={false}
+              r={(entry: ChartDataItemActivity) => entry.r} // Explicitly type 'entry'
             >
               <LabelList content={<CustomActivityLabel />} />
             </Scatter>

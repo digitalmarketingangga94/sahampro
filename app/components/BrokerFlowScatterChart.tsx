@@ -29,9 +29,9 @@ const formatChartValue = (value: number): string => {
   if (absValue >= 1e9) {
     return `${(value / 1e9).toFixed(1)}B`;
   } else if (absValue >= 1e6) {
-    return `${(value / 1e6).toFixed(1)}M`;
+    return `${(absValue / 1e6).toFixed(1)}M`;
   } else if (absValue >= 1e3) {
-    return `${(value / 1e3).toFixed(1)}K`;
+    return `${(absValue / 1e3).toFixed(1)}K`;
   }
   return value.toLocaleString();
 };
@@ -75,6 +75,18 @@ const CustomBrokerFlowLabel = (props: any) => {
       {broker_code}{displayPercentage}
     </text>
   );
+};
+
+// Define the type for items in chartDataWithDominanceAndRadius
+type ChartDataItem = {
+  broker_code: string;
+  stock_code: string;
+  broker_type: string;
+  net_value: number;
+  buy_value: number;
+  sell_value: number;
+  percentage_of_total_net_value: number;
+  r: number;
 };
 
 export default function BrokerFlowScatterChart({
@@ -147,21 +159,27 @@ export default function BrokerFlowScatterChart({
   // Calculate total net value for these top 5 brokers
   const totalAbsoluteNetValue = top5Brokers.reduce((sum, item) => sum + Math.abs(item.net_value), 0);
 
-  // Add dominant percentage to each item in the top 5 list
-  const chartDataWithDominance = top5Brokers.map(item => ({
+  // Find max buy_value for scaling circle size
+  const maxBuyValue = Math.max(...top5Brokers.map(item => item.buy_value), 1);
+  const baseRadius = 5; // Minimum radius
+  const scalingFactor = 15; // Max additional radius
+
+  // Add dominant percentage and radius to each item in the top 5 list
+  const chartDataWithDominanceAndRadius: ChartDataItem[] = top5Brokers.map(item => ({
     ...item,
     percentage_of_total_net_value: totalAbsoluteNetValue > 0 ? (Math.abs(item.net_value) / totalAbsoluteNetValue) * 100 : 0,
+    r: baseRadius + (item.buy_value / maxBuyValue) * scalingFactor, // Calculate radius
   }));
 
   // Group data by broker_type for separate scatters
-  const groupedData = chartDataWithDominance.reduce((acc, item) => {
-    const type = item.broker_type || 'Unknown'; // This will be 'Smartmoney', 'Foreign', 'Retail', 'Mix', 'Unknown'
+  const groupedData = chartDataWithDominanceAndRadius.reduce((acc, item) => {
+    const type = item.broker_type || 'Unknown';
     if (!acc[type]) {
       acc[type] = [];
     }
     acc[type].push(item);
     return acc;
-  }, {} as { [key: string]: typeof chartDataWithDominance });
+  }, {} as { [key: string]: ChartDataItem[] });
 
   return (
     <div style={{ width: '100%', height: '500px' }}>
@@ -211,6 +229,7 @@ export default function BrokerFlowScatterChart({
               opacity={0.8}
               shape="circle"
               line={false}
+              r={(entry: ChartDataItem) => entry.r} // Explicitly type 'entry'
             >
               <LabelList content={<CustomBrokerFlowLabel />} />
             </Scatter>
