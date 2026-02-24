@@ -71,7 +71,7 @@ const CustomActivityLabel = (props: any) => {
   const { broker_code, percentage_of_stock_net_value } = payload;
   const displayPercentage = percentage_of_stock_net_value > 0.1 ? ` (${percentage_of_stock_net_value.toFixed(1)}%)` : '';
   return (
-    <text x={x} y={y} dy={-10} textAnchor="middle" fill="var(--text-primary)" fontSize={10}>
+    <text x={x} y={y} dy={-10} textAnchor="middle" fill="black" fontSize={12}>
       {broker_code}{displayPercentage}
     </text>
   );
