@@ -198,7 +198,7 @@ export default function BrokerActivityScatterChart({
             <Scatter
               key={brokerType}
               name={brokerType === 'Smartmoney' ? 'Smart Money' : brokerType} // Adjust name for legend
-              data={dataPoints}
+              data={dataPoints as any[]} // Cast to any[] to satisfy Recharts' generic data prop
               fill="white" // White background for the circle
               stroke={brokerTypeColors[brokerType]} // Border color based on broker type
               strokeWidth={2}

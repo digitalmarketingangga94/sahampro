@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { BackgroundJobLogEntry, BackgroundJobLog } from './types'; // Import types from types.ts
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;

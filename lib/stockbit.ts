@@ -323,7 +323,7 @@ export function getBrokerSummary(marketDetectorData: MarketDetectorResponse): Br
       volume: detector?.volume || 0,
     },
     topBuyers: brokerSummary?.brokers_buy?.slice(0, 4) || [],
-    topSellers: brokerSummary?.brokers_sell?.slice(0, 4) || [],
+        topSellers: brokerSummary?.brokers_sell?.slice(0, 4) || [],
   };
 }
 
@@ -422,7 +422,7 @@ export async function fetchMarketMovers(type: MarketMoverType, limit: number = 2
   const json: MarketMoversResponse = await response.json();
   
   // Map the new response structure to the existing MarketMoverItem interface
-  const mappedMovers: MarketMoverItem[] = json.data.mover_list.map(item => ({
+  const mappedMovers: MarketMoverItem[] = json.data.mover_list.map((item: any) => ({
     symbol: item.stock_detail.code,
     name: item.stock_detail.name,
     last_price: item.price,

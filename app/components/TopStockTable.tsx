@@ -22,8 +22,8 @@ const formatRawValue = (valueStr: string | undefined): string => {
   if (isNaN(num)) return '-';
   const absNum = Math.abs(num);
   if (absNum >= 1_000_000_000) return `${(num / 1_000_000_000).toFixed(1)}B`;
-  if (absNum >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
-  if (absNum >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
+  if (absNum >= 1_000_000) return `${(absNum / 1_000_000).toFixed(1)}M`;
+  if (absNum >= 1_000) return `${(absNum / 1_000).toFixed(1)}K`;
   return num.toLocaleString('id-ID');
 };
 

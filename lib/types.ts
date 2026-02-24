@@ -330,59 +330,202 @@ export interface BackgroundJobLog {
   metadata?: Record<string, unknown>;
 }
 
-export interface BackgroundJobLog {
-  id: number;
-  job_name: string;
-  status: 'running' | 'completed' | 'failed';
-  started_at: string;
-  completed_at?: string;
-  success_count: number;
-  error_count: number;
-  total_items: number;
-  log_entries: BackgroundJobLogEntry[];
-  error_message?: string;
-  metadata?: Record<string, unknown>;
+// Stockbit Search Types
+export interface StockbitSearchCompanyItem {
+  symbol_2: string;
+  name: string;
+  icon_url: string;
+  // Add other properties if needed from the search API response
 }
 
-/**
- * Get the latest job log for a specific job name
- */
-export async function getLatestBackgroundJobLog(jobName: string) {
-  const { data, error } = await supabase
-    .from('background_job_logs')
-    .select('*')
-    .eq('job_name', jobName)
-    .order('started_at', { ascending: false })
-    .limit(1)
-    .single();
-
-  if (error && error.code !== 'PGRST116') {
-    console.error('Error fetching latest job log:', error);
-  }
-
-  return data || null;
+export interface StockbitSearchResponse {
+  data: {
+    company: StockbitSearchCompanyItem[];
+    // Other search categories like 'news', 'people', etc.
+  };
+  message: string;
 }
 
-/**
- * Get all unique emiten codes from stock_queries table
- */
-export async function getUniqueEmitens(): Promise<string[]> {
-  // Define the expected type for each row returned by the query
-  type EmitenRow = { emiten: string };
+// Market Movers Types
+export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency' | 'net-foreign-buy';
 
-  const { data, error } = await supabase
-    .from('stock_queries')
-    .select('distinct emiten');
+export interface MarketMoverItem {
+  symbol: string;
+  name: string;
+  last_price: number;
+  change_point: number;
+  change_percentage: number;
+  value: number;
+  volume: number;
+  frequency: number;
+  net_foreign_buy?: number; // Specific to 'net-foreign-buy' type
+}
 
-  if (error) {
-    console.error('Error fetching unique emitens from Supabase:', error);
-    throw error;
-  }
+export interface MarketMoversResponse {
+  data: {
+    mover_list: {
+      stock_detail: {
+        code: string;
+        name: string;
+      };
+      price: number;
+      change: {
+        value: number;
+        percentage: number;
+      };
+      value: { raw: number };
+      volume: { raw: number };
+      frequency: { raw: number };
+      net_foreign_buy?: { raw: number };
+    }[];
+  };
+  message: string;
+}
 
-  // Explicitly assert the type of 'data' to guide TypeScript
-  // Use 'unknown' as an intermediate step to bypass strict type checking
-  const typedEmitens = data as unknown as EmitenRow[] | null;
+// Trade Book Types
+export interface TradeBookItem {
+  price: number;
+  volume: number;
+  time: string;
+  type: 'buy' | 'sell';
+}
 
-  console.log('Unique emitens fetched from Supabase:', typedEmitens);
-  return typedEmitens?.map(item => item.emiten) || [];
+export interface TradeBookTotal {
+  total_buy_value: number;
+  total_sell_value: number;
+  total_buy_volume: number;
+  total_sell_volume: number;
+  trades: TradeBookItem[];
+}
+
+export interface TradeBookResponse {
+  data: {
+    book_total: TradeBookTotal;
+  };
+  message: string;
+}
+
+// Insider Activity Types
+export type ActionType =
+  | "ACTION_TYPE_UNSPECIFIED"
+  | "ACTION_TYPE_BUY"
+  | "ACTION_TYPE_SELL"
+  | "ACTION_TYPE_WARRANT_EXERCISE"
+  | "ACTION_TYPE_CONVERSION"
+  | "ACTION_TYPE_RIGHTS_ISSUE"
+  | "ACTION_TYPE_STOCK_SPLIT"
+  | "ACTION_TYPE_REVERSE_STOCK_SPLIT"
+  | "ACTION_TYPE_DIVIDEND"
+  | "ACTION_TYPE_BONUS_SHARE"
+  | "ACTION_TYPE_MERGER"
+  | "ACTION_TYPE_ACQUISITION"
+  | "ACTION_TYPE_DELISTING"
+  | "ACTION_TYPE_OTHER";
+
+export type SourceType =
+  | "SOURCE_TYPE_UNSPECIFIED"
+  | "SOURCE_TYPE_IDX"
+  | "SOURCE_TYPE_KSEI";
+
+export interface InsiderMovementItem {
+  id: string;
+  date: string;
+  symbol: string;
+  name: string;
+  action_type: ActionType;
+  changes: {
+    value: string;
+    percentage: string;
+  };
+  current: {
+    value: string;
+    percentage: string;
+  };
+  previous: {
+    value: string;
+    percentage: string;
+  };
+  price_formatted: string;
+  broker_detail?: {
+    code: string;
+    name: string;
+  };
+  nationality?: string;
+  data_source: {
+    type: SourceType;
+  };
+}
+
+export interface InsiderActivityResponse {
+  data: {
+    movement: InsiderMovementItem[];
+    is_more: boolean;
+  };
+  message: string;
+}
+
+// Broker Activity Detail Types
+import { BrokerType } from './brokers'; // Import BrokerType from brokers.ts
+export interface BrokerStockActivityPerBroker {
+  broker_code: string;
+  stock_code: string;
+  broker_type: BrokerType; // Changed to BrokerType
+  net_value: number;
+  net_lot: number;
+  buy_value: number;
+  buy_lot: number;
+  buy_avg_price: number;
+  sell_value: number;
+  sell_lot: number;
+  sell_avg_price: number;
+  stock_name?: string;
+}
+
+export interface BrokerOverallActivitySummary {
+  brokers_buy: BrokerBuyItem[];
+  brokers_sell: BrokerSellItem[];
+  // Add other properties if available in the API response
+}
+
+export interface BrokerOverallActivitySummaryResponse {
+  data: {
+    broker_summary: BrokerOverallActivitySummary;
+  };
+  message: string;
+}
+
+// Broker Screener Types
+export interface BrokerScreenerResultItem {
+  symbol: string;
+  stock_name?: string;
+  net_direction: 'All Net Buy' | 'All Net Sell';
+  net_lot: number;
+  avg_per_day: number;
+  dominant_broker: string;
+  dominant_percent: number;
+}
+
+// Top Stock Types
+export interface TopStockValue {
+  raw: string;
+  formatted: string;
+}
+
+export interface TopStockItem {
+  rank: number;
+  code: string;
+  name: string;
+  value: TopStockValue;
+  lot: TopStockValue;
+  average: TopStockValue;
+  foreign_value: TopStockValue;
+  frequency: TopStockValue;
+}
+
+export interface TopStockResponse {
+  data: {
+    top_buy: TopStockItem[];
+    top_sell: TopStockItem[];
+  };
+  message: string;
 }

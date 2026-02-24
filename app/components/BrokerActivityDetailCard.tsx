@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { BROKERS, BrokerInfo, BrokerType } from '@/lib/brokers';
 import { getLatestTradingDate, getDateNDaysAgo } from '@/lib/utils';
-import type { BrokerOverallActivitySummary, BrokerBuyItem, BrokerSellItem, BrokerStockActivityPerBroker } from '@/lib/types';
+import type { BrokerBuyItem, BrokerSellItem, BrokerStockActivityPerBroker } from '@/lib/types';
 import { ChevronLeft, ChevronRight, Search, Check, ChevronDown, Table, LineChart } from 'lucide-react';
 import BrokerActivityScatterChart from './BrokerActivityScatterChart';
 

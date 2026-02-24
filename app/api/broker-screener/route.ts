@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchBrokerActivityDetail, fetchEmitenInfo } from '@/lib/stockbit';
 import { getDateNDaysAgo, getLatestTradingDate } from '@/lib/utils';
-import type { BrokerStockActivityPerBroker, BrokerScreenerResultItem } from '@/lib/types';
+import type { BrokerStockActivityPerBroker, BrokerScreenerResultItem, BrokerBuyItem, BrokerSellItem } from '@/lib/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         // Combine buys and sells for the same stock by the same broker
         const tempStockMap = new Map<string, BrokerStockActivityPerBroker>();
 
-        brokerActivity.data.broker_summary.brokers_buy.forEach(item => {
+        brokerActivity.data.broker_summary.brokers_buy.forEach((item: BrokerBuyItem) => {
           const stockCode = item.netbs_stock_code;
           uniqueStockCodes.add(stockCode);
           const existing = tempStockMap.get(stockCode);
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
           }
         });
 
-        brokerActivity.data.broker_summary.brokers_sell.forEach(item => {
+        brokerActivity.data.broker_summary.brokers_sell.forEach((item: BrokerSellItem) => {
           const stockCode = item.netbs_stock_code;
           uniqueStockCodes.add(stockCode);
           const existing = tempStockMap.get(stockCode);
