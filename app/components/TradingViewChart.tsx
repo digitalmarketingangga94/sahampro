@@ -40,7 +40,19 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({
         "hide_side_toolbar": false,
         "allow_symbol_change": true,
         "calendar": false,
-        "support_host": "https://www.tradingview.com"
+        "support_host": "https://www.tradingview.com",
+        "withdateranges": true, // Show date range selector
+        "hide_volume": false, // Volume is visible
+        "hide_legend": false, // Legend is visible
+        "studies": [ // Add common indicators seen in the image
+          "MACD@tv-basic",
+          "IchimokuCloud@tv-basic"
+        ],
+        "details": true, // Show company details
+        "news": ["headlines"], // Show news headlines
+        "watchlist": ["AMMN", "BBCA", "TLKM", "ASII", "GOTO"], // Example watchlist
+        "hotlist": false,
+        "container_id": "tradingview_chart_container" // A unique ID for the container
       });
       containerRef.current.appendChild(script);
     }
