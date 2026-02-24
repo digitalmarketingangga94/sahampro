@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 
-interface IdxSectorCardProps {}
+interface AllSectorsListCardProps {}
 
-export default function IdxSectorCard({}: IdxSectorCardProps) {
+export default function AllSectorsListCard({}: AllSectorsListCardProps) {
   const [sectors, setSectors] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

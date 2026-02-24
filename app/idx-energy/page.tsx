@@ -1,12 +1,12 @@
 'use client';
 
-import IdxEnergyDetailCard from '../components/IdxEnergyDetailCard';
+import IdxIndexDetailCard from '../components/IdxIndexDetailCard';
 
 export default function IdxEnergyPage() {
   return (
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
       <h2 style={{ marginBottom: '2rem' }}>⚡ IDX Energy Detail</h2>
-      <IdxEnergyDetailCard symbol="IDXENERGY" />
+      <IdxIndexDetailCard symbol="IDXENERGY" />
     </div>
   );
 }

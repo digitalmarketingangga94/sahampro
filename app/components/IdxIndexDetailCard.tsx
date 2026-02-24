@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import type { EmitenInfoResponse } from '@/lib/types';
 import { LineChart, TrendingUp, TrendingDown, Users, DollarSign } from 'lucide-react';
 
-interface IdxEnergyDetailCardProps {
+interface IdxIndexDetailCardProps {
   symbol: string;
 }
 
@@ -27,13 +27,13 @@ const formatCompactNumber = (num: number | string | undefined): string => {
   return n.toLocaleString('id-ID');
 };
 
-export default function IdxEnergyDetailCard({ symbol }: IdxEnergyDetailCardProps) {
-  const [sectorData, setSectorData] = useState<EmitenInfoResponse['data'] | null>(null);
+export default function IdxIndexDetailCard({ symbol }: IdxIndexDetailCardProps) {
+  const [indexData, setIndexData] = useState<EmitenInfoResponse['data'] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchSectorDetail = async () => {
+    const fetchIndexDetail = async () => {
       setLoading(true);
       setError(null);
       try {
@@ -43,7 +43,7 @@ export default function IdxEnergyDetailCard({ symbol }: IdxEnergyDetailCardProps
         if (!json.success) {
           throw new Error(json.error || `Failed to fetch data for ${symbol}`);
         }
-        setSectorData(json.data);
+        setIndexData(json.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : `Error fetching data for ${symbol}`);
       } finally {
@@ -51,14 +51,14 @@ export default function IdxEnergyDetailCard({ symbol }: IdxEnergyDetailCardProps
       }
     };
 
-    fetchSectorDetail();
+    fetchIndexDetail();
   }, [symbol]);
 
   if (loading) {
     return (
       <div className="glass-card-static" style={{ padding: '2rem', textAlign: 'center' }}>
         <div className="spinner" style={{ margin: '0 auto' }}></div>
-        <p style={{ color: 'var(--text-secondary)', marginTop: '1rem' }}>Loading IDX Sector data...</p>
+        <p style={{ color: 'var(--text-secondary)', marginTop: '1rem' }}>Loading IDX Index data...</p>
       </div>
     );
   }
@@ -71,7 +71,7 @@ export default function IdxEnergyDetailCard({ symbol }: IdxEnergyDetailCardProps
     );
   }
 
-  if (!sectorData) {
+  if (!indexData) {
     return (
       <div className="glass-card-static" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
         No data available for {symbol}.
@@ -79,7 +79,7 @@ export default function IdxEnergyDetailCard({ symbol }: IdxEnergyDetailCardProps
     );
   }
 
-  const isPositive = sectorData.percentage >= 0;
+  const isPositive = indexData.percentage >= 0;
   const changeColor = isPositive ? 'var(--accent-success)' : 'var(--accent-warning)';
 
   return (
@@ -88,10 +88,10 @@ export default function IdxEnergyDetailCard({ symbol }: IdxEnergyDetailCardProps
         <LineChart size={36} color="var(--accent-primary)" />
         <div>
           <h3 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal' }}>
-            {sectorData.name || symbol} ({symbol})
+            {indexData.name || symbol} ({symbol})
           </h3>
-          <p style={{ fontSize: '0.0.9rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-            {sectorData.sector} - {sectorData.sub_sector}
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+            {indexData.sector} {indexData.sub_sector ? `- ${indexData.sub_sector}` : ''}
           </p>
         </div>
       </div>
@@ -101,12 +101,12 @@ export default function IdxEnergyDetailCard({ symbol }: IdxEnergyDetailCardProps
         <div style={{ background: 'rgba(0, 123, 255, 0.05)', border: '1px solid rgba(0, 123, 255, 0.1)', borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Current Index</p>
           <p style={{ fontSize: '2.2rem', fontWeight: '700', color: 'var(--text-primary)', lineHeight: '1' }}>
-            {formatNumber(sectorData.price, 0)}
+            {formatNumber(indexData.price, 0)}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', color: changeColor }}>
             {isPositive ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
             <span style={{ fontSize: '1.1rem', fontWeight: '600' }}>
-              {formatNumber(sectorData.change, 2)} ({formatNumber(sectorData.percentage, 2)}%)
+              {formatNumber(indexData.change, 2)} ({formatNumber(indexData.percentage, 2)}%)
             </span>
           </div>
         </div>
@@ -115,10 +115,10 @@ export default function IdxEnergyDetailCard({ symbol }: IdxEnergyDetailCardProps
         <div style={{ background: 'rgba(40, 167, 69, 0.05)', border: '1px solid rgba(40, 167, 69, 0.1)', borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Volume</p>
           <p style={{ fontSize: '2.2rem', fontWeight: '700', color: 'var(--text-primary)', lineHeight: '1' }}>
-            {formatCompactNumber(sectorData.volume)}
+            {formatCompactNumber(indexData.volume)}
           </p>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            Avg: {formatCompactNumber(sectorData.average)}
+            Avg: {formatCompactNumber(indexData.average)}
           </div>
         </div>
 
@@ -127,10 +127,10 @@ export default function IdxEnergyDetailCard({ symbol }: IdxEnergyDetailCardProps
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Followers</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '2.2rem', fontWeight: '700', color: 'var(--text-primary)', lineHeight: '1' }}>
             <Users size={28} color="var(--text-secondary)" />
-            {formatNumber(sectorData.followers)}
+            {formatNumber(indexData.followers)}
           </div>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            Last Updated: {sectorData.date} {sectorData.time}
+            Last Updated: {indexData.date} {indexData.time}
           </div>
         </div>
       </div>
@@ -139,15 +139,15 @@ export default function IdxEnergyDetailCard({ symbol }: IdxEnergyDetailCardProps
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
         <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Exchange</p>
-          <p style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-primary)' }}>{sectorData.exchange}</p>
+          <p style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-primary)' }}>{indexData.exchange}</p>
         </div>
         <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Country</p>
-          <p style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-primary)' }}>{sectorData.country}</p>
+          <p style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-primary)' }}>{indexData.country}</p>
         </div>
         <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Type</p>
-          <p style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-primary)' }}>{sectorData.type_company}</p>
+          <p style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-primary)' }}>{indexData.type_company}</p>
         </div>
       </div>
     </div>

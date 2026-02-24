@@ -4,10 +4,10 @@ import type { EmitenInfoResponse } from '@/lib/types';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { symbol: string } }
+  { params }: { params: Promise<{ symbol: string }> } // Mengubah tipe params menjadi Promise
 ) {
   try {
-    const { symbol } = params;
+    const { symbol } = await params; // Menambahkan 'await' untuk mendapatkan nilai dari Promise
 
     if (!symbol) {
       return NextResponse.json(
