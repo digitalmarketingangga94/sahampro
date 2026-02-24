@@ -7,7 +7,7 @@ import type { BrokerOverallActivitySummary, BrokerBuyItem, BrokerSellItem, Broke
 import { ChevronLeft, ChevronRight, Search, Check, ChevronDown, Table, LineChart } from 'lucide-react';
 import BrokerActivityScatterChart from './BrokerActivityScatterChart';
 
-interface BrokerStocksViewCardProps { // Renamed interface
+interface BrokerActivityDetailCardProps {
   initialBrokerCode?: string;
 }
 
@@ -26,7 +26,7 @@ const formatValueCompact = (value: number | undefined): string => {
   return `${sign}${absValue.toLocaleString('id-ID')}`;
 };
 
-export default function BrokerStocksViewCard({ initialBrokerCode }: BrokerStocksViewCardProps) { // Renamed component
+export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerActivityDetailCardProps) {
   const [selectedBrokerCodes, setSelectedBrokerCodes] = useState<string[]>(initialBrokerCode ? [initialBrokerCode] : ['AK']);
   const [fromDate, setFromDate] = useState(getLatestTradingDate());
   const [toDate, setToDate] = useState(getLatestTradingDate());
@@ -153,7 +153,7 @@ export default function BrokerStocksViewCard({ initialBrokerCode }: BrokerStocks
     <div className="glass-card-static" style={{ padding: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
         <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal' }}>
-          Stocks View
+          Broker Activity Detail
         </h3>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           {/* Multi-select Stock Dropdown */}
