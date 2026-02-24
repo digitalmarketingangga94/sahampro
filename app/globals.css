@@ -2258,3 +2258,131 @@ input:checked + .slider:before {
 .sector-performance-table tr:hover {
   background: rgba(0, 123, 255, 0.02);
 }
+
+/* IHSG Daily Chart Card */
+.ihsg-card {
+  padding: 1rem;
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.ihsg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.ihsg-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ihsg-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #28a745; /* Green background */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.ihsg-index-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+}
+
+.ihsg-full-name {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.ihsg-followers {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ihsg-follow-btn {
+  background-color: #007bff; /* Blue */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.ihsg-follow-btn:hover {
+  background-color: #0056b3;
+}
+
+.ihsg-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ihsg-price-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.ihsg-current-price {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.ihsg-change {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.ihsg-change.positive {
+  color: var(--accent-success);
+}
+
+.ihsg-change.negative {
+  color: var(--accent-warning);
+}
+
+.ihsg-timestamp {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+.ihsg-volume {
+  text-align: right;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ihsg-volume-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.ihsg-chart-container {
+  flex-grow: 1;
+}

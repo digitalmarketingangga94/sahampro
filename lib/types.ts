@@ -539,3 +539,40 @@ export interface SectorPerformanceItem {
   '120D': number;
   'W_AVG': number;
 }
+
+// IHSG Daily Chart Types
+export interface IHSGPricePoint {
+  date: string;
+  formatted_date: string;
+  xlabel: string;
+  value: string;
+  percentage: string;
+  change: number;
+  open: string;
+  high: string;
+  low: string;
+  volume: string;
+}
+
+export interface IHSGDailyChartData {
+  cagr: string;
+  change: number;
+  drawdown: string;
+  markingpoint: string;
+  percentage: string;
+  prices: IHSGPricePoint[];
+  timeframe: string;
+  xaxisopt: string;
+  previous: number;
+  line_weight: number;
+  previous_timeframe_price: IHSGPricePoint;
+  chart_type: string;
+  interval_in_minutes: number;
+  allowed_chart_type: string[];
+  max_candles: number;
+}
+
+export interface IHSGDailyChartResponse {
+  data: IHSGDailyChartData;
+  message: string;
+}

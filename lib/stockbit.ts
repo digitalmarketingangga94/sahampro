@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse, SectorPerformanceItem } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse, SectorPerformanceItem, IHSGDailyChartResponse } from './types';
 import { getSessionValue, upsertSession } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -577,4 +577,20 @@ export async function fetchSectorPerformance(): Promise<SectorPerformanceItem[]>
     { index: 'IDXPROPERT', '30D': -5.99, '90D': -4.62, '120D': -1.24, 'W_AVG': -4.63 },
     { index: 'IDXTECHNO', '30D': -0.44, '90D': -13.03, '120D': -10.95, 'W_AVG': -6.32 },
   ];
+}
+
+/**
+ * Fetch daily chart data for IHSG.
+ */
+export async function fetchIHSGDailyChart(): Promise<IHSGDailyChartResponse> {
+  const url = `${STOCKBIT_BASE_URL}/charts/IHSG/daily?timeframe=today`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: await getHeaders(),
+  });
+
+  await handleApiResponse(response, 'IHSG Daily Chart API');
+
+  return response.json();
 }

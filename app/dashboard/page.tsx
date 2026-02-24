@@ -3,6 +3,7 @@
 import TradingViewChart from '../components/TradingViewChart';
 import DashboardControls from '../components/DashboardControls';
 import SectorPerformanceCard from '../components/SectorPerformanceCard';
+import IHSGDailyChartCard from '../components/IHSGDailyChartCard'; // Import new component
 import React, { Suspense, useState } from 'react';
 
 export default function DashboardPage() {
@@ -41,8 +42,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Right Column: Sector Performance */}
-        <div style={{ flex: '1 1 350px', minWidth: '300px' }}>
+        {/* Right Column: Sector Performance and IHSG Daily Chart */}
+        <div style={{ flex: '1 1 350px', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <IHSGDailyChartCard height={350} /> {/* Added IHSG Daily Chart Card */}
           <SectorPerformanceCard />
         </div>
       </div>
