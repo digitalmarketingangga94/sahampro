@@ -2386,3 +2386,83 @@ input:checked + .slider:before {
 .ihsg-chart-container {
   flex-grow: 1;
 }
+
+/* NEW: IHSG Foreign Domestic Card */
+.ihsg-fd-card {
+  padding: 1rem;
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.ihsg-fd-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.ihsg-fd-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ihsg-fd-index-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ihsg-fd-full-name {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.ihsg-fd-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.ihsg-fd-summary {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  gap: 1rem;
+}
+
+.ihsg-fd-net-foreign,
+.ihsg-fd-net-domestic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.ihsg-fd-net-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.ihsg-fd-net-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ihsg-fd-net-value.positive {
+  color: var(--accent-success);
+}
+
+.ihsg-fd-net-value.negative {
+  color: var(--accent-warning);
+}
+
+.ihsg-fd-chart-container {
+  flex-grow: 1;
+}

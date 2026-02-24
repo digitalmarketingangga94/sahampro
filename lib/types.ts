@@ -567,3 +567,63 @@ export interface IHSGDailyChartResponse {
   data: IHSGDailyChartData;
   message: string;
 }
+
+// NEW: IHSG Foreign Domestic Chart Types
+export interface ForeignDomesticValue {
+  raw: number;
+  formatted: string;
+}
+
+export interface ForeignDomesticValueWithPercentage extends ForeignDomesticValue {
+  percentage: {
+    raw: number;
+    formatted: string;
+  };
+}
+
+export interface ForeignDomesticSummary {
+  date_range: string;
+  foreign_buy: ForeignDomesticValue;
+  foreign_sell: ForeignDomesticValue;
+  net_foreign: ForeignDomesticValue;
+  domestic_buy: ForeignDomesticValue;
+  domestic_sell: ForeignDomesticValue;
+  net_domestic: ForeignDomesticValue;
+  all_markets_summary: ForeignDomesticValue[];
+  volume: {
+    domestic_buy: ForeignDomesticValue;
+    domestic_sell: ForeignDomesticValue;
+    net_domestic: ForeignDomesticValue;
+    foreign_sell: ForeignDomesticValue;
+    foreign_buy: ForeignDomesticValue;
+    net_foreign_reguler: ForeignDomesticValue;
+    net_foreign_tunai_nego: ForeignDomesticValue;
+    net_foreign_all_market: ForeignDomesticValue;
+  };
+}
+
+export interface ForeignDomesticBreakdown {
+  label: string;
+  total: ForeignDomesticValue;
+  foreign_buy: ForeignDomesticValueWithPercentage;
+  foreign_sell: ForeignDomesticValueWithPercentage;
+  domestic_buy: ForeignDomesticValueWithPercentage;
+  domestic_sell: ForeignDomesticValueWithPercentage;
+  foreign_total: ForeignDomesticValueWithPercentage;
+  domestic_total: ForeignDomesticValueWithPercentage;
+}
+
+export interface IHSGForeignDomesticChartData {
+  summary: ForeignDomesticSummary;
+  value: ForeignDomesticBreakdown;
+  volume: ForeignDomesticBreakdown;
+  frequency: ForeignDomesticBreakdown;
+  last_updated: string;
+  from: string;
+  to: string;
+}
+
+export interface IHSGForeignDomesticChartResponse {
+  message: string;
+  data: IHSGForeignDomesticChartData;
+}
