@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react'; // Import useState
-import { LineChart as LineChartIcon, Menu, X } from 'lucide-react'; // Import Menu and X icons
+import { useState } from 'react';
+import { LineChart as LineChartIcon, Menu, X } from 'lucide-react';
 
 
 const Navbar = () => {
   const pathname = usePathname();
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // State for mobile menu
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -30,13 +30,7 @@ const Navbar = () => {
 
         {/* Desktop Navigation Links */}
         <div className="nav-links-desktop">
-          <Link 
-            href="/dashboard" 
-            onClick={closeMenu}
-            className={pathname === '/dashboard' ? 'nav-link active' : 'nav-link'}
-          >
-            Dashboard
-          </Link>
+          
           <Link 
             href="/" 
             onClick={closeMenu}
@@ -99,13 +93,7 @@ const Navbar = () => {
             <X size={24} />
           </button>
           <div className="mobile-nav-links">
-            <Link 
-              href="/dashboard" 
-              onClick={closeMenu}
-              className={pathname === '/dashboard' ? 'nav-link active' : 'nav-link'}
-            >
-              Dashboard
-            </Link>
+            
             <Link 
               href="/" 
               onClick={closeMenu}

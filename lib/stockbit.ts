@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse, IHSGDailyChartResponse, IHSGForeignDomesticChartResponse } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse } from './types';
 import { getSessionValue, upsertSession } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -554,43 +554,6 @@ export async function fetchTopStocks(
   });
 
   await handleApiResponse(response, `Top Stock API`);
-
-  return response.json();
-}
-
-/**
- * Fetch daily chart data for IHSG.
- */
-export async function fetchIHSGDailyChart(): Promise<IHSGDailyChartResponse> {
-  const url = `${STOCKBIT_BASE_URL}/charts/IHSG/daily?timeframe=today`;
-
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: await getHeaders(),
-  });
-
-  await handleApiResponse(response, 'IHSG Daily Chart API');
-
-  return response.json();
-}
-
-/**
- * Fetch foreign and domestic transaction data for IHSG.
- */
-export async function fetchIHSGForeignDomesticChart(
-  marketType: string = 'MARKET_TYPE_REGULAR',
-  period: string = 'PERIOD_RANGE_1D'
-): Promise<IHSGForeignDomesticChartResponse> {
-  const url = new URL(`${STOCKBIT_FINDATA_VIEW_URL}/foreign-domestic/v1/chart-data/IHSG`);
-  url.searchParams.append('market_type', marketType);
-  url.searchParams.append('period', period);
-
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers: await getHeaders(),
-  });
-
-  await handleApiResponse(response, 'IHSG Foreign Domestic Chart API');
 
   return response.json();
 }
