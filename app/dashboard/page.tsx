@@ -1,50 +1,28 @@
 'use client';
 
-import TradingViewChart from '../components/TradingViewChart';
-import DashboardControls from '../components/DashboardControls';
 import SectorPerformanceCard from '../components/SectorPerformanceCard';
 import IHSGDailyChartCard from '../components/IHSGDailyChartCard'; // Import new component
 import React, { Suspense, useState } from 'react';
 
 export default function DashboardPage() {
-  const [selectedSymbol, setSelectedSymbol] = useState('IDX:COMPOSITE'); // Default to IDX Composite
-  const [selectedInterval, setSelectedInterval] = useState('D'); // Default interval (Daily)
-
-  const handleSymbolChange = (symbol: string) => {
-    setSelectedSymbol(symbol);
-  };
-
-  const handleIntervalChange = (interval: string) => {
-    setSelectedInterval(interval);
-  };
+  // Removed selectedSymbol and selectedInterval states as they are no longer needed
+  // Removed handleSymbolChange and handleIntervalChange functions
 
   return (
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
       <h2 style={{ marginBottom: '2rem' }}>Dashboard</h2>
       <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        {/* Left Column: Chart and Controls */}
+        {/* Left Column: Placeholder or other content */}
         <div style={{ flex: '3 1 700px', minWidth: '400px' }}>
-          <div className="glass-card-static" style={{ padding: '1rem' }}>
-            <DashboardControls
-              currentSymbol={selectedSymbol}
-              onSymbolChange={handleSymbolChange}
-              currentInterval={selectedInterval}
-              onIntervalChange={handleIntervalChange}
-            />
-            <Suspense fallback={
-              <div className="text-center" style={{ paddingTop: '4rem' }}>
-                <div className="spinner" style={{ margin: '0 auto' }}></div>
-                <p className="text-secondary mt-2">Loading chart...</p>
-              </div>
-            }>
-              <TradingViewChart symbol={selectedSymbol} interval={selectedInterval} theme="dark" height={1000} />
-            </Suspense>
+          <div className="glass-card-static" style={{ padding: '1rem', minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+            {/* Placeholder for where the TradingView chart used to be */}
+            <p>TradingView chart removed.</p>
           </div>
         </div>
 
         {/* Right Column: Sector Performance and IHSG Daily Chart */}
         <div style={{ flex: '1 1 350px', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <IHSGDailyChartCard height={350} /> {/* Added IHSG Daily Chart Card */}
+          <IHSGDailyChartCard height={350} />
           <SectorPerformanceCard />
         </div>
       </div>
