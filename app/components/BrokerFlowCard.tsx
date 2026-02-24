@@ -234,11 +234,12 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
             ) : (
               <table className="broker-flow-table">
                 <thead>
-                    <th></th>
-                    <th>BROKER</th><th>DAILY HEATMAP</th>
+                  <tr>
+                    <th>#</th><th>BROKER</th><th>DAILY HEATMAP</th>
                     <th style={{ textAlign: 'center' }}>NET VALUE</th>
                     <th style={{ textAlign: 'center' }}>CONSISTENCY</th>
-                    <th style={{ textAlign: 'center' }}>DOMINANT %</th>
+                    <th style={{ textAlign: 'center' }}>DOMINANT %</th> {/* New header */}
+                  </tr>
                 </thead>
                 <tbody>
                   {data.activities.map((activity, idx) => (
@@ -311,9 +312,9 @@ function BrokerFlowRow({
           {activity.buy_days}/{activity.active_days}
         </span>
       </td>
-      <td className="dominant-percentage" style={{ textAlign: 'center' }}> {/* Ensure this cell is centered */}
+      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}> {/* Apply centering here */}
         {activity.dominant_percentage !== undefined ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
             <span>{activity.dominant_percentage.toFixed(1)}%</span>
             <div style={{ width: '60px', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px' }}>
               <div style={{ width: `${activity.dominant_percentage}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '4px' }}></div>
