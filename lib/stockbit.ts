@@ -1,6 +1,5 @@
 import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse } from './types';
 import { getSessionValue, upsertSession } from './supabase';
-import { getLatestTradingDate } from './utils'; // Import getLatestTradingDate
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
 const STOCKBIT_FINDATA_VIEW_URL = 'https://exodus.stockbit.com/findata-view'; // New base URL for findata-view
@@ -238,7 +237,7 @@ export async function fetchWatchlist(watchlistId?: number): Promise<WatchlistRes
   // If no ID provided, get default watchlist ID
   if (!id) {
     const groups = await fetchWatchlistGroups();
-    const defaultGroup = groups.find(w => w.is_default) || groups.find(w => w.name === 'Default'); // Fallback to 'Default' name
+    const defaultGroup = groups.find(w => w.is_default) || groups[0];
     id = defaultGroup?.watchlist_id;
     if (!id) throw new Error('No watchlist found');
   }
@@ -422,7 +421,8 @@ export async function fetchMarketMovers(type: MarketMoverType, limit: number = 2
 
   const json: MarketMoversResponse = await response.json();
   
-  let mappedMovers: MarketMoverItem[] = json.data.mover_list.map(item => ({
+  // Map the new response structure to the existing MarketMoverItem interface
+  const mappedMovers: MarketMoverItem[] = json.data.mover_list.map(item => ({
     symbol: item.stock_detail.code,
     name: item.stock_detail.name,
     last_price: item.price,
@@ -433,57 +433,6 @@ export async function fetchMarketMovers(type: MarketMoverType, limit: number = 2
     frequency: item.frequency.raw,
     net_foreign_buy: item.net_foreign_buy?.raw || 0,
   }));
-
-  // If type is 'net-foreign-buy', fetch dominant broker for each stock
-  if (type === 'net-foreign-buy') {
-    const today = getLatestTradingDate();
-    const moversWithDominantBroker = await Promise.all(
-      mappedMovers.map(async (mover) => {
-        try {
-          const marketDetectorData = await fetchMarketDetector(mover.symbol, today, today);
-          const brokers = marketDetectorData?.data?.broker_summary;
-
-          if (brokers && (brokers.brokers_buy.length > 0 || brokers.brokers_sell.length > 0)) {
-            let dominantBrokerCode: string | undefined;
-            let dominantBrokerNetValue: number = 0;
-
-            // Combine buy and sell activities to find net for each broker
-            const brokerNetActivity = new Map<string, { netValue: number }>();
-
-            brokers.brokers_buy.forEach(buyItem => {
-              const currentNet = brokerNetActivity.get(buyItem.netbs_broker_code)?.netValue || 0;
-              brokerNetActivity.set(buyItem.netbs_broker_code, { netValue: currentNet + parseFloat(buyItem.bval) });
-            });
-
-            brokers.brokers_sell.forEach(sellItem => {
-              const currentNet = brokerNetActivity.get(sellItem.netbs_broker_code)?.netValue || 0;
-              brokerNetActivity.set(sellItem.netbs_broker_code, { netValue: currentNet - Math.abs(parseFloat(sellItem.sval)) });
-            });
-
-            // Find the broker with the highest positive net value (dominant net buyer)
-            for (const [brokerCode, activity] of brokerNetActivity.entries()) {
-              if (activity.netValue > dominantBrokerNetValue) {
-                dominantBrokerNetValue = activity.netValue;
-                dominantBrokerCode = brokerCode;
-              }
-            }
-
-            if (dominantBrokerCode && dominantBrokerNetValue > 0) {
-              return {
-                ...mover,
-                dominant_broker_code: dominantBrokerCode,
-                dominant_broker_net_value: dominantBrokerNetValue,
-              };
-            }
-          }
-        } catch (brokerError) {
-          console.warn(`Failed to fetch dominant broker for ${mover.symbol}:`, brokerError);
-        }
-        return mover; // Return original mover if dominant broker fetch fails
-      })
-    );
-    mappedMovers = moversWithDominantBroker;
-  }
 
   return mappedMovers;
 }
