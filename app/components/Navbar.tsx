@@ -36,6 +36,22 @@ const Navbar = () => {
               Analyze Stock
             </Link>
 
+            {/* Moved Broker Activity here */}
+            <Link 
+              href="/broker-activity" 
+              style={{
+                textDecoration: 'none',
+                color: pathname === '/broker-activity' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                fontWeight: pathname === '/broker-activity' ? 600 : 400,
+                fontSize: '0.9rem',
+                borderBottom: pathname === '/broker-activity' ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                paddingBottom: '2px',
+                transition: 'all 0.2s'
+              }}
+            >
+              Broker Activity
+            </Link>
+
             {/* New Top Stock Link */}
             <Link 
               href="/top-stock" 
@@ -65,20 +81,6 @@ const Navbar = () => {
               }}
             >
               Insider Activity
-            </Link>
-            <Link 
-              href="/broker-activity" 
-              style={{
-                textDecoration: 'none',
-                color: pathname === '/broker-activity' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: pathname === '/broker-activity' ? 600 : 400,
-                fontSize: '0.9rem',
-                borderBottom: pathname === '/broker-activity' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                paddingBottom: '2px',
-                transition: 'all 0.2s'
-              }}
-            >
-              Broker Activity
             </Link>
             
             <Link 
