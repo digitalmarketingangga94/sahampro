@@ -42,20 +42,20 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
     return (
       <div style={{
-        background: 'rgba(30, 30, 45, 0.9)',
-        border: '1px solid rgba(255,255,255,0.1)',
+        background: 'rgba(255, 255, 255, 0.9)', // Changed to white background
+        border: '1px solid rgba(0,0,0,0.1)', // Darker border
         borderRadius: '8px',
         padding: '10px',
         fontSize: '0.8rem',
-        color: 'var(--text-primary)',
+        color: 'var(--text-primary)', // Primary text color (dark)
         boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
       }}>
         <p style={{ fontWeight: 600, marginBottom: '5px' }}>{data.broker_code} ({data.stock_code})</p>
         <p style={{ color: 'var(--text-secondary)' }}>Stock Name: {data.stock_name || '-'}</p>
         <p style={{ color: 'var(--text-secondary)' }}>Broker Type: {data.broker_type}</p>
-        <p style={{ color: data.net_value >= 0 ? '#38ef7d' : '#f5576c' }}>Net Value: {formatChartValue(data.net_value)}</p>
-        <p style={{ color: '#38ef7d' }}>Buy Value: {formatChartValue(data.buy_value)}</p>
-        <p style={{ color: '#f5576c' }}>Sell Value: {formatChartValue(data.sell_value)}</p>
+        <p style={{ color: data.net_value >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>Net Value: {formatChartValue(data.net_value)}</p>
+        <p style={{ color: 'var(--accent-success)' }}>Buy Value: {formatChartValue(data.buy_value)}</p>
+        <p style={{ color: 'var(--accent-warning)' }}>Sell Value: {formatChartValue(data.sell_value)}</p>
         <p style={{ color: 'var(--text-secondary)' }}>Buy Avg Price: {data.buy_avg_price?.toLocaleString() || '-'}</p>
         <p style={{ color: 'var(--text-secondary)' }}>Sell Avg Price: {data.sell_avg_price?.toLocaleString() || '-'}</p>
       </div>
@@ -96,11 +96,11 @@ export default function BrokerActivityScatterChart({
 
   // Define colors for broker types
   const brokerTypeColors: { [key: string]: string } = {
-    'Smartmoney': '#667eea', // Primary accent
-    'Foreign': '#38ef7d',      // Success accent
-    'Retail': '#f5576c',     // Warning accent
-    'Mix': '#f093fb',        // Purple/Pink
-    'Unknown': '#a0a0b8',    // Muted
+    'Smartmoney': '#007bff', // Primary accent (blue)
+    'Foreign': '#28a745',      // Success accent (green)
+    'Retail': '#dc3545',     // Warning accent (red)
+    'Mix': '#ffc107',        // Yellow/Orange
+    'Unknown': '#6C757D',    // Muted gray
   };
 
   // Filter data based on selectedBrokerTypes
@@ -127,13 +127,13 @@ export default function BrokerActivityScatterChart({
             bottom: 20,
           }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
           <XAxis
             type="number"
             dataKey="net_value" // X-axis: Net Value
             name="Net Value"
             tickFormatter={formatChartValue}
-            tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
+            tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
             axisLine={{ stroke: 'var(--border-color)' }}
             tickLine={{ stroke: 'var(--border-color)' }}
           >
@@ -144,7 +144,7 @@ export default function BrokerActivityScatterChart({
             dataKey="buy_value" // Y-axis: Total Buy Value (IDR)
             name="Total Buy Value"
             tickFormatter={formatChartValue}
-            tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
+            tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
             axisLine={{ stroke: 'var(--border-color)' }}
             tickLine={{ stroke: 'var(--border-color)' }}
           >
@@ -158,12 +158,14 @@ export default function BrokerActivityScatterChart({
               key={brokerType}
               name={brokerType === 'Smartmoney' ? 'Smart Money' : brokerType} // Adjust name for legend
               data={dataPoints}
-              fill={brokerTypeColors[brokerType]}
+              fill="white" // White background for the circle
+              stroke={brokerTypeColors[brokerType]} // Border color based on broker type
+              strokeWidth={2}
               opacity={0.8}
               shape="circle"
               line={false}
             >
-              <LabelList dataKey="stock_code" position="top" fill="#fff" fontSize={10} />
+              <LabelList dataKey="stock_code" position="top" fill="var(--text-primary)" fontSize={10} /> {/* Black text */}
             </Scatter>
           ))}
         </ScatterChart>
