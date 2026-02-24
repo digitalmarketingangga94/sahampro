@@ -112,7 +112,20 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
           throw new Error(json.error || 'Failed to fetch broker flow');
         }
         
-        setData(json.data);
+        // Calculate dominant percentage for table view
+        if (json.data && json.data.activities) {
+          const activities = json.data.activities;
+          const totalAbsoluteNetValue = activities.reduce((sum: number, item: BrokerFlowActivity) => sum + Math.abs(parseFloat(item.net_value)), 0);
+
+          const processedActivities = activities.map((activity: BrokerFlowActivity) => ({
+              ...activity,
+              dominant_percentage: totalAbsoluteNetValue > 0 ? (Math.abs(parseFloat(activity.net_value)) / totalAbsoluteNetValue) * 100 : 0,
+          }));
+          setData({ ...json.data, activities: processedActivities }); // Update data with processed activities
+        } else {
+          setData(json.data);
+        }
+
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error fetching data');
       } finally {
@@ -221,13 +234,20 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
             ) : (
               <table className="broker-flow-table">
                 <thead>
-                  <tr><th>#</th><th>BROKER</th><th>DAILY HEATMAP</th><th style={{ textAlign: 'center' }}>NET VALUE</th><th style={{ textAlign: 'center' }}>CONSISTENCY</th></tr>
+                  <tr>
+                    <th>#</th>
+                    <th>BROKER</th>
+                    <th>DAILY HEATMAP</th>
+                    <th style={{ textAlign: 'center' }}>NET VALUE</th>
+                    <th style={{ textAlign: 'center' }}>CONSISTENCY</th>
+                    <th style={{ textAlign: 'center' }}>DOMINANT %</th> {/* New header */}
+                  </tr>
                 </thead>
                 <tbody>
                   {data.activities.map((activity, idx) => (
                     <BrokerFlowRow 
                       key={`${activity.broker_code}-${idx}`}
-                      activity={activity} 
+                      activity={activity as BrokerFlowActivity & { dominant_percentage?: number }} // Cast to include dominant_percentage
                       index={idx + 1}
                       tradingDates={data.trading_dates}
                     />
@@ -254,7 +274,7 @@ function BrokerFlowRow({
   index,
   tradingDates 
 }: { 
-  activity: BrokerFlowActivity; 
+  activity: BrokerFlowActivity & { dominant_percentage?: number }; // Add optional dominant_percentage
   index: number;
   tradingDates: string[];
 }) {
@@ -293,6 +313,9 @@ function BrokerFlowRow({
         <span className="consistency-badge">
           {activity.buy_days}/{activity.active_days}
         </span>
+      </td>
+      <td className="dominant-percentage" style={{ textAlign: 'center' }}> {/* New data cell */}
+        {activity.dominant_percentage !== undefined ? `${activity.dominant_percentage.toFixed(1)}%` : '-'}
       </td>
     </tr>
   );
