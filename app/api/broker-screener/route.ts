@@ -136,6 +136,8 @@ export async function GET(request: NextRequest) {
         let totalNetLot = 0;
         let dominantBroker = '';
         let maxNetLot = 0;
+        let totalWeightedPrice = 0; // For calculating average price
+        let totalRelevantLot = 0;    // For calculating average price
 
         for (const brokerCode of brokerCodes) {
           const activity = stockActivitiesForBrokers[brokerCode];
@@ -145,11 +147,20 @@ export async function GET(request: NextRequest) {
             maxNetLot = activity.net_lot;
             dominantBroker = brokerCode;
           }
+
+          // Calculate weighted average price
+          if (netBuy) {
+            totalWeightedPrice += activity.buy_avg_price * activity.buy_lot;
+            totalRelevantLot += activity.buy_lot;
+          } else { // Net Sell
+            totalWeightedPrice += activity.sell_avg_price * activity.sell_lot;
+            totalRelevantLot += activity.sell_lot;
+          }
         }
 
         const avgPerDay = totalNetLot / nDays;
-        
         const dominantPercent = (Math.abs(maxNetLot) / Math.abs(totalNetLot)) * 100;
+        const avgPrice = totalRelevantLot > 0 ? totalWeightedPrice / totalRelevantLot : 0; // Calculate avg price
 
         screenerResults.push({
           symbol: stockCode,
@@ -159,6 +170,7 @@ export async function GET(request: NextRequest) {
           avg_per_day: avgPerDay, // Reverted to avg_per_day
           dominant_broker: dominantBroker,
           dominant_percent: isNaN(dominantPercent) ? 0 : dominantPercent,
+          avg_price: avgPrice,
         });
       }
     }

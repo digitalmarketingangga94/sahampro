@@ -20,7 +20,12 @@ const formatAvgPerDay = (num: number | undefined): string => {
   return num.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 };
 
-type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'avg_per_day' | 'dominant_broker' | 'dominant_percent';
+const formatPrice = (num: number | undefined): string => {
+  if (num === undefined || num === null) return '-';
+  return Math.round(num).toLocaleString('id-ID');
+};
+
+type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'avg_per_day' | 'avg_price' | 'dominant_broker' | 'dominant_percent';
 type SortDirection = 'asc' | 'desc';
 
 interface SortConfig {
@@ -343,6 +348,12 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                   </th>
                   <th 
                     style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('avg_price')}
+                  >
+                    Avg Price {getSortIndicator('avg_price')}
+                  </th>
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('dominant_broker')}
                   >
                     Dominant Broker {getSortIndicator('dominant_broker')}
@@ -371,6 +382,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                     </td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatNumber(item.net_lot)}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatAvgPerDay(item.avg_per_day)}</td>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatPrice(item.avg_price)}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{item.dominant_broker}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>

@@ -501,6 +501,7 @@ export interface BrokerScreenerResultItem {
   net_direction: 'All Net Buy' | 'All Net Sell';
   net_lot: number;
   avg_per_day: number;
+  avg_price?: number; // Added avg_price
   dominant_broker: string;
   dominant_percent: number;
 }
