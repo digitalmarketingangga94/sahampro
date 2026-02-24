@@ -530,3 +530,39 @@ export interface TopStockResponse {
   };
   message: string;
 }
+
+// New types for Running Trade Chart
+export interface ChartValue {
+  raw: string;
+  formatted: string;
+}
+
+export interface PriceChartDataItem {
+  date: string;
+  time: string;
+  value: ChartValue;
+  datetime_label: string;
+}
+
+export interface BrokerChartItem {
+  broker_code: string;
+  chart: PriceChartDataItem[];
+}
+
+export interface BrokerChartData {
+  type: 'TYPE_CHART_VALUE' | 'TYPE_CHART_VOLUME';
+  brokers: string[];
+  charts: BrokerChartItem[];
+}
+
+export interface RunningTradeChartResponse {
+  data: {
+    from: string;
+    to: string;
+    data_last_updated: string;
+    price_chart_data: PriceChartDataItem[];
+    broker_chart_data: BrokerChartData[];
+    date_session_info: string;
+  };
+  message: string;
+}

@@ -12,6 +12,7 @@ import AgentStoryCard from './AgentStoryCard';
 import BrokerFlowCard from './BrokerFlowCard';
 import InsiderActivityCard from './InsiderActivityCard';
 import GrahamFormulaCard from './GrahamFormulaCard';
+import BrokerFlowBandarCard from './BrokerFlowBandarCard'; // New import for Broker Flow Bandar
 import html2canvas from 'html2canvas';
 import type { StockInput, StockAnalysisResult, KeyStatsData, AgentStoryResult } from '@/lib/types';
 import { getLatestTradingDate } from '@/lib/utils';
@@ -159,6 +160,7 @@ export default function Calculator({ selectedSymbolFromSidebar, fromDate, toDate
         }
       } catch (storyErr) {
         console.error('Failed to fetch existing agent story:', storyErr);
+      (storyErr);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -440,6 +442,11 @@ export default function Calculator({ selectedSymbolFromSidebar, fromDate, toDate
           {/* Broker Flow Section */}
           <div style={{ gridColumn: '1 / -1', width: '100%', marginTop: '1.5rem' }}>
             <BrokerFlowCard emiten={result.input.emiten} />
+          </div>
+
+          {/* Broker Flow Bandar Section - NEW */}
+          <div style={{ gridColumn: '1 / -1', width: '100%', marginTop: '1.5rem' }}>
+            <BrokerFlowBandarCard emiten={result.input.emiten} />
           </div>
 
           {/* Insider Activity Stock Section - Full Width */}

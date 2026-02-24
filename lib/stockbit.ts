@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse, RunningTradeChartResponse } from './types';
 import { getSessionValue, upsertSession } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -554,6 +554,32 @@ export async function fetchTopStocks(
   });
 
   await handleApiResponse(response, `Top Stock API`);
+
+  return response.json();
+}
+
+/**
+ * Fetch Running Trade Chart data for a specific emiten and date range.
+ */
+export async function fetchRunningTradeChart(
+  emiten: string,
+  fromDate: string,
+  toDate: string,
+  investorType: string = 'INVESTOR_TYPE_ALL',
+  marketBoard: string = 'BOARD_TYPE_REGULAR'
+): Promise<RunningTradeChartResponse> {
+  const url = new URL(`${STOCKBIT_BASE_URL}/order-trade/running-trade/chart/${emiten}`);
+  url.searchParams.append('from', fromDate);
+  url.searchParams.append('to', toDate);
+  url.searchParams.append('investor_type', investorType);
+  url.searchParams.append('market_board', marketBoard);
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: await getHeaders(),
+  });
+
+  await handleApiResponse(response, `Running Trade Chart API (${emiten})`);
 
   return response.json();
 }
