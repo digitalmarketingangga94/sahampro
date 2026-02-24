@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import BrokerActivityDetailCard from '../components/BrokerActivityDetailCard';
-import BrokerScreenerCard from '../components/BrokerScreenerCard'; // Import the new screener card
+import BrokerStocksViewCard from '../components/BrokerStocksViewCard'; // Updated import
+import BrokerScreenerCard from '../components/BrokerScreenerCard';
 
-type BrokerActivityView = 'screener' | 'summary'; // Changed order
+type BrokerActivityView = 'summary' | 'movement' | 'stocks-view' | 'screener'; // Added 'movement' and 'stocks-view'
 
 export default function BrokerActivityPage() {
-  const [activeView, setActiveView] = useState<BrokerActivityView>('screener'); // Set default to 'screener'
+  const [activeView, setActiveView] = useState<BrokerActivityView>('stocks-view'); // Set default to 'stocks-view'
 
   return (
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
@@ -19,22 +19,44 @@ export default function BrokerActivityPage() {
       {/* Tab Navigation */}
       <div className="tab-navigation" style={{ marginBottom: '2rem' }}>
         <button
-          className={`tab-button ${activeView === 'screener' ? 'active' : ''}`}
-          onClick={() => setActiveView('screener')}
-        >
-          Screener
-        </button>
-        <button
           className={`tab-button ${activeView === 'summary' ? 'active' : ''}`}
           onClick={() => setActiveView('summary')}
         >
           Summary
         </button>
+        <button
+          className={`tab-button ${activeView === 'movement' ? 'active' : ''}`}
+          onClick={() => setActiveView('movement')}
+        >
+          Movement
+        </button>
+        <button
+          className={`tab-button ${activeView === 'stocks-view' ? 'active' : ''}`}
+          onClick={() => setActiveView('stocks-view')}
+        >
+          Stocks View
+        </button>
+        <button
+          className={`tab-button ${activeView === 'screener' ? 'active' : ''}`}
+          onClick={() => setActiveView('screener')}
+        >
+          Screener
+        </button>
       </div>
 
       {/* Content based on active tab */}
+      {activeView === 'summary' && (
+        <div className="glass-card-static" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+          Summary content coming soon!
+        </div>
+      )}
+      {activeView === 'movement' && (
+        <div className="glass-card-static" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+          Movement content coming soon!
+        </div>
+      )}
+      {activeView === 'stocks-view' && <BrokerStocksViewCard />}
       {activeView === 'screener' && <BrokerScreenerCard />}
-      {activeView === 'summary' && <BrokerActivityDetailCard />}
     </div>
   );
 }
