@@ -15,7 +15,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({
   interval = 'D',
   theme = 'dark', // Default to dark theme as seen in the image
   width = '100%',
-  height = 600,
+  height = 1000, // Keep the height at 1000px as requested
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +29,8 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({
       script.type = 'text/javascript';
       script.async = true;
       script.innerHTML = JSON.stringify({
-        "autosize": true,
+        "width": "100%", // Set width explicitly to 100%
+        "height": height, // Use the height prop directly
         "symbol": symbol,
         "interval": interval,
         "timezone": "Asia/Jakarta", // Assuming Indonesian timezone
