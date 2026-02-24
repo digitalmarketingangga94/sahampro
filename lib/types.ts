@@ -584,3 +584,26 @@ export interface TopStockResponse {
     };
   };
 }
+
+// New types for Broker Screener
+export interface BrokerScreenerResultItem {
+  symbol: string;
+  stock_name?: string;
+  net_direction: 'All Net Buy' | 'All Net Sell' | 'Mixed';
+  net_lot: number;
+  avg_per_day: number;
+  dominant_broker: string;
+  dominant_percent: number;
+}
+
+export interface BrokerScreenerResponse {
+  success: boolean;
+  data: BrokerScreenerResultItem[];
+  screen_date: string;
+  broksum_eod: string;
+  days: number;
+  brokers_count: number;
+  must_net_buy: boolean;
+  message?: string;
+  error?: string;
+}

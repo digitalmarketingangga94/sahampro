@@ -21,6 +21,8 @@
   --accent-primary: #667eea;
   --accent-success: #38ef7d;
   --accent-warning: #f5576c;
+  --accent-destructive: #ff4d4d; /* Added for explicit destructive actions/errors */
+
 
   /* Border */
   --border-color: rgba(255, 255, 255, 0.1);
@@ -114,6 +116,44 @@ body::before {
 .btn-primary:active {
   transform: translateY(0);
 }
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-danger {
+  background: rgba(245, 87, 108, 0.15);
+  color: var(--accent-warning);
+  border: 1px solid rgba(245, 87, 108, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-danger:hover {
+  background: rgba(245, 87, 108, 0.25);
+  border-color: rgba(245, 87, 108, 0.5);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: none;
+}
+
+.btn-outline:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: rgba(102, 126, 234, 0.1);
+}
+
 
 .btn:disabled {
   opacity: 0.5;
@@ -942,6 +982,7 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem; /* Added gap for icon + text */
 }
 
 @media (max-width: 768px) {
@@ -1758,4 +1799,150 @@ h3 {
 
 .sub-sector-row {
   /* Add any specific styling for sub-sector rows if needed */
+}
+
+/* ===== Tab Navigation ===== */
+.tab-navigation {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+
+.tab-button {
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-button:hover {
+  color: var(--text-primary);
+}
+
+.tab-button.active {
+  color: var(--accent-primary);
+  border-bottom: 2px solid var(--accent-primary);
+  font-weight: 600;
+}
+
+/* ===== Broker Screener Card Specifics ===== */
+.screener-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.screener-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.screener-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.screener-actions .compact-btn {
+  min-width: 120px;
+}
+
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 3px;
+  background-color: var(--text-secondary);
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px var(--accent-primary);
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(24px);
+  -ms-transform: translateX(24px);
+  transform: translateX(24px);
+  background-color: white;
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 24px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+  .screener-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .screener-row > .input-group,
+  .screener-row > div { /* Target the broker select wrapper */
+    flex: none !important;
+    width: 100%;
+  }
+
+  .screener-actions {
+    justify-content: stretch;
+  }
+
+  .screener-actions .compact-btn {
+    flex: 1;
+  }
 }
