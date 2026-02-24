@@ -46,6 +46,13 @@ const Navbar = () => {
             IDX Sector
           </Link>
           <Link 
+            href="/idx-energy" 
+            onClick={closeMenu}
+            className={pathname === '/idx-energy' ? 'nav-link active' : 'nav-link'}
+          >
+            IDX Energy
+          </Link>
+          <Link 
             href="/broker-activity" 
             onClick={closeMenu}
             className={pathname === '/broker-activity' ? 'nav-link active' : 'nav-link'}
@@ -114,6 +121,13 @@ const Navbar = () => {
             className={pathname === '/idx-sector' ? 'nav-link active' : 'nav-link'}
           >
             IDX Sector
+          </Link>
+            <Link 
+            href="/idx-energy" 
+            onClick={closeMenu}
+            className={pathname === '/idx-energy' ? 'nav-link active' : 'nav-link'}
+          >
+            IDX Energy
           </Link>
             <Link 
               href="/broker-activity" 

@@ -194,6 +194,15 @@ export interface EmitenInfoResponse {
     price: string;
     change: string;
     percentage: number;
+    // Added new fields from IDXENERGY example data
+    volume?: string; // Added
+    average?: string; // Added
+    followers?: number; // Added
+    date?: string; // Added
+    time?: string; // Added
+    exchange?: string; // Added
+    country?: string; // Added
+    type_company?: string; // Added
   };
   message: string;
 }

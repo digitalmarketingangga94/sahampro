@@ -179,6 +179,22 @@ export async function fetchEmitenInfo(emiten: string): Promise<EmitenInfoRespons
 }
 
 /**
+ * Fetch detailed information for an IDX sector.
+ */
+export async function fetchIdxSectorInfo(symbol: string): Promise<EmitenInfoResponse> {
+  const url = `${STOCKBIT_BASE_URL}/emitten/${symbol}/info`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: await getHeaders(),
+  });
+
+  await handleApiResponse(response, `IDX Sector Info API (${symbol})`);
+
+  return response.json();
+}
+
+/**
  * Fetch all sectors list
  */
 export async function fetchSectors(): Promise<string[]> { // Reverted return type to string[]
