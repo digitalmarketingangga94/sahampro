@@ -139,17 +139,11 @@ export default function BrokerFlowScatterChart({
       return selectedStatus.includes(statusToMatch);
     });
 
-  // Filter for accumulating brokers (net_value > 0), sort by net_value descending, and take top 5
-  const top5AccumulatingBrokers = chartData
-    .filter(item => item.net_value > 0) // Only accumulating brokers
-    .sort((a, b) => b.net_value - a.net_value) // Sort by net_value descending
-    .slice(0, 5); // Take top 5
+  // Calculate total net value for all filtered brokers for this emiten
+  const totalAbsoluteNetValue = chartData.reduce((sum, item) => sum + Math.abs(item.net_value), 0);
 
-  // Calculate total net value for these top 5 brokers
-  const totalAbsoluteNetValue = top5AccumulatingBrokers.reduce((sum, item) => sum + Math.abs(item.net_value), 0);
-
-  // Add dominant percentage to each item in the top 5 list
-  const chartDataWithDominance = top5AccumulatingBrokers.map(item => ({
+  // Add dominant percentage to each item
+  const chartDataWithDominance = chartData.map(item => ({
     ...item,
     percentage_of_total_net_value: totalAbsoluteNetValue > 0 ? (Math.abs(item.net_value) / totalAbsoluteNetValue) * 100 : 0,
   }));
