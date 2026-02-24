@@ -64,6 +64,18 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+// Custom Label component to display broker code and dominant percentage
+const CustomBrokerFlowLabel = (props: any) => {
+  const { x, y, payload } = props;
+  const { broker_code, percentage_of_total_net_value } = payload.value;
+  const displayPercentage = percentage_of_total_net_value > 0.1 ? ` (${percentage_of_total_net_value.toFixed(1)}%)` : ''; // Only show if significant
+  return (
+    <text x={x} y={y} dy={-10} textAnchor="middle" fill="black" fontSize={10}>
+      {broker_code}{displayPercentage}
+    </text>
+  );
+};
+
 export default function BrokerFlowScatterChart({
   data,
   loading,
@@ -126,15 +138,24 @@ export default function BrokerFlowScatterChart({
       return selectedStatus.includes(statusToMatch);
     });
 
+  // Calculate total net value for all filtered brokers for this emiten
+  const totalAbsoluteNetValue = chartData.reduce((sum, item) => sum + Math.abs(item.net_value), 0);
+
+  // Add dominant percentage to each item
+  const chartDataWithDominance = chartData.map(item => ({
+    ...item,
+    percentage_of_total_net_value: totalAbsoluteNetValue > 0 ? (Math.abs(item.net_value) / totalAbsoluteNetValue) * 100 : 0,
+  }));
+
   // Group data by broker_type for separate scatters
-  const groupedData = chartData.reduce((acc, item) => {
+  const groupedData = chartDataWithDominance.reduce((acc, item) => {
     const type = item.broker_type || 'Unknown'; // This will be 'Smartmoney', 'Foreign', 'Retail', 'Mix', 'Unknown'
     if (!acc[type]) {
       acc[type] = [];
     }
     acc[type].push(item);
     return acc;
-  }, {} as { [key: string]: typeof chartData });
+  }, {} as { [key: string]: typeof chartDataWithDominance });
 
   return (
     <div style={{ width: '100%', height: '500px' }}>
@@ -185,7 +206,7 @@ export default function BrokerFlowScatterChart({
               shape="circle"
               line={false}
             >
-              <LabelList dataKey="broker_code" position="top" fill="var(--text-primary)" fontSize={10} /> {/* Black text */}
+              <LabelList content={<CustomBrokerFlowLabel />} />
             </Scatter>
           ))}
         </ScatterChart>
