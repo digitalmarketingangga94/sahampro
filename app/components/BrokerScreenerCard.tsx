@@ -14,13 +14,13 @@ const formatNumber = (num: number | undefined): string => {
   return num.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
 };
 
-const formatAvgPrice = (num: number | undefined): string => {
+const formatAvgPerDay = (num: number | undefined): string => {
   if (num === undefined || num === null) return '-';
-  // Always show 3 decimal places for Avg Price, as per image
-  return num.toLocaleString('id-ID', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+  // Format Avg / Day with 2 decimal places
+  return num.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 };
 
-type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'average_price' | 'dominant_broker' | 'dominant_percent';
+type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'avg_per_day' | 'dominant_broker' | 'dominant_percent';
 type SortDirection = 'asc' | 'desc';
 
 interface SortConfig {
@@ -334,9 +334,9 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                   </th>
                   <th 
                     style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
-                    onClick={() => handleSort('average_price')}
+                    onClick={() => handleSort('avg_per_day')}
                   >
-                    Avg Price {getSortIndicator('average_price')}
+                    Avg / Day {getSortIndicator('avg_per_day')}
                   </th>
                   <th 
                     style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
@@ -367,7 +367,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                       </span>
                     </td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatNumber(item.net_lot)}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatAvgPrice(item.average_price)}</td>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatAvgPerDay(item.avg_per_day)}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{item.dominant_broker}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>

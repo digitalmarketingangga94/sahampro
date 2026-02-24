@@ -134,10 +134,6 @@ export async function GET(request: NextRequest) {
 
       if (allBrokersMatch) {
         let totalNetLot = 0;
-        let totalBuyValueForAvgPrice = 0;
-        let totalSellValueForAvgPrice = 0;
-        let weightedBuyAvgPriceSum = 0;
-        let weightedSellAvgPriceSum = 0;
         let dominantBroker = '';
         let maxNetLot = 0;
 
@@ -145,26 +141,13 @@ export async function GET(request: NextRequest) {
           const activity = stockActivitiesForBrokers[brokerCode];
           totalNetLot += activity.net_lot;
 
-          if (netBuy) {
-            totalBuyValueForAvgPrice += activity.buy_value;
-            weightedBuyAvgPriceSum += activity.buy_avg_price * activity.buy_value;
-          } else { // Net Sell
-            totalSellValueForAvgPrice += activity.sell_value;
-            weightedSellAvgPriceSum += activity.sell_avg_price * activity.sell_value;
-          }
-
           if (Math.abs(activity.net_lot) > Math.abs(maxNetLot)) {
             maxNetLot = activity.net_lot;
             dominantBroker = brokerCode;
           }
         }
 
-        let averagePrice = 0;
-        if (netBuy && totalBuyValueForAvgPrice > 0) {
-          averagePrice = weightedBuyAvgPriceSum / totalBuyValueForAvgPrice;
-        } else if (!netBuy && totalSellValueForAvgPrice > 0) {
-          averagePrice = weightedSellAvgPriceSum / totalSellValueForAvgPrice;
-        }
+        const avgPerDay = totalNetLot / nDays;
         
         const dominantPercent = (Math.abs(maxNetLot) / Math.abs(totalNetLot)) * 100;
 
@@ -173,7 +156,7 @@ export async function GET(request: NextRequest) {
           stock_name: stockNameMap.get(stockCode),
           net_direction: netBuy ? 'All Net Buy' : 'All Net Sell',
           net_lot: totalNetLot,
-          average_price: averagePrice, // Removed Math.round()
+          avg_per_day: avgPerDay, // Reverted to avg_per_day
           dominant_broker: dominantBroker,
           dominant_percent: isNaN(dominantPercent) ? 0 : dominantPercent,
         });
