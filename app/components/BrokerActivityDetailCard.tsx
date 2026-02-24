@@ -157,13 +157,13 @@ export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerAc
         </h3>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           {/* Multi-select Stock Dropdown */}
-          <div style={{ position: 'relative' }} ref={stockSelectRef}>
+          <div style={{ position: 'relative', flex: '1 1 180px', minWidth: '180px' }} ref={stockSelectRef}>
             <button
               type="button"
               className="input-field compact-input"
               onClick={() => setShowStockSelect(!showStockSelect)}
               style={{ 
-                width: '180px', 
+                width: '100%', 
                 height: '32px', 
                 padding: '0 0.5rem', 
                 fontSize: '0.75rem',
@@ -249,13 +249,13 @@ export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerAc
           </div>
 
           {/* Multi-select Broker Dropdown (existing) */}
-          <div style={{ position: 'relative' }} ref={brokerSelectRef}>
+          <div style={{ position: 'relative', flex: '1 1 180px', minWidth: '180px' }} ref={brokerSelectRef}>
             <button
               type="button"
               className="input-field compact-input"
               onClick={() => setShowBrokerSelect(!showBrokerSelect)}
               style={{ 
-                width: '180px', 
+                width: '100%', 
                 height: '32px', 
                 padding: '0 0.5rem', 
                 fontSize: '0.75rem',
@@ -341,7 +341,7 @@ export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerAc
           </div>
 
           {/* Date range and quick date buttons (existing) */}
-          <div className="date-range-group" style={{ height: '32px', borderRadius: '8px' }}>
+          <div className="date-range-group" style={{ height: '32px', borderRadius: '8px', flex: '1 1 220px', minWidth: '220px' }}>
             <input
               type="date"
               className="input-field compact-input"
