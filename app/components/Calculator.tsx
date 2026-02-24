@@ -5,7 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import InputForm from './InputForm';
 import CompactResultCard from './CompactResultCard';
 import BrokerSummaryCard from './BrokerSummaryCard';
-import KeyStatsCard from './KeyStatsCard';
+import KeyStatsColumnOneCard from './KeyStatsColumnOneCard'; // New import
+import KeyStatsColumnTwoCard from './KeyStatsColumnTwoCard'; // New import
 import AgentStoryCard from './AgentStoryCard';
 // Removed import PriceGraph from './PriceGraph';
 import BrokerFlowCard from './BrokerFlowCard';
@@ -341,7 +342,6 @@ export default function Calculator({ selectedSymbolFromSidebar, fromDate, toDate
         onDateChange={onDateChange}
         onCopyText={handleCopy}
         onCopyImage={handleCopyImage}
-        onAnalyzeAI={() => handleAnalyzeStory()}
         copiedText={copied}
         copiedImage={copiedImage}
         storyStatus={storyStatus}
@@ -403,8 +403,6 @@ export default function Calculator({ selectedSymbolFromSidebar, fromDate, toDate
                   copiedImage={copiedImage}
                 />
               </div>
-
-
             </div>
 
             {/* Right Column: Broker Summary */}
@@ -417,12 +415,12 @@ export default function Calculator({ selectedSymbolFromSidebar, fromDate, toDate
               />
             )}
 
-            {/* KeyStats Card */}
+            {/* KeyStats Cards - Now two separate cards */}
             {keyStats && (
-              <KeyStatsCard
-                emiten={result.input.emiten}
-                keyStats={keyStats}
-              />
+              <>
+                <KeyStatsColumnOneCard emiten={result.input.emiten} keyStats={keyStats} />
+                <KeyStatsColumnTwoCard emiten={result.input.emiten} keyStats={keyStats} />
+              </>
             )}
           </div>
 
