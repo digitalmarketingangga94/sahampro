@@ -27,9 +27,12 @@ const formatValueCompact = (value: number | undefined): string => {
 };
 
 export default function BrokerActivityDetailCard({ initialBrokerCode }: BrokerActivityDetailCardProps) {
+  const defaultEndDate = getLatestTradingDate();
+  const defaultStartDate = getDateNDaysAgo(6, defaultEndDate); // 7 days including today
+
   const [selectedBrokerCodes, setSelectedBrokerCodes] = useState<string[]>(initialBrokerCode ? [initialBrokerCode] : ['AK']);
-  const [fromDate, setFromDate] = useState(getLatestTradingDate());
-  const [toDate, setToDate] = useState(getLatestTradingDate());
+  const [fromDate, setFromDate] = useState(defaultStartDate);
+  const [toDate, setToDate] = useState(defaultEndDate);
   const [processedActivityData, setProcessedActivityData] = useState<BrokerStockActivityPerBroker[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
