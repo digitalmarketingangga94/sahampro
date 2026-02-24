@@ -337,7 +337,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                     Avg Price {getSortIndicator('average_price')}
                   </th>
                   <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('dominant_broker')}
                   >
                     Dominant Broker {getSortIndicator('dominant_broker')}
@@ -366,7 +366,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                     </td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatNumber(item.net_lot)}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatAvgPrice(item.average_price)}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{item.dominant_broker}</td>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'left' }}>{item.dominant_broker}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                         <span>{item.dominant_percent.toFixed(2)}%</span>
