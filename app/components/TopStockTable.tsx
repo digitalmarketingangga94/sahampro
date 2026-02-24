@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { TopStockItem } from '@/lib/types';
-import { getLatestTradingDate } from '@/lib/utils';
+import { getLatestTradingDate, getDateNDaysAgo } from '@/lib/utils'; // Import getDateNDaysAgo
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 
 type TopStockType = 'top_buy' | 'top_sell';
@@ -34,8 +34,12 @@ export default function TopStockTable() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TopStockType>('top_buy');
-  const [startDate, setStartDate] = useState(getLatestTradingDate());
-  const [endDate, setEndDate] = useState(getLatestTradingDate());
+  
+  // Set default dates to the previous day
+  const defaultPreviousDay = getDateNDaysAgo(1);
+  const [startDate, setStartDate] = useState(defaultPreviousDay);
+  const [endDate, setEndDate] = useState(defaultPreviousDay);
+
   const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'value', direction: 'desc' });
   const router = useRouter();
 
