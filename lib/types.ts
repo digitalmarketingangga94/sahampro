@@ -297,6 +297,7 @@ export interface BrokerFlowActivity {
   current_price: string;
   float_pl_pct: string;
   buy_avg_price?: number; // New field for calculated average buy price
+  dominant_percentage?: number; // Added this property
 }
 
 export interface BrokerFlowResponse {
@@ -329,281 +330,59 @@ export interface BackgroundJobLog {
   metadata?: Record<string, unknown>;
 }
 
-// New Market Movers Types
-export interface MarketMoverItem {
-  symbol: string;
-  name: string;
-  last_price: number;
-  change_point: number;
-  change_percentage: number;
-  value: number; // in IDR
-  volume: number; // in shares
-  frequency: number;
-  net_foreign_buy?: number; // Assuming this is 'Net Foreign' from the image
+export interface BackgroundJobLog {
+  id: number;
+  job_name: string;
+  status: 'running' | 'completed' | 'failed';
+  started_at: string;
+  completed_at?: string;
+  success_count: number;
+  error_count: number;
+  total_items: number;
+  log_entries: BackgroundJobLogEntry[];
+  error_message?: string;
+  metadata?: Record<string, unknown>;
 }
 
-// Raw response structure for market movers
-export interface MarketMoversResponse {
-  message: string;
-  data: {
-    mover_list: {
-      stock_detail: {
-        code: string;
-        name: string;
-        icon_url: string;
-        has_uma: boolean;
-        notations: any[];
-        corpaction: {
-          active: boolean;
-          icon_url: string;
-          text: string;
-        };
-      };
-      price: number;
-      change: {
-        value: number;
-        percentage: number;
-      };
-      value: {
-        raw: number;
-        formatted: string;
-      };
-      volume: {
-        raw: number;
-        formatted: string;
-      };
-      frequency: {
-        raw: number;
-        formatted: string;
-      };
-      net_foreign_buy: {
-        raw: number;
-        formatted: string;
-      };
-      net_foreign_sell: {
-        raw: number;
-        formatted: string;
-      };
-      net_buy: {
-        raw: number;
-        formatted: string;
-      };
-      net_sell: {
-        raw: number;
-        formatted: string;
-      };
-      iepiev_detail: any;
-    }[];
-  };
+/**
+ * Get the latest job log for a specific job name
+ */
+export async function getLatestBackgroundJobLog(jobName: string) {
+  const { data, error } = await supabase
+    .from('background_job_logs')
+    .select('*')
+    .eq('job_name', jobName)
+    .order('started_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    console.error('Error fetching latest job log:', error);
+  }
+
+  return data || null;
 }
 
-export type MarketMoverType = 'gainer' | 'loser' | 'value' | 'volume' | 'frequency' | 'net-foreign-buy';
+/**
+ * Get all unique emiten codes from stock_queries table
+ */
+export async function getUniqueEmitens(): Promise<string[]> {
+  // Define the expected type for each row returned by the query
+  type EmitenRow = { emiten: string };
 
-// Trade Book Types
-export interface TradeBookTotal {
-  buy_lot: string;
-  sell_lot: string;
-  total_lot: string;
-  buy_frequency: string;
-  sell_frequency: string;
-  total_frequency: string;
-  buy_percentage: string;
-  sell_percentage: string;
-}
+  const { data, error } = await supabase
+    .from('stock_queries')
+    .select('distinct emiten');
 
-export interface TradeBookResponse {
-  message: string;
-  data: {
-    book_total: TradeBookTotal;
-  };
-}
+  if (error) {
+    console.error('Error fetching unique emitens from Supabase:', error);
+    throw error;
+  }
 
-// Insider Activity Types
-export interface InsiderValueDetail {
-  value: string;
-  percentage: string;
-  formatted_value: string;
-}
+  // Explicitly assert the type of 'data' to guide TypeScript
+  // Use 'unknown' as an intermediate step to bypass strict type checking
+  const typedEmitens = data as unknown as EmitenRow[] | null;
 
-export interface InsiderChangesDetail {
-  value: string;
-  percentage: string;
-  formatted_value: string;
-}
-
-export type ActionType = "ACTION_TYPE_UNSPECIFIED" | "ACTION_TYPE_BUY" | "ACTION_TYPE_SELL" | "ACTION_TYPE_WARRANT_EXERCISE" | "ACTION_TYPE_CONVERSION" | "ACTION_TYPE_RIGHTS_ISSUE" | "ACTION_TYPE_STOCK_SPLIT" | "ACTION_TYPE_REVERSE_STOCK_SPLIT" | "ACTION_TYPE_DIVIDEND" | "ACTION_TYPE_BONUS_SHARE" | "ACTION_TYPE_MERGER" | "ACTION_TYPE_ACQUISITION" | "ACTION_TYPE_DELISTING" | "ACTION_TYPE_OTHER";
-export type SourceType = "SOURCE_TYPE_UNSPECIFIED" | "SOURCE_TYPE_IDX" | "SOURCE_TYPE_KSEI";
-
-export interface InsiderDataSource {
-  label: string;
-  type: SourceType;
-}
-
-export interface InsiderBrokerDetail {
-  code: string;
-  group: string; // BROKER_GROUP_UNSPECIFIED etc.
-}
-
-export interface InsiderMovementItem {
-  id: string;
-  name: string;
-  symbol: string;
-  date: string; // "22 Jan 26"
-  previous: InsiderValueDetail;
-  current: InsiderValueDetail;
-  changes: InsiderChangesDetail;
-  marker: string;
-  is_posted: boolean;
-  cmh_id: string;
-  nationality: string; // NATIONALITY_TYPE_LOCAL
-  action_type: ActionType;
-  data_source: InsiderDataSource;
-  price_formatted: string;
-  broker_detail: InsiderBrokerDetail;
-  badges: string[]; // SHAREHOLDER_BADGE_DIREKTUR
-}
-
-export interface InsiderActivityResponse {
-  message: string;
-  data: {
-    is_more: boolean;
-    movement: InsiderMovementItem[];
-  };
-}
-
-// New types for Broker Activity Detail API (based on user's example)
-export interface BrokerOverallActivitySummary {
-  bandar_detector: BrokerDetector;
-  broker_summary: {
-    brokers_buy: BrokerBuyItem[];
-    brokers_sell: BrokerSellItem[];
-    symbol: string;
-  };
-  from: string;
-  to: string;
-  broker_code: string;
-  broker_name: string;
-}
-
-export interface BrokerOverallActivitySummaryResponse {
-  message: string;
-  data: BrokerOverallActivitySummary;
-}
-
-// New type for combined stock activity for a broker
-export interface BrokerStockActivity {
-  stock_code: string;
-  stock_name?: string; // Not directly in the provided example, but good to have
-  buy_value?: number;
-  buy_lot?: number;
-  buy_avg_price?: number;
-  sell_value?: number;
-  sell_lot?: number;
-  sell_avg_price?: number;
-  net_value?: number;
-  net_lot?: number;
-  broker_type?: 'Smartmoney' | 'Foreign' | 'Retail' | 'Mix' | 'Unknown'; // Added broker_type
-}
-
-// New type for granular broker activity per stock (for scatter plot)
-export interface BrokerStockActivityPerBroker {
-  broker_code: string;
-  stock_code: string;
-  stock_name?: string;
-  broker_type: 'Smartmoney' | 'Foreign' | 'Retail' | 'Mix' | 'Unknown';
-  net_value: number;
-  net_lot: number;
-  buy_value: number;
-  sell_value: number;
-  buy_lot: number;
-  sell_lot: number;
-  buy_avg_price: number;
-  sell_avg_price: number;
-}
-
-// New types for Stockbit Search API
-export interface StockbitSearchCompanyItem {
-  id: string;
-  name: string;
-  symbol_2: string; // This is the stock code
-  desc: string; // Company description
-  type: string; // e.g., "Saham", "Waran"
-  is_tradeable: boolean;
-  icon_url: string; // Added this property
-}
-
-export interface StockbitSearchResponse {
-  message: string;
-  data: {
-    company: StockbitSearchCompanyItem[];
-    pagination: {
-      has_more_companies: boolean;
-    };
-  };
-}
-
-// New types for Top Stock API
-export interface TopStockValue {
-  raw: string;
-  formatted: string;
-}
-
-export interface TopStockItem {
-  rank: number;
-  code: string;
-  icon_url: string;
-  value: TopStockValue;
-  lot: TopStockValue;
-  average: TopStockValue;
-  foreign_value: TopStockValue;
-  frequency: TopStockValue;
-}
-
-export interface TopStockResponse {
-  message: string;
-  data: {
-    top_buy: TopStockItem[];
-    top_sell: TopStockItem[];
-    total: any[]; // Based on example, it's an empty array
-    response_info: {
-      page: number;
-      limit: number;
-      max_day_duration: number;
-      start_date: string;
-      end_date: string;
-      value_type: string;
-    };
-    display_option: {
-      banner_message: string;
-      foreign_value_column: boolean;
-      enabled_value_type: {
-        gross: boolean;
-        net: boolean;
-        total: boolean;
-      };
-    };
-  };
-}
-
-// New types for Broker Screener
-export interface BrokerScreenerResultItem {
-  symbol: string;
-  stock_name?: string;
-  net_direction: 'All Net Buy' | 'All Net Sell' | 'Mixed';
-  net_lot: number;
-  avg_per_day: number; // Changed from average_price to avg_per_day
-  dominant_broker: string;
-  dominant_percent: number;
-}
-
-export interface BrokerScreenerResponse {
-  success: boolean;
-  data: BrokerScreenerResultItem[];
-  screen_date: string;
-  broksum_eod: string;
-  days: number;
-  brokers_count: number;
-  must_net_buy: boolean;
-  message?: string;
-  error?: string;
+  console.log('Unique emitens fetched from Supabase:', typedEmitens);
+  return typedEmitens?.map(item => item.emiten) || [];
 }
