@@ -31,6 +31,13 @@ const Navbar = () => {
         {/* Desktop Navigation Links */}
         <div className="nav-links-desktop">
           <Link 
+            href="/dashboard" 
+            onClick={closeMenu}
+            className={pathname === '/dashboard' ? 'nav-link active' : 'nav-link'}
+          >
+            Dashboard
+          </Link>
+          <Link 
             href="/" 
             onClick={closeMenu}
             className={pathname === '/' ? 'nav-link active' : 'nav-link'}
@@ -92,6 +99,13 @@ const Navbar = () => {
             <X size={24} />
           </button>
           <div className="mobile-nav-links">
+            <Link 
+              href="/dashboard" 
+              onClick={closeMenu}
+              className={pathname === '/dashboard' ? 'nav-link active' : 'nav-link'}
+            >
+              Dashboard
+            </Link>
             <Link 
               href="/" 
               onClick={closeMenu}
