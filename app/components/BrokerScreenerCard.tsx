@@ -18,6 +18,14 @@ const formatAvgPerDay = (num: number | undefined): string => {
   return num.toLocaleString('id-ID', { maximumFractionDigits: 2 });
 };
 
+type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'avg_per_day' | 'dominant_broker' | 'dominant_percent';
+type SortDirection = 'asc' | 'desc';
+
+interface SortConfig {
+  column: SortColumn | null;
+  direction: SortDirection;
+}
+
 export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const [nDays, setNDays] = useState<number>(4);
   const [netBuy, setNetBuy] = useState<boolean>(true);
@@ -28,6 +36,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const [showBrokerSelect, setShowBrokerSelect] = useState<number | null>(null); // Index of broker dropdown being shown
   const [searchTerm, setSearchTerm] = useState('');
   const brokerSelectRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'dominant_percent', direction: 'desc' }); // Default sort by dominant_percent desc
 
   const brokerOptions = Object.values(BROKERS ?? {}).sort((a, b) => a.code.localeCompare(b.code));
 
@@ -101,7 +110,39 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
     setScreenerResults([]);
     setError(null);
     setLoading(false);
+    setSortConfig({ column: 'dominant_percent', direction: 'desc' }); // Reset sort config
   };
+
+  const handleSort = (column: SortColumn) => {
+    let direction: SortDirection = 'asc';
+    if (sortConfig.column === column && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ column, direction });
+  };
+
+  const getSortIndicator = (column: SortColumn) => {
+    if (sortConfig.column === column) {
+      return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+    }
+    return '';
+  };
+
+  const sortedResults = [...screenerResults].sort((a, b) => {
+    if (sortConfig.column === null) return 0;
+
+    const aValue = a[sortConfig.column];
+    const bValue = b[sortConfig.column];
+
+    let comparison = 0;
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      comparison = aValue - bValue;
+    } else if (typeof aValue === 'string' && typeof bValue === 'string') {
+      comparison = aValue.localeCompare(bValue);
+    }
+
+    return sortConfig.direction === 'asc' ? comparison : -comparison;
+  });
 
   const filteredBrokerOptions = brokerOptions.filter(broker => 
     broker.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -259,29 +300,59 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
         <div style={{ textAlign: 'center', padding: '2rem 0' }}>
           <div className="spinner" style={{ width: '20px', height: '20px', margin: '0 auto' }}></div>
         </div>
-      ) : screenerResults.length > 0 && (
+      ) : sortedResults.length > 0 && (
         <div style={{ marginTop: '2rem' }}>
           <h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
             Result Data
             <span style={{ marginLeft: '0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-              Screen Date: {screenDate} • Broksum EOD: {broksumEOD} • {screenerResults.length} saham ditemukan • Days: {nDays} • Broker: {selectedBrokerCodes.length} • Must Net Buy: {netBuy ? 'YES' : 'NO'}
+              Screen Date: {screenDate} • Broksum EOD: {broksumEOD} • {sortedResults.length} saham ditemukan • Days: {nDays} • Broker: {selectedBrokerCodes.length} • Must Net Buy: {netBuy ? 'YES' : 'NO'}
             </span>
           </h4>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', minWidth: '700px' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Symbol</th>
-                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Net Direction</th>
-                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Net Lot</th>
-                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Avg / Day</th>
-                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Dominant Broker</th>
-                  <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Dominant %</th>
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('symbol')}
+                  >
+                    Symbol {getSortIndicator('symbol')}
+                  </th>
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('net_direction')}
+                  >
+                    Net Direction {getSortIndicator('net_direction')}
+                  </th>
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('net_lot')}
+                  >
+                    Net Lot {getSortIndicator('net_lot')}
+                  </th>
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('avg_per_day')}
+                  >
+                    Avg / Day {getSortIndicator('avg_per_day')}
+                  </th>
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('dominant_broker')}
+                  >
+                    Dominant Broker {getSortIndicator('dominant_broker')}
+                  </th>
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('dominant_percent')}
+                  >
+                    Dominant % {getSortIndicator('dominant_percent')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {screenerResults.map((item, index) => (
-                  <tr key={item.symbol} style={{ borderBottom: index < screenerResults.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+                {sortedResults.map((item, index) => (
+                  <tr key={item.symbol} style={{ borderBottom: index < sortedResults.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
                     <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
                       {item.symbol}
                       {item.stock_name && item.stock_name !== item.symbol && (
