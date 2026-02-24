@@ -57,13 +57,21 @@ export default function KeyStatsCard({ emiten, keyStats }: KeyStatsCardProps) {
         <div className="compact-date">{emiten.toUpperCase()}</div>
       </div>
 
-      {/* Sections */}
-      {renderSection('Per Share', keyStats.perShare, 6)} {/* New section added here */}
-      {renderSection('Current Valuation', keyStats.currentValuation, 6)}
-      {renderSection('Income Statement', keyStats.incomeStatement, 4)}
-      {renderSection('Balance Sheet', keyStats.balanceSheet, 5)}
-      {renderSection('Profitability', keyStats.profitability, 3)}
-      {renderSection('Growth', keyStats.growth, 3)}
+      {/* Sections in two columns */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+        {/* Left Column */}
+        <div>
+          {renderSection('Per Share', keyStats.perShare, 6)}
+          {renderSection('Current Valuation', keyStats.currentValuation, 6)}
+          {renderSection('Profitability', keyStats.profitability, 3)}
+        </div>
+        {/* Right Column */}
+        <div>
+          {renderSection('Income Statement', keyStats.incomeStatement, 4)}
+          {renderSection('Balance Sheet', keyStats.balanceSheet, 5)}
+          {renderSection('Growth', keyStats.growth, 3)}
+        </div>
+      </div>
     </div>
   );
 }
