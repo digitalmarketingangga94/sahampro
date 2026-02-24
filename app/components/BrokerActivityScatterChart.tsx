@@ -54,11 +54,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <p style={{ color: 'var(--text-secondary)' }}>Stock Name: {data.stock_name || '-'}</p>
         <p style={{ color: 'var(--text-secondary)' }}>Broker Type: {data.broker_type}</p>
         <p style={{ color: data.net_value >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>Net Value: {formatChartValue(data.net_value)}</p>
-        {data.net_value >= 0 ? (
-          <p style={{ color: 'var(--accent-success)' }}>Total Buy Value: {formatChartValue(data.buy_value)}</p>
-        ) : (
-          <p style={{ color: 'var(--accent-warning)' }}>Total Sell Value: {formatChartValue(Math.abs(data.sell_value))}</p>
-        )}
+        <p style={{ color: 'var(--accent-success)' }}>Buy Value: {formatChartValue(data.buy_value)}</p>
+        <p style={{ color: 'var(--accent-warning)' }}>Sell Value: {formatChartValue(data.sell_value)}</p>
         <p style={{ color: 'var(--text-secondary)' }}>Buy Avg Price: {data.buy_avg_price?.toLocaleString() || '-'}</p>
         <p style={{ color: 'var(--text-secondary)' }}>Sell Avg Price: {data.sell_avg_price?.toLocaleString() || '-'}</p>
       </div>
@@ -83,7 +80,6 @@ const CustomActivityLabel = (props: any) => {
 // Define the type for items in chartDataWithDominanceAndRadius
 type ChartDataItemActivity = BrokerStockActivityPerBroker & {
   percentage_of_stock_net_value: number;
-  y_value_for_chart: number; // New field for dynamic Y-axis
   r: number;
 };
 
@@ -137,27 +133,18 @@ export default function BrokerActivityScatterChart({
     return acc;
   }, {} as { [stockCode: string]: number }); // Explicitly type the initial accumulator
 
-  // Add y_value_for_chart to each item
-  const chartDataWithYValue = filteredChartData.map(item => {
-    const yValueForChart = item.net_value >= 0 ? item.buy_value : -Math.abs(item.sell_value);
-    return {
-      ...item,
-      y_value_for_chart: yValueForChart,
-    };
-  });
-
-  // Find max absolute y_value_for_chart for scaling circle size
-  const maxAbsoluteYValue = Math.max(...chartDataWithYValue.map(item => Math.abs(item.y_value_for_chart)), 1);
+  // Find max buy_value for scaling circle size
+  const maxBuyValue = Math.max(...filteredChartData.map(item => item.buy_value), 1);
   const baseRadius = 5; // Minimum radius
   const scalingFactor = 15; // Max additional radius
 
   // Add dominant percentage and radius to each item
-  const chartDataWithDominanceAndRadius: ChartDataItemActivity[] = chartDataWithYValue.map(item => ({
+  const chartDataWithDominanceAndRadius: ChartDataItemActivity[] = filteredChartData.map(item => ({
     ...item,
     percentage_of_stock_net_value: totalNetValuePerStock[item.stock_code] > 0
       ? (Math.abs(item.net_value) / totalNetValuePerStock[item.stock_code]) * 100
       : 0,
-    r: baseRadius + (Math.abs(item.y_value_for_chart) / maxAbsoluteYValue) * scalingFactor, // Calculate radius
+    r: baseRadius + (item.buy_value / maxBuyValue) * scalingFactor, // Calculate radius
   }));
 
   // Group data by broker_type for separate scatters
@@ -195,14 +182,14 @@ export default function BrokerActivityScatterChart({
           </XAxis>
           <YAxis
             type="number"
-            dataKey="y_value_for_chart" // Y-axis: Total Buy/Sell Value
-            name="Total Buy/Sell Value"
+            dataKey="buy_value" // Y-axis: Total Buy Value (IDR)
+            name="Total Buy Value"
             tickFormatter={formatChartValue}
             tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
             axisLine={{ stroke: 'var(--border-color)' }}
             tickLine={{ stroke: 'var(--border-color)' }}
           >
-            <Label value="Total Buy/Sell Value (IDR)" angle={-90} offset={-10} position="insideLeft" fill="var(--text-primary)" fontSize={12} />
+            <Label value="Total Buy Value (IDR)" angle={-90} offset={-10} position="insideLeft" fill="var(--text-primary)" fontSize={12} />
           </YAxis>
           <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '0.75rem' }} />
