@@ -178,7 +178,7 @@ export default function BrokerActivityScatterChart({
             axisLine={{ stroke: 'var(--border-color)' }}
             tickLine={{ stroke: 'var(--border-color)' }}
           >
-            <Label value="Net Value (IDR)" offset={-10} position="insideBottom" fill="var(--text-secondary)" fontSize={12} />
+            <Label value="Net Value (IDR)" offset={-10} position="insideBottom" fill="var(--text-primary)" fontSize={12} />
           </XAxis>
           <YAxis
             type="number"
@@ -189,7 +189,7 @@ export default function BrokerActivityScatterChart({
             axisLine={{ stroke: 'var(--border-color)' }}
             tickLine={{ stroke: 'var(--border-color)' }}
           >
-            <Label value="Total Buy Value (IDR)" angle={-90} offset={-10} position="insideLeft" fill="var(--text-secondary)" fontSize={12} />
+            <Label value="Total Buy Value (IDR)" angle={-90} offset={-10} position="insideLeft" fill="var(--text-primary)" fontSize={12} />
           </YAxis>
           <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '0.75rem' }} />
@@ -205,7 +205,7 @@ export default function BrokerActivityScatterChart({
               opacity={0.8}
               shape="circle"
               line={false}
-              r={(entry: ChartDataItemActivity) => entry.r} // Explicitly type 'entry'
+              r="r" // Use the dataKey "r"
             >
               <LabelList content={<CustomActivityLabel />} />
             </Scatter>

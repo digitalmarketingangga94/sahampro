@@ -229,7 +229,7 @@ export default function BrokerFlowScatterChart({
               opacity={0.8}
               shape="circle"
               line={false}
-              r={(entry: ChartDataItem) => entry.r} // Explicitly type 'entry'
+              r="r" // Use the dataKey "r"
             >
               <LabelList content={<CustomBrokerFlowLabel />} />
             </Scatter>
