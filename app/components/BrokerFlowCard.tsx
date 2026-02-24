@@ -296,7 +296,9 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
               <table className="broker-flow-table">
                 <thead>
                   <tr>
-                    <th>#</th><th>BROKER</th><th>DAILY HEATMAP</th>
+                    <th>#</th>
+                    <th>BROKER</th>
+                    <th>DAILY HEATMAP</th>
                     <th 
                       style={{ textAlign: 'center', cursor: 'pointer' }}
                       onClick={() => handleSort('net_value')}
@@ -321,7 +323,7 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
                   {sortedActivities.map((activity, idx) => (
                     <BrokerFlowRow 
                       key={`${activity.broker_code}-${idx}`}
-                      activity={activity} // Removed unnecessary cast
+                      activity={activity as BrokerFlowActivity & { dominant_percentage?: number }} // Cast to include dominant_percentage
                       index={idx + 1}
                       tradingDates={data.trading_dates}
                     />
@@ -348,7 +350,7 @@ function BrokerFlowRow({
   index,
   tradingDates 
 }: { 
-  activity: BrokerFlowActivity; // Removed unnecessary cast
+  activity: BrokerFlowActivity & { dominant_percentage?: number }; // Add optional dominant_percentage
   index: number;
   tradingDates: string[];
 }) {

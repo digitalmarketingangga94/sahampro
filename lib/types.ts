@@ -297,7 +297,6 @@ export interface BrokerFlowActivity {
   current_price: string;
   float_pl_pct: string;
   buy_avg_price?: number; // New field for calculated average buy price
-  dominant_percentage?: number; // Added this property
 }
 
 export interface BrokerFlowResponse {
