@@ -14,7 +14,7 @@ export default function DashboardPage() {
             <p className="text-secondary mt-2">Loading chart...</p>
           </div>
         }>
-          <TradingViewChart symbol="IDX:AMMN" theme="dark" height={800} />
+          <TradingViewChart symbol="IDX:AMMN" theme="dark" height={1000} />
         </Suspense>
       </div>
     </div>
