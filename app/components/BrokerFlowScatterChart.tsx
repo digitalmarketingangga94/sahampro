@@ -40,7 +40,7 @@ const formatChartValue = (value: number): string => {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload; // Access the original data object
-    const brokerInfo = getBrokerInfo(data.broker_code);
+    const brokerInfo = getBrokerInfo(data.broker_code); // Fetch brokerInfo here
 
     return (
       <div style={{
@@ -67,6 +67,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 // Custom Label component to display broker code and dominant percentage
 const CustomBrokerFlowLabel = (props: any) => {
   const { x, y, payload } = props;
+  if (!payload) return null; // Defensive check for undefined payload
   const { broker_code, percentage_of_total_net_value } = payload;
   const displayPercentage = percentage_of_total_net_value > 0.1 ? ` (${percentage_of_total_net_value.toFixed(1)}%)` : ''; // Only show if significant
   return (
@@ -155,7 +156,7 @@ export default function BrokerFlowScatterChart({
 
   // Group data by broker_type for separate scatters
   const groupedData = chartDataWithDominance.reduce((acc, item) => {
-    const type = item.broker_type || 'Unknown';
+    const type = item.broker_type || 'Unknown'; // This will be 'Smartmoney', 'Foreign', 'Retail', 'Mix', 'Unknown'
     if (!acc[type]) {
       acc[type] = [];
     }

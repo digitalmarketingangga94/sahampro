@@ -64,6 +64,19 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+// Custom Label component to display broker code and dominant percentage
+const CustomActivityLabel = (props: any) => {
+  const { x, y, payload } = props;
+  if (!payload) return null; // Defensive check for undefined payload
+  const { broker_code, percentage_of_stock_net_value } = payload;
+  const displayPercentage = percentage_of_stock_net_value > 0.1 ? ` (${percentage_of_stock_net_value.toFixed(1)}%)` : '';
+  return (
+    <text x={x} y={y} dy={-10} textAnchor="middle" fill="black" fontSize={10}>
+      {broker_code}{displayPercentage}
+    </text>
+  );
+};
+
 export default function BrokerActivityScatterChart({
   data,
   loading,
@@ -108,15 +121,29 @@ export default function BrokerActivityScatterChart({
     (item.broker_type && selectedBrokerTypes.includes(item.broker_type))
   );
 
+  // Calculate total net value per stock across all filtered brokers
+  const totalNetValuePerStock = filteredChartData.reduce((acc: { [stockCode: string]: number }, item) => {
+    acc[item.stock_code] = (acc[item.stock_code] || 0) + Math.abs(item.net_value);
+    return acc;
+  }, {} as { [stockCode: string]: number }); // Explicitly type the initial accumulator
+
+  // Add dominant percentage to each item
+  const chartDataWithDominance = filteredChartData.map(item => ({
+    ...item,
+    percentage_of_stock_net_value: totalNetValuePerStock[item.stock_code] > 0
+      ? (Math.abs(item.net_value) / totalNetValuePerStock[item.stock_code]) * 100
+      : 0,
+  }));
+
   // Group data by broker_type for separate scatters
-  const groupedData = filteredChartData.reduce((acc, item) => {
+  const groupedData = chartDataWithDominance.reduce((acc, item) => {
     const type = item.broker_type || 'Unknown';
     if (!acc[type]) {
       acc[type] = [];
     }
     acc[type].push(item);
     return acc;
-  }, {} as { [key: string]: typeof filteredChartData });
+  }, {} as { [key: string]: typeof chartDataWithDominance });
 
   return (
     <div style={{ width: '100%', height: '500px' }}>
@@ -167,7 +194,7 @@ export default function BrokerActivityScatterChart({
               shape="circle"
               line={false}
             >
-              <LabelList dataKey="stock_code" position="top" fill="var(--text-primary)" fontSize={10} /> {/* Black text */}
+              <LabelList content={<CustomActivityLabel />} />
             </Scatter>
           ))}
         </ScatterChart>
