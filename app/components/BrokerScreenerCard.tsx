@@ -171,7 +171,10 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
               id="nDays"
               type="number"
               value={nDays}
-              onChange={(e) => setNDays(parseInt(e.target.value))}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                setNDays(isNaN(value) ? 1 : value); // Default to 1 if NaN
+              }}
               className="input-field compact-input"
               style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', height: '32px', textAlign: 'center' }}
               min="1"
