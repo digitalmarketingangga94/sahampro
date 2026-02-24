@@ -88,6 +88,14 @@ function DailyHeatmap({ dailyData, tradingDates }: { dailyData: BrokerFlowDailyD
   );
 }
 
+type SortColumn = 'broker_code' | 'net_value' | 'consistency' | 'dominant_percentage';
+type SortDirection = 'asc' | 'desc';
+
+interface SortConfig {
+  column: SortColumn | null;
+  direction: SortDirection;
+}
+
 export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
   const [data, setData] = useState<BrokerFlowResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -95,6 +103,7 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
   const [lookbackDays, setLookbackDays] = useState<number>(7); // Keep as number
   const [selectedStatus, setSelectedStatus] = useState<string[]>(['Bandar', 'Foreign', 'Retail', 'Mix']);
   const [viewMode, setViewMode] = useState<'table' | 'chart'>('table'); // Re-added 'chart' option
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'dominant_percentage', direction: 'desc' }); // Default sort by dominant_percentage desc
 
   useEffect(() => {
     if (!emiten) return;
@@ -135,6 +144,58 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
 
     fetchData();
   }, [emiten, lookbackDays, selectedStatus]);
+
+  const handleSort = (column: SortColumn) => {
+    let direction: SortDirection = 'asc';
+    if (sortConfig.column === column && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ column, direction });
+  };
+
+  const getSortIndicator = (column: SortColumn) => {
+    if (sortConfig.column === column) {
+      return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+    }
+    return '';
+  };
+
+  const sortedActivities = [...(data?.activities || [])].sort((a, b) => {
+    if (sortConfig.column === null) return 0;
+
+    let aValue: any;
+    let bValue: any;
+
+    switch (sortConfig.column) {
+      case 'broker_code':
+        aValue = a.broker_code;
+        bValue = b.broker_code;
+        break;
+      case 'net_value':
+        aValue = parseFloat(a.net_value);
+        bValue = parseFloat(b.net_value);
+        break;
+      case 'consistency':
+        // Assuming consistency is based on buy_days/active_days ratio
+        aValue = (parseFloat(a.buy_days) || 0) / (parseFloat(a.active_days) || 1);
+        bValue = (parseFloat(b.buy_days) || 0) / (parseFloat(b.active_days) || 1);
+        break;
+      case 'dominant_percentage':
+        aValue = a.dominant_percentage || 0;
+        bValue = b.dominant_percentage || 0;
+        break;
+      default:
+        return 0;
+    }
+
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
+    } else if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortConfig.direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    }
+    return 0;
+  });
+
 
   const filterOptions = [
     { label: '1D', value: 1 },
@@ -227,7 +288,7 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
           </div>
         ) : data && (
           <div className="broker-flow-content">
-            {data.activities.length === 0 ? (
+            {sortedActivities.length === 0 ? (
               <div style={{ padding: '1rem', textAlign: 'center', color: '#888' }}>
                 No broker activity found for {emiten}
               </div>
@@ -235,14 +296,31 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
               <table className="broker-flow-table">
                 <thead>
                   <tr>
-                    <th>#</th><th>BROKER</th><th>DAILY HEATMAP</th>
-                    <th style={{ textAlign: 'center' }}>NET VALUE</th>
-                    <th style={{ textAlign: 'center' }}>CONSISTENCY</th>
-                    <th style={{ textAlign: 'center' }}>DOMINANT %</th> {/* New header */}
+                    <th>#</th>
+                    <th>BROKER</th>
+                    <th>DAILY HEATMAP</th>
+                    <th 
+                      style={{ textAlign: 'center', cursor: 'pointer' }}
+                      onClick={() => handleSort('net_value')}
+                    >
+                      NET VALUE {getSortIndicator('net_value')}
+                    </th>
+                    <th 
+                      style={{ textAlign: 'center', cursor: 'pointer' }}
+                      onClick={() => handleSort('consistency')}
+                    >
+                      CONSISTENCY {getSortIndicator('consistency')}
+                    </th>
+                    <th 
+                      style={{ textAlign: 'center', cursor: 'pointer' }}
+                      onClick={() => handleSort('dominant_percentage')}
+                    >
+                      DOMINANT % {getSortIndicator('dominant_percentage')}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.activities.map((activity, idx) => (
+                  {sortedActivities.map((activity, idx) => (
                     <BrokerFlowRow 
                       key={`${activity.broker_code}-${idx}`}
                       activity={activity as BrokerFlowActivity & { dominant_percentage?: number }} // Cast to include dominant_percentage
