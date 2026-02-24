@@ -53,7 +53,7 @@ export default function KeyStatsColumnTwoCard({ emiten, keyStats }: KeyStatsColu
             <line x1="12" y1="20" x2="12" y2="4"></line>
             <line x1="6" y1="20" x2="6" y2="14"></line>
           </svg>
-          <div className="compact-ticker" style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Key Stats (Cont.)</div>
+          <div className="compact-ticker" style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Key Stats 2</div>
         </div>
         <div className="compact-date">{emiten.toUpperCase()}</div>
       </div>
