@@ -314,7 +314,7 @@ function BrokerFlowRow({
           {activity.buy_days}/{activity.active_days}
         </span>
       </td>
-      <td className="dominant-percentage" style={{ textAlign: 'center' }}> {/* New data cell */}
+      <td className="dominant-percentage" style={{ textAlign: 'center' }}> {/* Ensure this cell is centered */}
         {activity.dominant_percentage !== undefined ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
             <span>{activity.dominant_percentage.toFixed(1)}%</span>
