@@ -71,7 +71,7 @@ const CustomBrokerFlowLabel = (props: any) => {
   const { broker_code, percentage_of_total_net_value } = payload;
   const displayPercentage = percentage_of_total_net_value > 0.1 ? ` (${percentage_of_total_net_value.toFixed(1)}%)` : ''; // Only show if significant
   return (
-    <text x={x} y={y} dy={-10} textAnchor="middle" fill="black" fontSize={10}>
+    <text x={x} y={y} dy={-10} textAnchor="middle" fill="var(--text-primary)" fontSize={10}>
       {broker_code}{displayPercentage}
     </text>
   );
@@ -139,11 +139,16 @@ export default function BrokerFlowScatterChart({
       return selectedStatus.includes(statusToMatch);
     });
 
-  // Calculate total net value for all filtered brokers for this emiten
-  const totalAbsoluteNetValue = chartData.reduce((sum, item) => sum + Math.abs(item.net_value), 0);
+  // Filter for top 5 brokers by absolute net_value
+  const top5Brokers = chartData
+    .sort((a, b) => Math.abs(b.net_value) - Math.abs(a.net_value)) // Sort by absolute net_value descending
+    .slice(0, 5); // Take top 5
 
-  // Add dominant percentage to each item
-  const chartDataWithDominance = chartData.map(item => ({
+  // Calculate total net value for these top 5 brokers
+  const totalAbsoluteNetValue = top5Brokers.reduce((sum, item) => sum + Math.abs(item.net_value), 0);
+
+  // Add dominant percentage to each item in the top 5 list
+  const chartDataWithDominance = top5Brokers.map(item => ({
     ...item,
     percentage_of_total_net_value: totalAbsoluteNetValue > 0 ? (Math.abs(item.net_value) / totalAbsoluteNetValue) * 100 : 0,
   }));

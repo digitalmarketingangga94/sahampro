@@ -71,7 +71,7 @@ const CustomActivityLabel = (props: any) => {
   const { broker_code, percentage_of_stock_net_value } = payload;
   const displayPercentage = percentage_of_stock_net_value > 0.1 ? ` (${percentage_of_stock_net_value.toFixed(1)}%)` : '';
   return (
-    <text x={x} y={y} dy={-10} textAnchor="middle" fill="black" fontSize={10}>
+    <text x={x} y={y} dy={-10} textAnchor="middle" fill="var(--text-primary)" fontSize={10}>
       {broker_code}{displayPercentage}
     </text>
   );
@@ -125,7 +125,7 @@ export default function BrokerActivityScatterChart({
   const totalNetValuePerStock = filteredChartData.reduce((acc: { [stockCode: string]: number }, item) => {
     acc[item.stock_code] = (acc[item.stock_code] || 0) + Math.abs(item.net_value);
     return acc;
-  }, {} as { [stockCode: string]: number }); // Explicitly type the initial accumulator
+  }, {});
 
   // Add dominant percentage to each item
   const chartDataWithDominance = filteredChartData.map(item => ({
