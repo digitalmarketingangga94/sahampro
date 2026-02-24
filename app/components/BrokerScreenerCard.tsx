@@ -319,31 +319,31 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                     Symbol {getSortIndicator('symbol')}
                   </th>
                   <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('net_direction')}
                   >
                     Net Direction {getSortIndicator('net_direction')}
                   </th>
                   <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('net_lot')}
                   >
                     Net Lot {getSortIndicator('net_lot')}
                   </th>
                   <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('avg_per_day')}
                   >
                     Avg / Day {getSortIndicator('avg_per_day')}
                   </th>
                   <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('dominant_broker')}
                   >
                     Dominant Broker {getSortIndicator('dominant_broker')}
                   </th>
                   <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('dominant_percent')}
                   >
                     Dominant % {getSortIndicator('dominant_percent')}
@@ -353,22 +353,22 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
               <tbody>
                 {sortedResults.map((item, index) => (
                   <tr key={item.symbol} style={{ borderBottom: index < sortedResults.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
-                    <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                    <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)', textAlign: 'left' }}>
                       {item.symbol}
                       {item.stock_name && item.stock_name !== item.symbol && (
                         <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{item.stock_name}</div>
                       )}
                     </td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'left' }}>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
                       <span style={{ color: item.net_direction === 'All Net Buy' ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
                         • {item.net_direction}
                       </span>
                     </td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatNumber(item.net_lot)}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatAvgPerDay(item.avg_per_day)}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'left' }}>{item.dominant_broker}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatNumber(item.net_lot)}</td>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatAvgPerDay(item.avg_per_day)}</td>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{item.dominant_broker}</td>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                         <span>{item.dominant_percent.toFixed(2)}%</span>
                         <div style={{ width: '80px', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px' }}>
                           <div style={{ width: `${item.dominant_percent}%`, height: '100%', background: 'var(--accent-success)', borderRadius: '4px' }}></div>
