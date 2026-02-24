@@ -120,6 +120,7 @@ export async function GET(request: NextRequest) {
           allBrokersMatch = false;
           break;
         }
+        // Check net_lot direction based on netBuy filter
         if (netBuy && activity.net_lot <= 0) {
           allBrokersMatch = false;
           break;
@@ -133,14 +134,24 @@ export async function GET(request: NextRequest) {
 
       if (allBrokersMatch) {
         let totalNetLot = 0;
-        let totalNetValue = 0;
+        let totalBuyValueForAvgPrice = 0;
+        let totalSellValueForAvgPrice = 0;
+        let weightedBuyAvgPriceSum = 0;
+        let weightedSellAvgPriceSum = 0;
         let dominantBroker = '';
         let maxNetLot = 0;
 
         for (const brokerCode of brokerCodes) {
           const activity = stockActivitiesForBrokers[brokerCode];
           totalNetLot += activity.net_lot;
-          totalNetValue += activity.net_value;
+
+          if (netBuy) {
+            totalBuyValueForAvgPrice += activity.buy_value;
+            weightedBuyAvgPriceSum += activity.buy_avg_price * activity.buy_value;
+          } else { // Net Sell
+            totalSellValueForAvgPrice += activity.sell_value;
+            weightedSellAvgPriceSum += activity.sell_avg_price * activity.sell_value;
+          }
 
           if (Math.abs(activity.net_lot) > Math.abs(maxNetLot)) {
             maxNetLot = activity.net_lot;
@@ -148,7 +159,13 @@ export async function GET(request: NextRequest) {
           }
         }
 
-        const avgPerDay = totalNetLot / nDays;
+        let averagePrice = 0;
+        if (netBuy && totalBuyValueForAvgPrice > 0) {
+          averagePrice = weightedBuyAvgPriceSum / totalBuyValueForAvgPrice;
+        } else if (!netBuy && totalSellValueForAvgPrice > 0) {
+          averagePrice = weightedSellAvgPriceSum / totalSellValueForAvgPrice;
+        }
+        
         const dominantPercent = (Math.abs(maxNetLot) / Math.abs(totalNetLot)) * 100;
 
         screenerResults.push({
@@ -156,7 +173,7 @@ export async function GET(request: NextRequest) {
           stock_name: stockNameMap.get(stockCode),
           net_direction: netBuy ? 'All Net Buy' : 'All Net Sell',
           net_lot: totalNetLot,
-          avg_per_day: avgPerDay,
+          average_price: Math.round(averagePrice), // Round the average price
           dominant_broker: dominantBroker,
           dominant_percent: isNaN(dominantPercent) ? 0 : dominantPercent,
         });

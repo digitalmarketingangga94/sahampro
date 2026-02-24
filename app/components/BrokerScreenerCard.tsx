@@ -13,12 +13,12 @@ const formatNumber = (num: number | undefined): string => {
   return num.toLocaleString('id-ID', { maximumFractionDigits: 0 });
 };
 
-const formatAvgPerDay = (num: number | undefined): string => {
+const formatAvgPrice = (num: number | undefined): string => {
   if (num === undefined || num === null) return '-';
-  return num.toLocaleString('id-ID', { maximumFractionDigits: 2 });
+  return num.toLocaleString('id-ID', { maximumFractionDigits: 0 }); // Format as integer price
 };
 
-type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'avg_per_day' | 'dominant_broker' | 'dominant_percent';
+type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'average_price' | 'dominant_broker' | 'dominant_percent';
 type SortDirection = 'asc' | 'desc';
 
 interface SortConfig {
@@ -332,9 +332,9 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                   </th>
                   <th 
                     style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
-                    onClick={() => handleSort('avg_per_day')}
+                    onClick={() => handleSort('average_price')}
                   >
-                    Avg / Day {getSortIndicator('avg_per_day')}
+                    Avg Price {getSortIndicator('average_price')}
                   </th>
                   <th 
                     style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
@@ -365,7 +365,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                       </span>
                     </td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatNumber(item.net_lot)}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatAvgPerDay(item.avg_per_day)}</td>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatAvgPrice(item.average_price)}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{item.dominant_broker}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>

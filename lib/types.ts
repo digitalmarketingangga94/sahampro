@@ -591,7 +591,7 @@ export interface BrokerScreenerResultItem {
   stock_name?: string;
   net_direction: 'All Net Buy' | 'All Net Sell' | 'Mixed';
   net_lot: number;
-  avg_per_day: number;
+  average_price: number; // Changed from avg_per_day to average_price
   dominant_broker: string;
   dominant_percent: number;
 }
