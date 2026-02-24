@@ -39,6 +39,13 @@ const Navbar = () => {
             Analyze Stock
           </Link>
           <Link 
+            href="/idx-sector" 
+            onClick={closeMenu}
+            className={pathname === '/idx-sector' ? 'nav-link active' : 'nav-link'}
+          >
+            IDX Sector
+          </Link>
+          <Link 
             href="/broker-activity" 
             onClick={closeMenu}
             className={pathname === '/broker-activity' ? 'nav-link active' : 'nav-link'}
@@ -101,6 +108,13 @@ const Navbar = () => {
             >
               Analyze Stock
             </Link>
+            <Link 
+            href="/idx-sector" 
+            onClick={closeMenu}
+            className={pathname === '/idx-sector' ? 'nav-link active' : 'nav-link'}
+          >
+            IDX Sector
+          </Link>
             <Link 
               href="/broker-activity" 
               onClick={closeMenu}
