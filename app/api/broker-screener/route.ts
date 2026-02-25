@@ -160,8 +160,8 @@ export async function GET(request: NextRequest) {
         screenerResults.push({
           symbol: stockCode,
           stock_name: stockNameMap.get(stockCode),
-          // FIX: net_direction should reflect the actual totalNetLot, not just the filter
-          net_direction: totalNetLot > 0 ? 'Net Buy' : 'Net Sell',
+          // Reverted: net_direction now reflects the netBuy filter, not the aggregated totalNetLot
+          net_direction: netBuy ? 'Net Buy' : 'Net Sell',
           net_lot: totalNetLot,
           avg_per_day: avgPerDay,
           dominant_broker: dominantBroker,

@@ -546,10 +546,10 @@ export async function fetchBrokerActivityDetail(
 
   const json: BrokerOverallActivitySummaryResponse = await response.json();
 
-  // Add logging for empty data
-  if (!json.data || !json.data.broker_summary || (!json.data.broker_summary.brokers_buy.length && !json.data.broker_summary.brokers_sell.length)) {
-    console.warn(`[Stockbit API] No broker activity data found for ${brokerCode} from ${fromDate} to ${toDate}`);
-  }
+  // Removed the console.warn log as it was for debugging the previous issue.
+  // if (!json.data || !json.data.broker_summary || (!json.data.broker_summary.brokers_buy.length && !json.data.broker_summary.brokers_sell.length)) {
+  //   console.warn(`[Stockbit API] No broker activity data found for ${brokerCode} from ${fromDate} to ${toDate}`);
+  // }
 
   return json;
 }
