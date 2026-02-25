@@ -33,6 +33,15 @@ interface SortConfig {
   direction: SortDirection;
 }
 
+// Helper to get score interpretation
+const getScoreInterpretation = (score: number | undefined) => {
+  if (score === undefined || score === null) return { text: '-', color: 'var(--text-muted)' };
+  if (score > 80) return { text: 'Bandar Kontrol Kuat', color: 'var(--accent-success)' };
+  if (score >= 65) return { text: 'Akumulasi Valid', color: 'var(--accent-primary)' };
+  if (score >= 50) return { text: 'Potensi Rotasi', color: 'var(--accent-warning)' };
+  return { text: 'Noise / Tidak Dominan', color: 'var(--accent-destructive)' };
+};
+
 export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const [nDays, setNDays] = useState<number>(4);
   const [netBuy, setNetBuy] = useState<boolean>(true);
@@ -408,36 +417,42 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                 </tr>
               </thead>
               <tbody>
-                {sortedResults.map((item, index) => (
-                  <tr key={item.symbol} style={{ borderBottom: index < sortedResults.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
-                    <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)', textAlign: 'left' }}>
-                      {item.symbol}
-                      {item.stock_name && item.stock_name !== item.symbol && (
-                        <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{item.stock_name}</div>
-                      )}
-                    </td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
-                      <span style={{ color: item.net_direction === 'Net Buy' ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
-                        • {item.net_direction}
-                      </span>
-                    </td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatNumber(item.net_lot)}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatAvgPerDay(item.avg_per_day)}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatPrice(item.avg_price)}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{item.dominant_broker}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                        <span>{item.dominant_percent.toFixed(2)}%</span>
-                        <div style={{ width: '80px', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px' }}>
-                          <div style={{ width: `${item.dominant_percent}%`, height: '100%', background: 'var(--accent-success)', borderRadius: '4px' }}></div>
+                {sortedResults.map((item, index) => {
+                  const scoreInterpretation = getScoreInterpretation(item.dominantBrokerScore);
+                  return (
+                    <tr key={item.symbol} style={{ borderBottom: index < sortedResults.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+                      <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)', textAlign: 'left' }}>
+                        {item.symbol}
+                        {item.stock_name && item.stock_name !== item.symbol && (
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{item.stock_name}</div>
+                        )}
+                      </td>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
+                        <span style={{ color: item.net_direction === 'Net Buy' ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
+                          • {item.net_direction}
+                        </span>
+                      </td>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatNumber(item.net_lot)}</td>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatAvgPerDay(item.avg_per_day)}</td>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatPrice(item.avg_price)}</td>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{item.dominant_broker}</td>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                          <span>{item.dominant_percent !== undefined ? item.dominant_percent.toFixed(2) : '-'}%</span>
+                          <div style={{ width: '80px', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px' }}>
+                            <div style={{ width: `${item.dominant_percent || 0}%`, height: '100%', background: 'var(--accent-success)', borderRadius: '4px' }}></div>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center', fontWeight: 600, color: 'var(--accent-primary)' }}>
-                      {item.dominantBrokerScore !== undefined ? item.dominantBrokerScore.toFixed(1) : '-'}%
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center', fontWeight: 600, color: scoreInterpretation.color }}>
+                        {item.dominantBrokerScore !== undefined ? item.dominantBrokerScore.toFixed(1) : '-'}%
+                        <div style={{ fontSize: '0.65rem', color: scoreInterpretation.color, marginTop: '2px' }}>
+                          {scoreInterpretation.text}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
