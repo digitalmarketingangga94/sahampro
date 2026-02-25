@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
   const emiten = searchParams.get('emiten');
   const lookbackDays = searchParams.get('lookback_days') || '7';
   const brokerStatusParam = searchParams.get('broker_status') || 'Bandar,Foreign,Retail,Mix'; // Default to match frontend
+  const netDirection = searchParams.get('netDirection') || 'all'; // NEW: Get netDirection filter
 
   if (!emiten) {
     return NextResponse.json(
@@ -79,10 +80,17 @@ export async function GET(request: NextRequest) {
         .map(mapStatusIdToBrokerType)
         .filter((type): type is BrokerType => type !== null);
 
-      const filteredActivities = data.activities.filter(activity => {
+      let filteredActivities = data.activities.filter(activity => {
         const brokerInfo = getBrokerInfo(activity.broker_code);
         return selectedInternalBrokerTypes.includes(brokerInfo.type);
       });
+
+      // NEW: Apply netDirection filter
+      if (netDirection === 'net_buy') {
+        filteredActivities = filteredActivities.filter(activity => parseFloat(activity.net_value) > 0);
+      } else if (netDirection === 'net_sell') {
+        filteredActivities = filteredActivities.filter(activity => parseFloat(activity.net_value) < 0);
+      }
 
       data.activities = filteredActivities;
     }

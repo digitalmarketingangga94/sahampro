@@ -102,6 +102,7 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
   const [error, setError] = useState<string | null>(null);
   const [lookbackDays, setLookbackDays] = useState<number>(7); // Keep as number
   const [selectedStatus, setSelectedStatus] = useState<string[]>(['Bandar', 'Foreign', 'Retail', 'Mix']);
+  const [netDirection, setNetDirection] = useState<'all' | 'net_buy' | 'net_sell'>('all'); // NEW: Net Buy/Sell filter
   const [viewMode, setViewMode] = useState<'table' | 'chart'>('table'); // Re-added 'chart' option
   const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'dominant_percentage', direction: 'desc' }); // Default sort by dominant_percentage desc
 
@@ -114,7 +115,7 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
       
       try {
         const statusParam = selectedStatus.length > 0 ? selectedStatus.join(',') : 'None';
-        const response = await fetch(`/api/broker-flow?emiten=${emiten}&lookback_days=${lookbackDays}&broker_status=${statusParam}`);
+        const response = await fetch(`/api/broker-flow?emiten=${emiten}&lookback_days=${lookbackDays}&broker_status=${statusParam}&netDirection=${netDirection}`); // NEW: Pass netDirection
         const json = await response.json();
         
         if (!json.success) {
@@ -143,7 +144,7 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
     };
 
     fetchData();
-  }, [emiten, lookbackDays, selectedStatus]);
+  }, [emiten, lookbackDays, selectedStatus, netDirection]); // NEW: Add netDirection to dependencies
 
   const handleSort = (column: SortColumn) => {
     let direction: SortDirection = 'asc';
@@ -225,7 +226,7 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
       {/* Header */}
       <div className="broker-flow-header">
         <span className="broker-flow-title">Broker Flow</span>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}> {/* Added flexWrap */}
           {/* Status Filters */}
           <div className="broker-flow-filters">
             {statusOptions.map((opt) => (
@@ -238,6 +239,31 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
                 {opt.label.split(' ')[0]}
               </button>
             ))}
+          </div>
+
+          {/* NEW: Net Direction Filters */}
+          <div className="broker-flow-filters">
+            <button
+              className={`broker-flow-filter-btn ${netDirection === 'all' ? 'active' : ''}`}
+              onClick={() => setNetDirection('all')}
+              title="Show All Net Directions"
+            >
+              All
+            </button>
+            <button
+              className={`broker-flow-filter-btn ${netDirection === 'net_buy' ? 'active' : ''}`}
+              onClick={() => setNetDirection('net_buy')}
+              title="Show Net Buy Activities"
+            >
+              Net Buy
+            </button>
+            <button
+              className={`broker-flow-filter-btn ${netDirection === 'net_sell' ? 'active' : ''}`}
+              onClick={() => setNetDirection('net_sell')}
+              title="Show Net Sell Activities"
+            >
+              Net Sell
+            </button>
           </div>
 
           {/* Divider */}
