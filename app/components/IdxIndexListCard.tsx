@@ -1,15 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import { LineChart, TrendingUp, TrendingDown } from 'lucide-react';
-import type { EmitenInfoResponse } from '@/lib/types'; // Removed IdxSubsectorItem
-import { fetchIdxSectorInfo, fetchSectors } from '@/lib/stockbit'; // Changed to fetchSectors
+import type { IdxSector, EmitenInfoResponse } from '@/lib/types'; // Import IdxSector
+import { fetchIdxSectorInfo, fetchSectors } from '@/lib/stockbit';
 
 export default function IdxIndexListCard() {
-  const [idxIndices, setIdxIndices] = useState<string[]>([]); // State to store fetched sector names
+  const [idxIndices, setIdxIndices] = useState<IdxSector[]>([]); // State to store fetched sector names
   const [indexData, setIndexData] = useState<Record<string, EmitenInfoResponse['data']>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter(); // Initialize useRouter
 
   useEffect(() => {
     const fetchAllIndexData = async () => {
@@ -17,19 +19,18 @@ export default function IdxIndexListCard() {
       setError(null);
       try {
         // Fetch main sectors from the existing API route
-        const sectorsResponse = await fetchSectors(); // Use fetchSectors
+        const fetchedSectors: IdxSector[] = await fetchSectors(); // Now returns IdxSector[]
         
-        const fetchedSectors: string[] = sectorsResponse || [];
         setIdxIndices(fetchedSectors); // Set the fetched sector names as indices
 
         // Now, for each fetched sector, fetch its detailed info
-        const promises = fetchedSectors.map(async (sectorName) => {
+        const promises = fetchedSectors.map(async (sector) => {
           try {
-            const response = await fetchIdxSectorInfo(sectorName); // Use sectorName as symbol
-            return { symbol: sectorName, data: response.data };
+            const response = await fetchIdxSectorInfo(sector.name); // Use sector.name as symbol
+            return { symbol: sector.name, data: response.data };
           } catch (err) {
-            console.error(`Failed to fetch data for ${sectorName}:`, err);
-            return { symbol: sectorName, data: null, error: err instanceof Error ? err.message : 'Unknown error' };
+            console.error(`Failed to fetch data for ${sector.name}:`, err);
+            return { symbol: sector.name, data: null, error: err instanceof Error ? err.message : 'Unknown error' };
           }
         });
 
@@ -70,6 +71,11 @@ export default function IdxIndexListCard() {
     return n.toLocaleString('id-ID', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   };
 
+  const handleSectorClick = (sector: IdxSector) => {
+    // Navigate to the new page for sector companies
+    router.push(`/idx-sector/${sector.name}?sectorId=${sector.parent}&subsectorId=${sector.id}`);
+  };
+
   return (
     <div className="glass-card-static" style={{ padding: '1rem' }}>
       <h3 style={{ marginBottom: '1rem', fontSize: '1rem', color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal' }}>
@@ -96,17 +102,23 @@ export default function IdxIndexListCard() {
               </tr>
             </thead>
             <tbody>
-              {idxIndices.map((sectorName, i) => {
-                const data = indexData[sectorName]; // Use sectorName to lookup data
+              {idxIndices.map((sector, i) => {
+                const data = indexData[sector.name]; // Use sector.name to lookup data
                 const isPositive = data && data.percentage >= 0;
                 const changeColor = isPositive ? 'var(--accent-success)' : 'var(--accent-warning)';
 
                 return (
-                  <tr key={sectorName} style={{ borderBottom: i < idxIndices.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+                  <tr 
+                    key={sector.id} 
+                    style={{ 
+                      borderBottom: i < idxIndices.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none',
+                      cursor: 'pointer' // Make row clickable
+                    }}
+                    onClick={() => handleSectorClick(sector)}
+                  >
                     <td style={{ padding: '0.5rem 0.25rem', color: 'var(--text-muted)' }}>{i + 1}</td>
                     <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
-                      {/* Removed Link as detail pages are being removed */}
-                      {data?.name || sectorName} {/* Use data.name if available, else sectorName */}
+                      {data?.name || sector.name}
                     </td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: changeColor }}>
                       {data ? `${isPositive ? '+' : ''}${formatNumber(data.change, 2)}` : '-'}

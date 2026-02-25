@@ -1,10 +1,10 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse } from './types'; // Removed IdxSectorCompanyResponse, IdxSectorCompanyItemRaw, IdxSubsectorsResponse, IdxSubsectorItem
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse, IdxSector, IdxSectorCompaniesResponse } from './types';
 import { getSessionValue, upsertSession } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
 const STOCKBIT_FINDATA_VIEW_URL = 'https://exodus.stockbit.com/findata-view'; // New base URL for findata-view
 const STOCKBIT_ORDERBOOK_API_URL = 'https://exodus.stockbit.com/company-price-feed/v2/orderbook/companies'; // New base URL for orderbook API
-// Removed STOCKBIT_EMITTEN_V3_URL
+const STOCKBIT_EMITTEN_V3_URL = 'https://exodus.stockbit.com/emitten/v3'; // New base URL for emitten v3 API
 
 // Custom error for token expiry - allows UI to detect and show refresh prompt
 export class TokenExpiredError extends Error {
@@ -24,10 +24,20 @@ const TOKEN_CACHE_DURATION = 60000; // 1 minute
 const sectorCache = new Map<string, { sector: string; name: string; timestamp: number }>();
 const SECTOR_CACHE_DURATION = 3600000; // 1 hour
 
-// Static list of IDX sectors
-const STATIC_IDX_SECTORS: string[] = [
-  "IDXBASIC", "IDXCYCLIC", "IDXENERGY", "IDXFINANCE", "IDXHEALTH", "IDXINDUST", 
-  "IDXINFRA", "IDXNONCYC", "IDXPROPERT", "IDXTECHNO", "IDXTRANS", "Syariah"
+// Static list of IDX sectors with their IDs and parent ID (70 for all main sectors)
+const STATIC_IDX_SECTORS_DATA: IdxSector[] = [
+  { id: "1000003292", name: "IDXBASIC", alias1: "IDXBASIC", parent: "70" },
+  { id: "1000003293", name: "IDXCYCLIC", alias1: "IDXCYCLIC", parent: "70" },
+  { id: "1000003294", name: "IDXENERGY", alias1: "IDXENERGY", parent: "70" },
+  { id: "1000003295", name: "IDXFINANCE", alias1: "IDXFINANCE", parent: "70" },
+  { id: "1000003296", name: "IDXHEALTH", alias1: "IDXHEALTH", parent: "70" },
+  { id: "1000003297", name: "IDXINDUST", alias1: "IDXINDUST", parent: "70" },
+  { id: "1000003298", name: "IDXINFRA", alias1: "IDXINFRA", parent: "70" },
+  { id: "1000003299", name: "IDXNONCYC", alias1: "IDXNONCYC", parent: "70" },
+  { id: "1000003300", name: "IDXPROPERT", alias1: "IDXPROPERT", parent: "70" },
+  { id: "1000003301", name: "IDXTECHNO", alias1: "IDXTECHNO", parent: "70" },
+  { id: "1000003302", name: "IDXTRANS", alias1: "IDXTRANS", parent: "70" },
+  { id: "628", name: "Syariah", alias1: "Syariah", parent: "70" }
 ];
 
 /**
@@ -224,10 +234,27 @@ export async function fetchIdxSectorInfo(symbol: string): Promise<EmitenInfoResp
 }
 
 /**
- * Fetch all sectors list (now returns static data)
+ * Fetch all sectors list (now returns static data with IDs)
  */
-export async function fetchSectors(): Promise<string[]> {
-  return STATIC_IDX_SECTORS;
+export async function fetchSectors(): Promise<IdxSector[]> {
+  return STATIC_IDX_SECTORS_DATA;
+}
+
+/**
+ * Fetch companies for a specific IDX sector.
+ * The API uses a generic parent ID (70) and the sector's actual ID as 'subsectorId'.
+ */
+export async function fetchIdxSectorCompanies(sectorId: string, subsectorId: string): Promise<IdxSectorCompaniesResponse> {
+  const url = `${STOCKBIT_EMITTEN_V3_URL}/sector/${sectorId}/subsector/${subsectorId}/company`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: await getHeaders(),
+  });
+
+  await handleApiResponse(response, `IDX Sector Companies API (${sectorId}/${subsectorId})`);
+
+  return response.json();
 }
 
 /**
@@ -575,6 +602,3 @@ export async function fetchTopStocks(
 
   return response.json();
 }
-
-// Removed fetchIdxSectorCompanyMembers
-// Removed fetchIdxSubsectors

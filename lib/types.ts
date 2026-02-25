@@ -546,6 +546,32 @@ export interface TopStockResponse {
   message: string;
 }
 
-// Removed New type for IDX Sector Member Stocks
-// Removed New types for the direct API response for sector companies
-// Removed NEW: Types for IDX Subsectors
+// NEW: Type for IDX Sector (main sectors with their IDs)
+export interface IdxSector {
+  id: string;
+  name: string;
+  alias1: string;
+  parent: string;
+}
+
+// NEW: Type for a single company item within an IDX sector
+export interface IdxSectorCompanyItem {
+  symbol: string;
+  name: string;
+  last: string; // Price
+  change: string;
+  percent: string; // Change percentage
+  volume: number;
+  value: number;
+  marketcap: string;
+  icon_url: string;
+  formatted_price: string;
+  formatted_change_percentage?: string; // Added for consistency
+  // Add other fields as needed from the example response
+}
+
+// NEW: Type for the API response containing IDX sector companies
+export interface IdxSectorCompaniesResponse {
+  data: IdxSectorCompanyItem[];
+  message: string;
+}

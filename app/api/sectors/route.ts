@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { fetchSectors } from '@/lib/stockbit';
+import type { IdxSector } from '@/lib/types'; // Import IdxSector
 
 export async function GET() {
   try {
-    const sectors = await fetchSectors();
+    const sectors: IdxSector[] = await fetchSectors(); // Now returns IdxSector[]
 
     return NextResponse.json({
       success: true,
