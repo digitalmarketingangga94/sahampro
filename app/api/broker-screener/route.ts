@@ -174,7 +174,8 @@ export async function GET(request: NextRequest) {
 
           consistencyTotalDays = dailyAggregatedNetValues.size;
           dailyAggregatedNetValues.forEach(netValue => {
-            if (netValue > 0) { // Check for positive net lot
+            // Check for positive net lot if netBuy is true, or negative if netBuy is false
+            if ((netBuy && netValue > 0) || (!netBuy && netValue < 0)) {
               consistencyPositiveDays++;
             }
           });
