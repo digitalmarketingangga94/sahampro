@@ -1,10 +1,10 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse, IdxSectorCompanyResponse, IdxSectorCompanyItemRaw, IdxSubsectorsResponse, IdxSubsectorItem } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse } from './types'; // Removed IdxSectorCompanyResponse, IdxSectorCompanyItemRaw, IdxSubsectorsResponse, IdxSubsectorItem
 import { getSessionValue, upsertSession } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
 const STOCKBIT_FINDATA_VIEW_URL = 'https://exodus.stockbit.com/findata-view'; // New base URL for findata-view
 const STOCKBIT_ORDERBOOK_API_URL = 'https://exodus.stockbit.com/company-price-feed/v2/orderbook/companies'; // New base URL for orderbook API
-const STOCKBIT_EMITTEN_V3_URL = 'https://exodus.stockbit.com/emitten/v3'; // New base URL for emitten v3 API
+// Removed STOCKBIT_EMITTEN_V3_URL
 
 // Custom error for token expiry - allows UI to detect and show refresh prompt
 export class TokenExpiredError extends Error {
@@ -28,9 +28,9 @@ const SECTOR_CACHE_DURATION = 3600000; // 1 hour
 let sectorsListCache: { sectors: string[]; timestamp: number } | null = null; // Reverted to string[]
 const SECTORS_LIST_CACHE_DURATION = 86400000; // 24 hours
 
-// NEW: Cache for IDX subsectors
-let idxSubsectorsCache: { subsectors: IdxSubsectorItem[]; timestamp: number } | null = null;
-const IDX_SUBSECTORS_CACHE_DURATION = 86400000; // 24 hours
+// Removed NEW: Cache for IDX subsectors
+// let idxSubsectorsCache: { subsectors: IdxSubsectorItem[]; timestamp: number } | null = null;
+// const IDX_SUBSECTORS_CACHE_DURATION = 86400000; // 24 hours
 
 /**
  * Get JWT token from database or environment
@@ -603,58 +603,5 @@ export async function fetchTopStocks(
   return response.json();
 }
 
-/**
- * Fetch list of companies within a specific IDX sector and subsector.
- */
-export async function fetchIdxSectorCompanyMembers(
-  sectorId: string,
-  subSectorId: string,
-  page: number = 1,
-  limit: number = 100
-): Promise<IdxSectorCompanyResponse> {
-  const url = new URL(`${STOCKBIT_EMITTEN_V3_URL}/sector/${sectorId}/subsector/${subSectorId}/company`);
-  url.searchParams.append('page', page.toString());
-  url.searchParams.append('limit', limit.toString());
-
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers: await getHeaders(),
-  });
-
-  await handleApiResponse(response, `IDX Sector Company Members API (Sector: ${sectorId}, Subsector: ${subSectorId})`);
-
-  return response.json();
-}
-
-/**
- * NEW: Fetch list of IDX subsectors for a given main sector ID.
- */
-export async function fetchIdxSubsectors(sectorId: string): Promise<IdxSubsectorsResponse> {
-  const now = Date.now();
-  
-  // Check cache first
-  if (idxSubsectorsCache && (now - idxSubsectorsCache.timestamp) < IDX_SUBSECTORS_CACHE_DURATION) {
-    return { data: idxSubsectorsCache.subsectors, message: 'Successfully retrieved list sub sector company (cached)' };
-  }
-
-  const url = new URL(`${STOCKBIT_EMITTEN_V3_URL}/sectors/${sectorId}/subsectors`);
-
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers: await getHeaders(),
-  });
-
-  await handleApiResponse(response, `IDX Subsectors API (Sector: ${sectorId})`);
-
-  const json: IdxSubsectorsResponse = await response.json();
-  
-  // Cache the subsectors list
-  if (json.data) {
-    idxSubsectorsCache = {
-      subsectors: json.data,
-      timestamp: now,
-    };
-  }
-
-  return json;
-}
+// Removed fetchIdxSectorCompanyMembers
+// Removed fetchIdxSubsectors

@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { LineChart, TrendingUp, TrendingDown } from 'lucide-react';
-import type { EmitenInfoResponse, IdxSubsectorItem } from '@/lib/types'; // Import IdxSubsectorItem
-import { fetchIdxSectorInfo } from '@/lib/stockbit';
+import type { EmitenInfoResponse } from '@/lib/types'; // Removed IdxSubsectorItem
+import { fetchIdxSectorInfo, fetchSectors } from '@/lib/stockbit'; // Changed to fetchSectors
 
 export default function IdxIndexListCard() {
-  const [idxIndices, setIdxIndices] = useState<IdxSubsectorItem[]>([]); // State to store fetched indices
+  const [idxIndices, setIdxIndices] = useState<string[]>([]); // State to store fetched sector names
   const [indexData, setIndexData] = useState<Record<string, EmitenInfoResponse['data']>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,25 +16,20 @@ export default function IdxIndexListCard() {
       setLoading(true);
       setError(null);
       try {
-        // Fetch subsectors from the new API route
-        const subsectorsResponse = await fetch('/api/idx-subsectors');
-        const subsectorsJson = await subsectorsResponse.json();
+        // Fetch main sectors from the existing API route
+        const sectorsResponse = await fetchSectors(); // Use fetchSectors
+        
+        const fetchedSectors: string[] = sectorsResponse || [];
+        setIdxIndices(fetchedSectors); // Set the fetched sector names as indices
 
-        if (!subsectorsJson.success) {
-          throw new Error(subsectorsJson.error || 'Failed to fetch IDX subsectors');
-        }
-
-        const fetchedSubsectors: IdxSubsectorItem[] = subsectorsJson.data || [];
-        setIdxIndices(fetchedSubsectors); // Set the fetched subsectors as indices
-
-        // Now, for each fetched subsector, fetch its detailed info
-        const promises = fetchedSubsectors.map(async (index) => {
+        // Now, for each fetched sector, fetch its detailed info
+        const promises = fetchedSectors.map(async (sectorName) => {
           try {
-            const response = await fetchIdxSectorInfo(index.name); // Use index.name as symbol
-            return { symbol: index.name, data: response.data };
+            const response = await fetchIdxSectorInfo(sectorName); // Use sectorName as symbol
+            return { symbol: sectorName, data: response.data };
           } catch (err) {
-            console.error(`Failed to fetch data for ${index.name}:`, err);
-            return { symbol: index.name, data: null, error: err instanceof Error ? err.message : 'Unknown error' };
+            console.error(`Failed to fetch data for ${sectorName}:`, err);
+            return { symbol: sectorName, data: null, error: err instanceof Error ? err.message : 'Unknown error' };
           }
         });
 
@@ -96,27 +90,24 @@ export default function IdxIndexListCard() {
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>#</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Simbol Indeks</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Nama Indeks</th>
+                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Nama Sektor</th>
                 <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Change</th>
                 <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Change %</th>
               </tr>
             </thead>
             <tbody>
-              {idxIndices.map((index, i) => {
-                const data = indexData[index.name]; // Use index.name to lookup data
+              {idxIndices.map((sectorName, i) => {
+                const data = indexData[sectorName]; // Use sectorName to lookup data
                 const isPositive = data && data.percentage >= 0;
                 const changeColor = isPositive ? 'var(--accent-success)' : 'var(--accent-warning)';
 
                 return (
-                  <tr key={index.id} style={{ borderBottom: i < idxIndices.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+                  <tr key={sectorName} style={{ borderBottom: i < idxIndices.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
                     <td style={{ padding: '0.5rem 0.25rem', color: 'var(--text-muted)' }}>{i + 1}</td>
                     <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
-                      <Link href={`/idx-sector/${index.name}`} passHref style={{ textDecoration: 'none', color: 'inherit' }}>
-                        {index.name}
-                      </Link>
+                      {/* Removed Link as detail pages are being removed */}
+                      {data?.name || sectorName} {/* Use data.name if available, else sectorName */}
                     </td>
-                    <td style={{ padding: '0.5rem 0.25rem', color: 'var(--text-primary)' }}>{data?.name || index.name}</td> {/* Use data.name if available, else index.name */}
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: changeColor }}>
                       {data ? `${isPositive ? '+' : ''}${formatNumber(data.change, 2)}` : '-'}
                     </td>
