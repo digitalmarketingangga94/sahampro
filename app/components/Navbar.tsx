@@ -30,7 +30,13 @@ const Navbar = () => {
 
         {/* Desktop Navigation Links */}
         <div className="nav-links-desktop">
-          
+          <Link 
+            href="/hot-stock" 
+            onClick={closeMenu}
+            className={pathname === '/hot-stock' ? 'nav-link active' : 'nav-link'}
+          >
+            Hot Stock
+          </Link>
           <Link 
             href="/" 
             onClick={closeMenu}
@@ -68,13 +74,6 @@ const Navbar = () => {
             Insider Activity
           </Link>
           <Link 
-            href="/hot-stock" 
-            onClick={closeMenu}
-            className={pathname === '/hot-stock' ? 'nav-link active' : 'nav-link'}
-          >
-            Hot Stock
-          </Link>
-          <Link 
             href="/net-foreign-buy" 
             onClick={closeMenu}
             className={pathname === '/net-foreign-buy' ? 'nav-link active' : 'nav-link'}
@@ -101,7 +100,13 @@ const Navbar = () => {
             <X size={24} />
           </button>
           <div className="mobile-nav-links">
-            
+            <Link 
+              href="/hot-stock" 
+              onClick={closeMenu}
+              className={pathname === '/hot-stock' ? 'nav-link active' : 'nav-link'}
+            >
+              Hot Stock
+            </Link>
             <Link 
               href="/" 
               onClick={closeMenu}
@@ -137,13 +142,6 @@ const Navbar = () => {
               className={pathname === '/insider-activity' ? 'nav-link active' : 'nav-link'}
             >
               Insider Activity
-            </Link>
-            <Link 
-              href="/hot-stock" 
-              onClick={closeMenu}
-              className={pathname === '/hot-stock' ? 'nav-link active' : 'nav-link'}
-            >
-              Hot Stock
             </Link>
             <Link 
               href="/net-foreign-buy" 
