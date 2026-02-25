@@ -8,7 +8,7 @@ import BrokerSummaryCard from './BrokerSummaryCard';
 import KeyStatsColumnOneCard from './KeyStatsColumnOneCard'; // New import
 import KeyStatsColumnTwoCard from './KeyStatsColumnTwoCard'; // New import
 import AgentStoryCard from './AgentStoryCard';
-// Removed import PriceGraph from './PriceGraph';
+import TradingViewWidget from './TradingViewWidget'; // NEW: Import TradingViewWidget
 import BrokerFlowCard from './BrokerFlowCard';
 import InsiderActivityCard from './InsiderActivityCard';
 import GrahamFormulaCard from './GrahamFormulaCard';
@@ -435,7 +435,10 @@ export default function Calculator({ selectedSymbolFromSidebar, fromDate, toDate
             </div>
           )}
 
-          {/* Removed Price Graph Section */}
+          {/* TradingView Widget Section */}
+          <div style={{ gridColumn: '1 / -1', width: '100%', marginTop: '1.5rem' }}>
+            <TradingViewWidget symbol={result.input.emiten} />
+          </div>
 
           {/* Broker Flow Section */}
           <div style={{ gridColumn: '1 / -1', width: '100%', marginTop: '1.5rem' }}>
