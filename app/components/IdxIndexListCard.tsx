@@ -108,7 +108,6 @@ export default function IdxIndexListCard() {
                 <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>#</th>
                 <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Simbol Indeks</th>
                 <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Nama Indeks</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Harga</th>
                 <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Change</th>
                 <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Change %</th>
               </tr>
@@ -128,7 +127,6 @@ export default function IdxIndexListCard() {
                       </Link>
                     </td>
                     <td style={{ padding: '0.5rem 0.25rem', color: 'var(--text-primary)' }}>{index.name}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{data ? formatNumber(data.price, 0) : '-'}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: changeColor }}>
                       {data ? `${isPositive ? '+' : ''}${formatNumber(data.change, 2)}` : '-'}
                     </td>
