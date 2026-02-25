@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchTopStocks } from '@/lib/stockbit';
+import { fetchTopStocks, getDominantBuyBroker } from '@/lib/stockbit'; // Import new function
+import type { TopStockItem } from '@/lib/types'; // Import TopStockItem
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,7 +8,7 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const investorType = searchParams.get('investorType') || 'INVESTOR_TYPE_ALL';
-    const marketType = searchParams.get('marketType') || 'MARKET_TYPE_REGULER';
+    const marketType = searchParams.get('marketType') || 'MARKET_BOARD_REGULER';
     const valueType = searchParams.get('valueType') || 'VALUE_TYPE_NET';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '100');
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const topStocks = await fetchTopStocks(
+    const topStocksResponse = await fetchTopStocks(
       startDate,
       endDate,
       investorType,
@@ -29,9 +30,30 @@ export async function GET(request: NextRequest) {
       limit
     );
 
+    const topBuyData = topStocksResponse.data.top_buy || [];
+    const topSellData = topStocksResponse.data.top_sell || [];
+
+    // Function to process a list of TopStockItems
+    const processTopStockItems = async (items: TopStockItem[]) => {
+      return Promise.all(items.map(async (item) => {
+        const dominantBuyBroker = await getDominantBuyBroker(item.code, startDate, endDate);
+        return {
+          ...item,
+          dominantBuyBroker,
+        };
+      }));
+    };
+
+    const processedTopBuyData = await processTopStockItems(topBuyData);
+    const processedTopSellData = await processTopStockItems(topSellData);
+
+
     return NextResponse.json({
       success: true,
-      data: topStocks.data,
+      data: {
+        top_buy: processedTopBuyData,
+        top_sell: processedTopSellData,
+      },
     });
   } catch (error) {
     console.error('Top Stock API error:', error);

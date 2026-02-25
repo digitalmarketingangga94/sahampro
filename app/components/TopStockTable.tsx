@@ -7,7 +7,7 @@ import { getLatestTradingDate, getDateNDaysAgo } from '@/lib/utils'; // Import g
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 
 type TopStockType = 'top_buy' | 'top_sell';
-type SortColumn = 'value' | 'lot' | 'average' | 'foreign_value' | 'frequency';
+type SortColumn = 'value' | 'lot' | 'average' | 'foreign_value' | 'frequency' | 'dominantBuyBroker'; // Added 'dominantBuyBroker'
 type SortDirection = 'asc' | 'desc';
 
 interface SortConfig {
@@ -77,8 +77,19 @@ export default function TopStockTable() {
   const sortedData = [...(activeTab === 'top_buy' ? topBuyData : topSellData)].sort((a, b) => {
     if (sortConfig.column === null) return 0;
 
-    const aValue = parseFloat(a[sortConfig.column]?.raw || '0');
-    const bValue = parseFloat(b[sortConfig.column]?.raw || '0');
+    let aValue: any;
+    let bValue: any;
+
+    // Handle sorting for the new 'dominantBuyBroker' column
+    if (sortConfig.column === 'dominantBuyBroker') {
+      aValue = a.dominantBuyBroker || '';
+      bValue = b.dominantBuyBroker || '';
+      return sortConfig.direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    }
+
+    // Existing sorting logic for other columns
+    aValue = parseFloat(a[sortConfig.column]?.raw || '0');
+    bValue = parseFloat(b[sortConfig.column]?.raw || '0');
 
     if (aValue < bValue) {
       return sortConfig.direction === 'asc' ? -1 : 1;
@@ -190,6 +201,12 @@ export default function TopStockTable() {
                 >
                   Freq {getSortIndicator('frequency')}
                 </th>
+                <th
+                  style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                  onClick={() => handleSort('dominantBuyBroker')}
+                >
+                  Dom. Broker {getSortIndicator('dominantBuyBroker')}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -209,6 +226,9 @@ export default function TopStockTable() {
                     {formatRawValue(item.foreign_value.raw)}
                   </td>
                   <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{formatRawValue(item.frequency.raw)}</td>
+                  <td style={{ padding: '0.5rem 0.25rem', textAlign: 'left' }}>
+                    {item.dominantBuyBroker || '-'}
+                  </td>
                 </tr>
               ))}
             </tbody>

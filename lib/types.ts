@@ -538,6 +538,7 @@ export interface TopStockItem {
   average: TopStockValue;
   foreign_value: TopStockValue;
   frequency: TopStockValue;
+  dominantBuyBroker?: string; // NEW: Dominant buy broker code
 }
 
 export interface TopStockResponse {
