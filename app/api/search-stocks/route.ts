@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     // Map to a simpler format for the frontend, including icon_url
     const formattedResults = searchResults.map(item => ({
-      code: item.symbol_2,
+      code: item.code,
       name: item.name,
       icon_url: item.icon_url, // Include icon_url
     }));
