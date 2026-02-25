@@ -3,13 +3,9 @@
 import { useSearchParams } from 'next/navigation';
 import IdxSectorCompaniesCard from '../../components/IdxSectorCompaniesCard';
 
-interface IdxSectorCompaniesPageProps {
-  params: {
-    sectorName: string;
-  };
-}
+// Removed IdxSectorCompaniesPageProps interface
 
-export default function IdxSectorCompaniesPage({ params }: IdxSectorCompaniesPageProps) {
+export default function IdxSectorCompaniesPage({ params }: { params: any }) {
   const searchParams = useSearchParams();
   const sectorId = searchParams.get('sectorId');
   const subsectorId = searchParams.get('subsectorId');
