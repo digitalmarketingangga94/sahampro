@@ -195,31 +195,31 @@ export async function fetchIdxSectorInfo(symbol: string): Promise<EmitenInfoResp
 
   const json = await response.json();
 
-  // Map the new response structure to EmitenInfoResponse['data']
-  const data = json.data;
+  // Safely get data, or provide a default empty object if json.data is null/undefined
+  const apiData = json.data || {};
+
   return {
     data: {
-      sector: data.name || symbol, // Use name as sector for indices
+      sector: apiData.name || symbol, // Use name as sector for indices
       sub_sector: '', // Not available in this API for indices
-      symbol: data.symbol || symbol,
-      name: data.name || symbol,
-      price: String(data.close),
-      change: String(data.change),
-      percentage: data.percentage_change,
-      volume: String(data.volume),
-      average: String(data.average),
-      // Followers, date, time are not directly available in this API, set to defaults
-      followers: 0, 
-      date: new Date().toISOString().split('T')[0], // Current date as fallback
-      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }), // Current time as fallback
-      exchange: data.exchange,
-      country: data.country,
-      type_company: data.company_type,
-      fnet: data.fnet,
-      fbuy: data.fbuy,
-      fsell: data.fsell,
-      domestic: data.domestic,
-      foreign: data.foreign,
+      symbol: apiData.symbol || symbol,
+      name: apiData.name || symbol,
+      price: String(apiData.close || 0), // Provide default for numbers
+      change: String(apiData.change || 0),
+      percentage: apiData.percentage_change || 0,
+      volume: String(apiData.volume || 0),
+      average: String(apiData.average || 0),
+      followers: apiData.followers || 0,
+      date: apiData.date || new Date().toISOString().split('T')[0],
+      time: apiData.time || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      exchange: apiData.exchange || 'N/A',
+      country: apiData.country || 'N/A',
+      type_company: apiData.company_type || 'N/A',
+      fnet: apiData.fnet || 0, // Provide default for numbers
+      fbuy: apiData.fbuy || 0,
+      fsell: apiData.fsell || 0,
+      domestic: apiData.domestic || '0',
+      foreign: apiData.foreign || '0',
     },
     message: json.message || 'Successfully retrieved company orderbook',
   };
@@ -454,7 +454,7 @@ export async function fetchMarketMovers(type: MarketMoverType, limit: number = 2
   const url = new URL(`${STOCKBIT_BASE_URL}/order-trade/market-mover`);
   url.searchParams.append('mover_type', moverTypeMap[type]);
   url.searchParams.append('filter_stocks', 'FILTER_STOCKS_TYPE_MAIN_BOARD');
-  url.searchParams.append('filter_stocks', 'FILTER_STOCKS_TYPE_DEVELOPMENT_BOARD');
+  url.searchParams.append('filter_stocks', 'FILTER_STOCKS_TYPE_DEVELOPMENT_BOARD'); // Corrected line
   url.searchParams.append('filter_stocks', 'FILTER_STOCKS_TYPE_ACCELERATION_BOARD');
   url.searchParams.append('filter_stocks', 'FILTER_STOCKS_TYPE_NEW_ECONOMY_BOARD');
   url.searchParams.append('limit', limit.toString());
