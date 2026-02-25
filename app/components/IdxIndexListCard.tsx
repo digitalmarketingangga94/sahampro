@@ -1,32 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation';
 import { LineChart, TrendingUp, TrendingDown } from 'lucide-react';
-import type { IdxSector, EmitenInfoResponse } from '@/lib/types'; // Import IdxSector
+import type { IdxSector, EmitenInfoResponse } from '@/lib/types';
 import { fetchIdxSectorInfo, fetchSectors } from '@/lib/stockbit';
+import IdxSectorGridCard from './IdxSectorGridCard'; // Import the new grid card component
 
 export default function IdxIndexListCard() {
-  const [idxIndices, setIdxIndices] = useState<IdxSector[]>([]); // State to store fetched sector names
+  const [idxIndices, setIdxIndices] = useState<IdxSector[]>([]);
   const [indexData, setIndexData] = useState<Record<string, EmitenInfoResponse['data']>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter(); // Initialize useRouter
+  // useRouter is not directly used here anymore for navigation, but kept if needed elsewhere
+  // const router = useRouter(); 
 
   useEffect(() => {
     const fetchAllIndexData = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch main sectors from the existing API route
-        const fetchedSectors: IdxSector[] = await fetchSectors(); // Now returns IdxSector[]
-        
-        setIdxIndices(fetchedSectors); // Set the fetched sector names as indices
+        const fetchedSectors: IdxSector[] = await fetchSectors();
+        setIdxIndices(fetchedSectors);
 
-        // Now, for each fetched sector, fetch its detailed info
         const promises = fetchedSectors.map(async (sector) => {
           try {
-            const response = await fetchIdxSectorInfo(sector.name); // Use sector.name as symbol
+            const response = await fetchIdxSectorInfo(sector.name);
             return { symbol: sector.name, data: response.data };
           } catch (err) {
             console.error(`Failed to fetch data for ${sector.name}:`, err);
@@ -64,17 +63,7 @@ export default function IdxIndexListCard() {
     fetchAllIndexData();
   }, []);
 
-  const formatNumber = (num: number | string | undefined, decimals: number = 0): string => {
-    if (num === undefined || num === null) return '-';
-    const n = typeof num === 'string' ? parseFloat(num) : num;
-    if (isNaN(n)) return '-';
-    return n.toLocaleString('id-ID', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-  };
-
-  const handleSectorClick = (sector: IdxSector) => {
-    // Navigate to the new page for sector companies
-    router.push(`/idx-sector/${sector.name}?sectorId=${sector.parent}&subsectorId=${sector.id}`);
-  };
+  // Removed handleSectorClick as navigation is now handled by IdxSectorGridCard's Link
 
   return (
     <div className="glass-card-static" style={{ padding: '1rem' }}>
@@ -83,7 +72,7 @@ export default function IdxIndexListCard() {
       </h3>
       {loading ? (
         <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-          <div className="spinner" style={{ width: '20px', height: '20px', margin: '0 auto' }}></div>
+          <div className="spinner" style={{ margin: '0 auto' }}></div>
           <p style={{ color: 'var(--text-secondary)', marginTop: '1rem' }}>Loading index data...</p>
         </div>
       ) : error ? (
@@ -91,46 +80,14 @@ export default function IdxIndexListCard() {
           {error}
         </div>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', minWidth: '700px' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>#</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}>Nama Sektor</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Change</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Change %</th>
-              </tr>
-            </thead>
-            <tbody>
-              {idxIndices.map((sector, i) => {
-                const data = indexData[sector.name]; // Use sector.name to lookup data
-                const isPositive = data && data.percentage >= 0;
-                const changeColor = isPositive ? 'var(--accent-success)' : 'var(--accent-warning)';
-
-                return (
-                  <tr 
-                    key={sector.id} 
-                    style={{ 
-                      borderBottom: i < idxIndices.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none',
-                      cursor: 'pointer' // Make row clickable
-                    }}
-                    onClick={() => handleSectorClick(sector)}
-                  >
-                    <td style={{ padding: '0.5rem 0.25rem', color: 'var(--text-muted)' }}>{i + 1}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
-                      {data?.name || sector.name}
-                    </td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: changeColor }}>
-                      {data ? `${isPositive ? '+' : ''}${formatNumber(data.change, 2)}` : '-'}
-                    </td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: changeColor }}>
-                      {data ? `${isPositive ? '+' : ''}${formatNumber(data.percentage, 2)}%` : '-'}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="idx-sector-grid"> {/* New grid container */}
+          {idxIndices.map((sector) => (
+            <IdxSectorGridCard 
+              key={sector.id} 
+              sector={sector} 
+              data={indexData[sector.name] || null} 
+            />
+          ))}
         </div>
       )}
     </div>

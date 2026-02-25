@@ -2500,11 +2500,11 @@ input:checked + .slider:before {
 }
 
 .stock-tile.positive {
-  background-color: #28a745; /* Green for positive change */
+  background-color: var(--accent-success); /* Green for positive change */
 }
 
 .stock-tile.negative {
-  background-color: #dc3545; /* Red for negative change */
+  background-color: var(--accent-warning); /* Red for negative change */
 }
 
 .stock-tile-header {
@@ -2526,4 +2526,109 @@ input:checked + .slider:before {
 
 .stock-tile svg {
   color: white; /* Icons should be white on colored tiles */
+}
+
+/* NEW: IDX Sector Grid */
+.idx-sector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Adjust column width as needed */
+  gap: 1rem; /* Gap between cards */
+  width: 100%;
+}
+
+.idx-sector-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.idx-sector-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-primary);
+}
+
+.idx-sector-card.positive {
+  background: rgba(40, 167, 69, 0.05); /* Light green tint */
+  border-color: rgba(40, 167, 69, 0.2);
+}
+
+.idx-sector-card.negative {
+  background: rgba(220, 53, 69, 0.05); /* Light red tint */
+  border-color: rgba(220, 53, 69, 0.2);
+}
+
+.idx-sector-card.positive:hover {
+  background: rgba(40, 167, 69, 0.1);
+  border-color: var(--accent-success);
+}
+
+.idx-sector-card.negative:hover {
+  background: rgba(220, 53, 69, 0.1);
+  border-color: var(--accent-warning);
+}
+
+.idx-sector-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.idx-sector-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.idx-sector-card.positive .idx-sector-name,
+.idx-sector-card.positive svg {
+  color: var(--accent-success);
+}
+
+.idx-sector-card.negative .idx-sector-name,
+.idx-sector-card.negative svg {
+  color: var(--accent-warning);
+}
+
+.idx-sector-change {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.idx-sector-change-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.idx-sector-change-percent {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+.idx-sector-card.positive .idx-sector-change-value,
+.idx-sector-card.positive .idx-sector-change-percent {
+  color: var(--accent-success);
+}
+
+.idx-sector-card.negative .idx-sector-change-value,
+.idx-sector-card.negative .idx-sector-change-percent {
+  color: var(--accent-warning);
 }
