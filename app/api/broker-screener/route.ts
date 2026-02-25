@@ -108,28 +108,34 @@ export async function GET(request: NextRequest) {
 
     const screenerResults: BrokerScreenerResultItem[] = [];
 
-    // Filter and aggregate results based on "OR" logic
+    // Filter and aggregate results based on "AND" logic for all selected brokers
     for (const stockCode of uniqueStockCodes) {
-      let hasMatchingActivity = false;
+      let allBrokersMatchCriteria = true;
       const matchingBrokerActivitiesForStock: BrokerStockActivityPerBroker[] = [];
 
       for (const brokerCode of brokerCodes) {
         const brokerStockMap = allBrokerActivitiesMap.get(brokerCode);
         const activity = brokerStockMap?.get(stockCode);
 
-        if (activity) {
-          // Check net_lot direction based on netBuy filter
-          const isNetBuyMatch = netBuy && activity.net_lot > 0;
-          const isNetSellMatch = !netBuy && activity.net_lot < 0;
-
-          if (isNetBuyMatch || isNetSellMatch) {
-            hasMatchingActivity = true;
-            matchingBrokerActivitiesForStock.push(activity);
-          }
+        if (!activity) {
+          // If any selected broker has no activity for this stock, it doesn't match
+          allBrokersMatchCriteria = false;
+          break;
         }
+
+        // Check net_lot direction based on netBuy filter
+        const isNetBuyMatch = netBuy && activity.net_lot > 0;
+        const isNetSellMatch = !netBuy && activity.net_lot < 0;
+
+        if (!isNetBuyMatch && !isNetSellMatch) {
+          // If activity exists but doesn't match the desired net direction, it doesn't match
+          allBrokersMatchCriteria = false;
+          break;
+        }
+        matchingBrokerActivitiesForStock.push(activity);
       }
 
-      if (hasMatchingActivity) {
+      if (allBrokersMatchCriteria && matchingBrokerActivitiesForStock.length === brokerCodes.length) {
         let totalNetLot = 0;
         let dominantBroker = '';
         let maxNetLot = 0;
@@ -160,8 +166,7 @@ export async function GET(request: NextRequest) {
         screenerResults.push({
           symbol: stockCode,
           stock_name: stockNameMap.get(stockCode),
-          // Reverted: net_direction now reflects the netBuy filter, not the aggregated totalNetLot
-          net_direction: netBuy ? 'Net Buy' : 'Net Sell',
+          net_direction: netBuy ? 'Net Buy' : 'Net Sell', // Reflects the filter, as all matched it
           net_lot: totalNetLot,
           avg_per_day: avgPerDay,
           dominant_broker: dominantBroker,
