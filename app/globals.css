@@ -705,9 +705,9 @@ h3 {
 .broker-table th {
   text-align: right;
   padding: 4px;
-  color: var(--text-muted); /* Changed to use variable */
+  color: var(--text-muted);
   font-weight: 500;
-  border-bottom: 1px solid var(--border-color); /* Changed to use variable */
+  border-bottom: 1px solid var(--border-color);
   font-size: 0.7rem;
 }
 
@@ -717,20 +717,24 @@ h3 {
 
 .broker-table td {
   padding: 6px 4px;
-  color: var(--text-primary); /* Changed to use variable */
+  color: var(--text-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.broker-table tr:hover {
+  background: rgba(0, 123, 255, 0.02);
 }
 
 .broker-table td.row-label {
   text-align: left;
   font-weight: 600;
-  color: var(--text-primary); /* Changed to use variable */
+  color: var(--text-primary);
   white-space: nowrap;
 }
 
 .broker-table td.num {
   font-family: 'Inter', sans-serif;
-  /* Ensure nums use Inter for consistency */
-  color: var(--text-secondary); /* Changed to use variable */
+  color: var(--text-secondary);
 }
 
 .broker-table td.num-wide {
@@ -741,7 +745,7 @@ h3 {
 /* Broker Detail Specifics */
 .broker-detail-table th {
   text-align: center;
-  color: var(--text-muted); /* Changed to use variable */
+  color: var(--text-muted);
   font-size: 0.65rem;
   padding: 4px 2px;
 }
@@ -758,12 +762,10 @@ h3 {
 
 .broker-code.buyer {
   color: #007bff;
-  /* Blue */
 }
 
 .broker-code.seller {
   color: #dc3545;
-  /* Red */
 }
 
 .broker-detail-table .num {
@@ -771,7 +773,7 @@ h3 {
 }
 
 .broker-detail-table tr {
-  border-bottom: 1px solid var(--border-color); /* Changed to use variable */
+  border-bottom: 1px solid var(--border-color);
 }
 
 .broker-detail-table tr:last-child {
@@ -791,30 +793,30 @@ h3 {
 }
 
 .badge-acc {
-  background: rgba(40, 167, 69, 0.1); /* Lighter green background */
-  color: var(--accent-success); /* Use accent green */
+  background: rgba(40, 167, 69, 0.1);
+  color: var(--accent-success);
   font-weight: 600;
 }
 
 .badge-neutral {
-  background: rgba(108, 117, 125, 0.1); /* Lighter gray background */
-  color: var(--text-muted); /* Use muted text color */
+  background: rgba(108, 117, 125, 0.1);
+  color: var(--text-muted);
 }
 
 .badge-dist {
-  background: rgba(220, 53, 69, 0.15); /* Slightly darker red background */
-  color: var(--accent-warning); /* Use accent warning color */
+  background: rgba(220, 53, 69, 0.15);
+  color: var(--accent-warning);
 }
 
 .badge-small-dist {
-  background: rgba(220, 53, 69, 0.1); /* Lighter red background */
-  color: var(--accent-warning); /* Use accent warning color */
+  background: rgba(220, 53, 69, 0.1);
+  color: var(--accent-warning);
   font-weight: 600;
 }
 
 /* Stats table divider */
 .broker-stats-table tr:first-child td {
-  border-bottom: 1px solid var(--border-color); /* Changed to use variable */
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 8px;
 }
 
@@ -839,8 +841,8 @@ h3 {
 
 .compact-form {
   padding: 0.75rem 1rem;
-  background: var(--bg-card); /* Changed to use variable */
-  border: 1px solid var(--border-color); /* Changed to use variable */
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
 }
 
 .compact-form-header {
@@ -874,7 +876,7 @@ h3 {
 .quick-date-btn:hover {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
-  background: rgba(0, 123, 255, 0.05); /* Lighter blue tint on hover */
+  background: rgba(0, 123, 255, 0.05);
 }
 
 .compact-form-row {
@@ -897,7 +899,6 @@ h3 {
   padding: 0.5rem 0.75rem;
   font-size: 0.9rem;
   height: 38px;
-  /* Fixed height for alignment */
 }
 
 .date-range-group {
@@ -913,12 +914,11 @@ h3 {
   border: none;
   background: transparent;
   width: 130px;
-  /* specific width for date inputs */
 }
 
 .date-range-group .compact-input:focus {
   box-shadow: none;
-  background: rgba(0, 123, 255, 0.05); /* Blue tint on focus */
+  background: rgba(0, 123, 255, 0.05);
 }
 
 .date-separator {
@@ -933,7 +933,7 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem; /* Added gap for icon + text */
+  gap: 0.5rem;
 }
 
 @media (max-width: 768px) {
@@ -974,19 +974,18 @@ h3 {
     justify-content: center;
     margin-top: 0.5rem;
     padding-top: 0.5rem;
-    border-top: 1px solid rgba(0, 123, 255, 0.1); /* Changed to use variable */
+    border-top: 1px solid rgba(0, 123, 255, 0.1);
   }
 }
 
 /* Static Glass Card (No Hover Effect, Darker Background) */
 .glass-card-static {
-  background: var(--bg-card); /* Changed to use variable */
+  background: var(--bg-card);
   backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   padding: 2rem;
   box-shadow: var(--shadow-md);
-  /* No hover transition for transform or bg */
 }
 
 /* Adjust date input text alignment if needed */
@@ -996,7 +995,7 @@ h3 {
 
 /* ===== Navbar ===== */
 .navbar {
-  background: rgba(255, 255, 255, 0.95); /* White with transparency */
+  background: rgba(255, 255, 255, 0.95);
   border-bottom: 1px solid var(--border-color);
   padding: 0.75rem 0;
   position: sticky;
@@ -1008,7 +1007,7 @@ h3 {
 .navbar-container {
   padding: 0 2rem;
   display: flex;
-  justify-content: space-between; /* Changed to space-between */
+  justify-content: space-between;
   align-items: center;
   gap: 1rem;
   width: 100%;
@@ -1062,7 +1061,7 @@ h3 {
   border-bottom: 2px solid transparent;
   padding-bottom: 2px;
   transition: all 0.2s;
-  white-space: nowrap; /* Prevent wrapping */
+  white-space: nowrap;
 }
 
 .nav-link:hover {
@@ -1077,7 +1076,7 @@ h3 {
 
 /* Mobile Menu Button */
 .mobile-menu-button {
-  display: none; /* Hidden by default on desktop */
+  display: none;
   background: transparent;
   border: none;
   color: var(--text-primary);
@@ -1096,20 +1095,20 @@ h3 {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw; /* Changed to 100vw for full viewport width */
-  height: 100vh; /* Changed to 100vh for full viewport height */
-  background: var(--bg-primary); /* Use primary background */
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-primary);
   z-index: 1000;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transform: translateX(100%); /* Start off-screen to the right */
+  transform: translateX(100%);
   transition: transform 0.3s ease-out;
 }
 
 .mobile-menu-overlay.open {
-  transform: translateX(0); /* Slide in */
+  transform: translateX(0);
 }
 
 .mobile-menu-close-button {
@@ -1137,7 +1136,7 @@ h3 {
 }
 
 .mobile-nav-links .nav-link {
-  font-size: 1.2rem; /* Larger font for mobile links */
+  font-size: 1.2rem;
   padding: 0.5rem 0;
 }
 
@@ -1152,7 +1151,7 @@ h3 {
   }
 
   .navbar-subtitle {
-    display: none; /* Hide subtitle on mobile */
+    display: none;
   }
 
   .navbar-logo-icon {
@@ -1161,30 +1160,30 @@ h3 {
   }
 
   .nav-links-desktop {
-    display: none; /* Hide desktop links on mobile */
+    display: none;
   }
 
   .mobile-menu-button {
-    display: block; /* Show hamburger icon on mobile */
+    display: block;
   }
 }
 
 /* ===== KeyStats Card ===== */
 .keystats-card {
   width: 350px;
-  background: var(--bg-card); /* Changed to use variable */
+  background: var(--bg-card);
   border-radius: 8px;
-  border: 1px solid var(--border-color); /* Changed to use variable */
+  border: 1px solid var(--border-color);
   padding: 0.75rem 1rem;
   font-family: 'Inter', sans-serif;
   font-size: 0.8rem;
-  color: var(--text-primary); /* Changed to use variable */
+  color: var(--text-primary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .keystats-section {
   margin-bottom: 0.5rem;
-  border-top: 1px solid var(--border-color); /* Changed to use variable */
+  border-top: 1px solid var(--border-color);
   padding-top: 0.35rem;
 }
 
@@ -1196,7 +1195,7 @@ h3 {
 .keystats-section-title {
   font-size: 0.65rem;
   font-weight: 600;
-  color: var(--text-muted); /* Changed to use variable */
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 0.25rem;
@@ -1209,7 +1208,7 @@ h3 {
 }
 
 .keystats-table tr {
-  border-bottom: 1px solid var(--border-color); /* Changed to use variable */
+  border-bottom: 1px solid var(--border-color);
 }
 
 .keystats-table tr:last-child {
@@ -1218,7 +1217,7 @@ h3 {
 
 .keystats-label {
   font-size: 0.7rem;
-  color: var(--text-secondary); /* Changed to use variable */
+  color: var(--text-secondary);
   padding: 3px 0;
   text-align: left;
   white-space: nowrap;
@@ -1230,7 +1229,7 @@ h3 {
 .keystats-value {
   font-size: 0.75rem;
   font-weight: 500;
-  color: var(--text-primary); /* Changed to use variable */
+  color: var(--text-primary);
   padding: 3px 0;
   text-align: right;
   white-space: nowrap;
@@ -1247,13 +1246,13 @@ h3 {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: rgba(0, 123, 255, 0.05); /* Blue tint */
+  background: rgba(0, 123, 255, 0.05);
   border: 1px solid var(--border-color);
   backdrop-filter: blur(10px);
 }
 
 .token-status-pill:hover {
-  background: rgba(0, 123, 255, 0.1); /* Blue tint on hover */
+  background: rgba(0, 123, 255, 0.1);
   transform: translateY(-1px);
 }
 
@@ -1274,7 +1273,7 @@ h3 {
 }
 
 .token-dot.error {
-  background-color: #dc3545; /* Red */
+  background-color: #dc3545;
   box-shadow: 0 0 10px #dc3545;
 }
 
@@ -1287,7 +1286,7 @@ h3 {
 }
 
 .status-error {
-  color: #dc3545; /* Red */
+  color: #dc3545;
 }
 
 .token-popup {
@@ -1347,7 +1346,7 @@ h3 {
   width: 100%;
   padding: 0.75rem;
   margin-top: 1rem;
-  background: rgba(0, 123, 255, 0.05); /* Blue tint */
+  background: rgba(0, 123, 255, 0.05);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   color: var(--text-primary);
@@ -1374,7 +1373,6 @@ h3 {
   box-shadow: var(--shadow-md);
   width: 100%;
   height: 600px;
-  /* Matching PriceGraph height */
   overflow-y: auto;
   scrollbar-width: thin;
 }
@@ -1399,7 +1397,7 @@ h3 {
 .broker-flow-filters {
   display: flex;
   gap: 4px;
-  background: rgba(0, 123, 255, 0.05); /* Blue tint */
+  background: rgba(0, 123, 255, 0.05);
   border-radius: 6px;
   padding: 2px;
 }
@@ -1449,11 +1447,11 @@ h3 {
 .broker-flow-table td {
   padding: 8px 6px;
   color: var(--text-primary);
-  border-bottom: 1px solid rgba(0, 123, 255, 0.03); /* Blue tint */
+  border-bottom: 1px solid rgba(0, 123, 255, 0.03);
 }
 
 .broker-flow-table tr:hover {
-  background: rgba(0, 123, 255, 0.02); /* Blue tint on hover */
+  background: rgba(0, 123, 255, 0.02);
 }
 
 .broker-flow-table .row-num {
@@ -1526,7 +1524,7 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(0, 123, 255, 0.1); /* Blue tint */
+  border: 1px solid rgba(0, 123, 255, 0.1);
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -1535,8 +1533,8 @@ h3 {
 
 .icon-action-btn:hover {
   transform: translateY(-1px);
-  border-color: rgba(0, 123, 255, 0.3); /* Blue tint */
-  background: rgba(0, 123, 255, 0.1) !important; /* Blue tint */
+  border-color: rgba(0, 123, 255, 0.3);
+  background: rgba(0, 123, 255, 0.1) !important;
 }
 
 .icon-action-btn:active {
@@ -1601,9 +1599,7 @@ h3 {
 .broker-flow-card,
 .watchlist-items-container {
   -ms-overflow-style: none;
-  /* IE and Edge */
   scrollbar-width: none;
-  /* Firefox */
 }
 
 .app-sidebar::-webkit-scrollbar,
@@ -1611,7 +1607,6 @@ h3 {
 .broker-flow-card::-webkit-scrollbar,
 .watchlist-items-container::-webkit-scrollbar {
   display: none;
-  /* Chrome, Safari and Opera */
 }
 
 /* ===== Chartbit Button ===== */
@@ -1629,7 +1624,7 @@ h3 {
   gap: 8px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px rgba(0, 123, 255, 0.25);
-  border: 1px solid rgba(0, 123, 255, 0.1); /* Blue tint */
+  border: 1px solid rgba(0, 123, 255, 0.1);
 }
 
 .chartbit-btn:hover {
@@ -1677,7 +1672,7 @@ h3 {
 
 .show-all-btn:hover {
   opacity: 1;
-  background: rgba(0, 123, 255, 0.05); /* Blue tint */
+  background: rgba(0, 123, 255, 0.05);
 }
 
 .job-logs-list {
@@ -1687,7 +1682,7 @@ h3 {
 }
 
 .job-log-item {
-  background: rgba(0, 123, 255, 0.03); /* Blue tint */
+  background: rgba(0, 123, 255, 0.03);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
@@ -1695,18 +1690,18 @@ h3 {
 }
 
 .job-log-item:hover {
-  background: rgba(0, 123, 255, 0.05); /* Blue tint */
-  border-color: rgba(0, 123, 255, 0.2); /* Blue tint */
+  background: rgba(0, 123, 255, 0.05);
+  border-color: rgba(0, 123, 255, 0.2);
 }
 
 .job-log-item.active {
-  background: rgba(0, 123, 255, 0.06); /* Blue tint */
+  background: rgba(0, 123, 255, 0.06);
   border-color: var(--accent-primary);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .job-log-item.has-error {
-  border-color: rgba(220, 53, 69, 0.3); /* Red error border */
+  border-color: rgba(220, 53, 69, 0.3);
 }
 
 .job-log-summary {
@@ -1764,7 +1759,7 @@ h3 {
 }
 
 .stat.success { color: var(--accent-success); }
-.stat.error { color: #dc3545; } /* Red */
+.stat.error { color: #dc3545; }
 
 .job-duration {
   font-size: 0.65rem;
@@ -1773,7 +1768,7 @@ h3 {
 
 .job-log-details {
   border-top: 1px solid var(--border-color);
-  background: var(--bg-secondary); /* Changed to use variable */
+  background: var(--bg-secondary);
   padding: 0.5rem;
 }
 
@@ -1781,8 +1776,8 @@ h3 {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(220, 53, 69, 0.1); /* Red error banner */
-  color: #dc3545; /* Red */
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
   font-size: 0.7rem;
   padding: 0.4rem 0.6rem;
   border-radius: 6px;
@@ -1802,7 +1797,7 @@ h3 {
 }
 
 .log-entries-scroll::-webkit-scrollbar-thumb {
-  background: rgba(0, 123, 255, 0.1); /* Blue tint */
+  background: rgba(0, 123, 255, 0.1);
   border-radius: 4px;
 }
 
@@ -1834,7 +1829,7 @@ h3 {
   color: var(--text-secondary);
 }
 
-.level-error .entry-msg { color: #dc3545; } /* Red */
+.level-error .entry-msg { color: #dc3545; }
 .level-warn .entry-msg { color: var(--accent-warning); }
 .level-info .entry-msg { color: var(--text-primary); }
 
@@ -1847,7 +1842,7 @@ h3 {
 
 /* New styles for expandable sector table */
 .sector-row:hover {
-  background-color: rgba(0, 123, 255, 0.05) !important; /* Blue tint on hover */
+  background-color: rgba(0, 123, 255, 0.05) !important;
 }
 
 .sub-sector-row {
@@ -1934,7 +1929,7 @@ h3 {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 123, 255, 0.1); /* Blue tint */
+  background-color: rgba(0, 123, 255, 0.1);
   -webkit-transition: .4s;
   transition: .4s;
   border-radius: 24px;
@@ -1986,7 +1981,7 @@ input:checked + .slider:before {
   }
 
   .screener-row > .input-group,
-  .screener-row > div { /* Target the broker select wrapper */
+  .screener-row > div {
     flex: none !important;
     width: 100%;
   }
@@ -2005,13 +2000,13 @@ input:checked + .slider:before {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #1a1a1a; /* Dark background */
+  background-color: #1a1a1a;
   border-radius: 8px;
   padding: 0.5rem 1rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
-  gap: 1rem; /* Gap between control groups */
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .control-group {
@@ -2024,13 +2019,13 @@ input:checked + .slider:before {
 /* Symbol Select */
 .symbol-select-wrapper {
   position: relative;
-  z-index: 20; /* Ensure dropdown is above other elements */
+  z-index: 20;
 }
 
 .symbol-select-button,
 .indicators-button {
-  background-color: #333; /* Darker button background */
-  color: #eee; /* Light text */
+  background-color: #333;
+  color: #eee;
   border: 1px solid #555;
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
@@ -2045,14 +2040,14 @@ input:checked + .slider:before {
 .symbol-select-button:hover,
 .indicators-button:hover {
   background-color: #444;
-  border-color: var(--accent-primary); /* Use accent color on hover */
+  border-color: var(--accent-primary);
 }
 
 .symbol-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: #2a2a2a; /* Slightly lighter than bar */
+  background-color: #2a2a2a;
   border: 1px solid #555;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
@@ -2085,7 +2080,7 @@ input:checked + .slider:before {
 }
 
 .dropdown-options {
-  max-height: 200px; /* Limit height for scroll */
+  max-height: 200px;
   overflow-y: auto;
 }
 
@@ -2129,7 +2124,7 @@ input:checked + .slider:before {
 }
 
 .timeframe-button.active {
-  background-color: #ff8c00; /* Orange for active, matching image */
+  background-color: #ff8c00;
   color: white;
   font-weight: 600;
 }
@@ -2284,7 +2279,7 @@ input:checked + .slider:before {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: #28a745; /* Green background */
+  background-color: #28a745;
   color: white;
   display: flex;
   align-items: center;
@@ -2315,7 +2310,7 @@ input:checked + .slider:before {
 }
 
 .ihsg-follow-btn {
-  background-color: #007bff; /* Blue */
+  background-color: #007bff;
   color: white;
   border: none;
   border-radius: 6px;
@@ -2470,15 +2465,15 @@ input:checked + .slider:before {
 /* Stock Heatmap Grid */
 .stock-heatmap-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Increased min-width */
-  gap: 12px; /* Increased gap between tiles */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Increased min-width for more data */
+  gap: 12px;
   width: 100%;
 }
 
 .stock-tile {
-  background-color: #333; /* Default dark background */
+  background-color: #333;
   border-radius: 8px;
-  padding: 16px; /* Increased padding */
+  padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2490,7 +2485,7 @@ input:checked + .slider:before {
   transition: all 0.2s ease;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  text-decoration: none; /* For Link component */
+  text-decoration: none;
 }
 
 .stock-tile:hover {
@@ -2500,53 +2495,54 @@ input:checked + .slider:before {
 }
 
 .stock-tile.positive {
-  background-color: var(--accent-success); /* Green for positive change */
+  background-color: var(--accent-success);
 }
 
 .stock-tile.negative {
-  background-color: var(--accent-warning); /* Red for negative change */
+  background-color: var(--accent-warning);
 }
 
 .stock-tile-header {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: 8px; /* Increased margin */
+  margin-bottom: 8px;
 }
 
 .stock-symbol {
-  font-size: 1.2rem; /* Slightly larger font */
+  font-size: 1.2rem;
   text-transform: uppercase;
 }
 
 .stock-change {
-  font-size: 1rem; /* Slightly larger font */
+  font-size: 1rem;
   opacity: 0.9;
-  margin-bottom: 8px; /* Added margin */
+  margin-bottom: 8px;
 }
 
-.stock-volume-freq {
+.stock-details { /* New container for value, volume, frequency */
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 0.75rem; /* Smaller font for volume/frequency */
-  color: rgba(255, 255, 255, 0.8); /* Slightly muted white */
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
 }
 
+.stock-value,
 .stock-volume,
 .stock-frequency {
   white-space: nowrap;
 }
 
 .stock-tile svg {
-  color: white; /* Icons should be white on colored tiles */
+  color: white;
 }
 
 /* NEW: IDX Sector Grid */
 .idx-sector-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Adjust column width as needed */
-  gap: 1rem; /* Gap between cards */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
   width: 100%;
 }
 
@@ -2575,12 +2571,12 @@ input:checked + .slider:before {
 }
 
 .idx-sector-card.positive {
-  background: rgba(40, 167, 69, 0.05); /* Light green tint */
+  background: rgba(40, 167, 69, 0.05);
   border-color: rgba(40, 167, 69, 0.2);
 }
 
 .idx-sector-card.negative {
-  background: rgba(220, 53, 69, 0.05); /* Light red tint */
+  background: rgba(220, 53, 69, 0.05);
   border-color: rgba(220, 53, 69, 0.2);
 }
 

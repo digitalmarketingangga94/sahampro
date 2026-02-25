@@ -45,7 +45,8 @@ export default function StockHeatmapGrid({ stocks }: StockHeatmapGridProps) {
             <div className="stock-change">
               {stock.change_percentage >= 0 ? '+' : ''}{stock.change_percentage.toFixed(2)}%
             </div>
-            <div className="stock-volume-freq">
+            <div className="stock-details">
+              <div className="stock-value">Val: {formatCompactNumber(stock.value)}</div>
               <div className="stock-volume">Vol: {formatCompactNumber(stock.volume)}</div>
               <div className="stock-frequency">Freq: {formatCompactNumber(stock.frequency)}</div>
             </div>
