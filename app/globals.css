@@ -2466,3 +2466,64 @@ input:checked + .slider:before {
 .ihsg-fd-chart-container {
   flex-grow: 1;
 }
+
+/* Stock Heatmap Grid */
+.stock-heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* Adjust column width as needed */
+  gap: 8px; /* Gap between tiles */
+  width: 100%;
+}
+
+.stock-tile {
+  background-color: #333; /* Default dark background */
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  color: white;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  text-decoration: none; /* For Link component */
+}
+
+.stock-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  filter: brightness(1.1);
+}
+
+.stock-tile.positive {
+  background-color: #28a745; /* Green for positive change */
+}
+
+.stock-tile.negative {
+  background-color: #dc3545; /* Red for negative change */
+}
+
+.stock-tile-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.stock-symbol {
+  font-size: 1.1rem;
+  text-transform: uppercase;
+}
+
+.stock-change {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.stock-tile svg {
+  color: white; /* Icons should be white on colored tiles */
+}
