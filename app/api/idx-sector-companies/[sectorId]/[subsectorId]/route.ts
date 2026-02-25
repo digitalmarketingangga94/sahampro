@@ -4,10 +4,10 @@ import type { IdxSectorCompaniesResponse } from '@/lib/types';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { sectorId: string; subsectorId: string } }
+  { params }: { params: Promise<{ sectorId: string; subsectorId: string }> }
 ) {
   try {
-    const { sectorId, subsectorId } = params;
+    const { sectorId, subsectorId } = await params; // Await the params promise
 
     if (!sectorId || !subsectorId) {
       return NextResponse.json(
