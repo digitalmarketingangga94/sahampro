@@ -10,20 +10,20 @@ interface BrokerFlowCardProps {
   emiten: string;
 }
 
-// Format large numbers (e.g., 24322664000 -> "+24.3 B")
-function formatNetValue(value: string): string {
-  const num = parseFloat(value);
+// Format large numbers (e.g., 24322664000 -> "24.3 B")
+function formatValue(value: string | number): string {
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(num)) return '-';
   const absNum = Math.abs(num);
-  const sign = num >= 0 ? '+' : '-' ;
   
   if (absNum >= 1e12) {
-    return `${sign}${(absNum / 1e12).toFixed(1)} T`;
+    return `${(num / 1e12).toFixed(1)} T`;
   } else if (absNum >= 1e9) {
-    return `${sign}${(absNum / 1e9).toFixed(1)} B`;
+    return `${(num / 1e9).toFixed(1)} B`;
   } else if (absNum >= 1e6) {
-    return `${sign}${(absNum / 1e6).toFixed(1)} M`;
+    return `${(num / 1e6).toFixed(1)} M`;
   } else {
-    return `${sign}${absNum.toLocaleString()}`;
+    return `${num.toLocaleString('id-ID')}`;
   }
 }
 
@@ -76,7 +76,7 @@ function DailyHeatmap({ dailyData, tradingDates }: { dailyData: BrokerFlowDailyD
                   zIndex: 1,
                   transition: 'all 0.3s ease'
                 }}
-                title={`${date}: ${data ? formatNetValue(String(data.n)) : 'No data'}`}
+                title={`${date}: ${data ? formatValue(String(data.n)) : 'No data'}`}
               />
             </div>
           );
@@ -88,7 +88,7 @@ function DailyHeatmap({ dailyData, tradingDates }: { dailyData: BrokerFlowDailyD
   );
 }
 
-type SortColumn = 'broker_code' | 'net_value' | 'consistency' | 'dominant_percentage';
+type SortColumn = 'broker_code' | 'net_value' | 'total_buy_value' | 'total_sell_value' | 'consistency' | 'dominant_percentage';
 type SortDirection = 'asc' | 'desc';
 
 interface SortConfig {
@@ -175,6 +175,14 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
       case 'net_value':
         aValue = parseFloat(a.net_value);
         bValue = parseFloat(b.net_value);
+        break;
+      case 'total_buy_value':
+        aValue = parseFloat(a.total_buy_value);
+        bValue = parseFloat(b.total_buy_value);
+        break;
+      case 'total_sell_value':
+        aValue = parseFloat(a.total_buy_value) - parseFloat(a.net_value); // Calculate sell value
+        bValue = parseFloat(b.total_buy_value) - parseFloat(b.net_value); // Calculate sell value
         break;
       case 'consistency':
         // Assuming consistency is based on buy_days/active_days ratio
@@ -327,6 +335,18 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
                     <th>DAILY HEATMAP</th>
                     <th 
                       style={{ textAlign: 'center', cursor: 'pointer' }}
+                      onClick={() => handleSort('total_buy_value')}
+                    >
+                      BUY VALUE {getSortIndicator('total_buy_value')}
+                    </th>
+                    <th 
+                      style={{ textAlign: 'center', cursor: 'pointer' }}
+                      onClick={() => handleSort('total_sell_value')}
+                    >
+                      SELL VALUE {getSortIndicator('total_sell_value')}
+                    </th>
+                    <th 
+                      style={{ textAlign: 'center', cursor: 'pointer' }}
                       onClick={() => handleSort('net_value')}
                     >
                       NET VALUE {getSortIndicator('net_value')}
@@ -385,6 +405,8 @@ function BrokerFlowRow({
     ? brokerInfo.type 
     : (activity.broker_status === 'Bandar' ? 'Smart Money' : activity.broker_status);
   
+  const totalSellValue = parseFloat(activity.total_buy_value) - parseFloat(activity.net_value);
+
   return (
     <tr>
       <td className="row-num">{index}</td>
@@ -408,8 +430,14 @@ function BrokerFlowRow({
       <td className="heatmap-cell">
         <DailyHeatmap dailyData={activity.daily_data} tradingDates={tradingDates} />
       </td>
+      <td style={{ textAlign: 'center' }}>
+        {formatValue(activity.total_buy_value)}
+      </td>
+      <td style={{ textAlign: 'center' }}>
+        {formatValue(totalSellValue)}
+      </td>
       <td className={`net-value ${parseFloat(activity.net_value) >= 0 ? 'positive' : 'negative'}`} style={{ textAlign: 'center' }}>
-        {formatNetValue(activity.net_value)}
+        {formatValue(activity.net_value)}
       </td>
       <td className="consistency" style={{ textAlign: 'center' }}>
         <span className="consistency-badge">
