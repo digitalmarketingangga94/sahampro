@@ -45,7 +45,7 @@ const Navbar = () => {
           >
             IDX Sector
           </Link>
-          {/* Removed IDX Energy Link */}
+          
           <Link 
             href="/broker-activity" 
             onClick={closeMenu}
@@ -116,7 +116,7 @@ const Navbar = () => {
           >
             IDX Sector
           </Link>
-            {/* Removed IDX Energy Link */}
+            
             <Link 
               href="/broker-activity" 
               onClick={closeMenu}

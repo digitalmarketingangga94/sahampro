@@ -551,8 +551,8 @@ export interface IdxSectorMemberStock {
   symbol: string;
   name: string;
   last_price: number;
-  change_percentage: number;
   change_point: number;
+  change_percentage: number;
   volume: number;
   value: number;
 }
@@ -609,5 +609,18 @@ export interface IdxSectorCompanyItemRaw {
 
 export interface IdxSectorCompanyResponse {
   data: IdxSectorCompanyItemRaw[];
+  message: string;
+}
+
+// NEW: Types for IDX Subsectors
+export interface IdxSubsectorItem {
+  id: string;
+  name: string; // This is the IDX symbol like IDXENERGY
+  alias1: string;
+  parent: string; // This seems to be the main sector ID, e.g., "70"
+}
+
+export interface IdxSubsectorsResponse {
+  data: IdxSubsectorItem[];
   message: string;
 }

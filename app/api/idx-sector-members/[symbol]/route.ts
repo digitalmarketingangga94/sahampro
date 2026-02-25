@@ -1,21 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { IdxSectorMemberStock } from '@/lib/types';
-import { fetchIdxSectorCompanyMembers } from '@/lib/stockbit';
-
-// Temporary mapping for IDX symbols to their corresponding sector and subsector IDs.
-// This is a placeholder as there's no direct API to get these IDs from the IDX symbol.
-// For IDXTECHNO, using the example IDs provided by the user.
-const IDX_SYMBOL_TO_SECTOR_IDS: Record<string, { sectorId: string; subSectorId: string }> = {
-  'IDXTECHNO': { sectorId: '70', subSectorId: '1000003301' },
-  // Add more mappings here if needed for other IDX indices.
-  // Example: 'IDXENERGY': { sectorId: '...', subSectorId: '...' },
-};
+import type { IdxSectorMemberStock, IdxSubsectorItem } from '@/lib/types'; // Import IdxSubsectorItem
+import { fetchIdxSectorCompanyMembers, fetchIdxSubsectors } from '@/lib/stockbit'; // Import fetchIdxSubsectors
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ symbol: string }> }
 ) {
-  let symbol: string; // Declare symbol here to make it accessible in catch block
+  let symbol: string = ''; // Initialize symbol to an empty string
   try {
     const awaitedParams = await params;
     symbol = awaitedParams.symbol; // Assign to the outer-scoped symbol
@@ -27,16 +18,22 @@ export async function GET(
       );
     }
 
-    const sectorIds = IDX_SYMBOL_TO_SECTOR_IDS[symbol.toUpperCase()];
+    // Dynamically fetch subsectors to find the correct IDs
+    const mainSectorId = '70'; // As per user's example for the subsectors API
+    const subsectorsResponse = await fetchIdxSubsectors(mainSectorId);
+    const subsector = subsectorsResponse.data.find(s => s.name.toUpperCase() === symbol.toUpperCase());
 
-    if (!sectorIds) {
+    if (!subsector) {
       return NextResponse.json(
-        { success: false, error: `No sector/subsector IDs found for IDX symbol: ${symbol}. Please add a mapping.` },
+        { success: false, error: `No subsector found for IDX symbol: ${symbol}.` },
         { status: 404 }
       );
     }
 
-    const companyResponse = await fetchIdxSectorCompanyMembers(sectorIds.sectorId, sectorIds.subSectorId);
+    const sectorId = mainSectorId; // The parent ID is '70'
+    const subSectorId = subsector.id; // The ID from the subsector item
+
+    const companyResponse = await fetchIdxSectorCompanyMembers(sectorId, subSectorId);
 
     if (!companyResponse.data || companyResponse.data.length === 0) {
       return NextResponse.json({

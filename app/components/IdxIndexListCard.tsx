@@ -3,33 +3,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { LineChart, TrendingUp, TrendingDown } from 'lucide-react';
-import type { EmitenInfoResponse } from '@/lib/types';
+import type { EmitenInfoResponse, IdxSubsectorItem } from '@/lib/types'; // Import IdxSubsectorItem
 import { fetchIdxSectorInfo } from '@/lib/stockbit';
 
 export default function IdxIndexListCard() {
-  const idxIndices = [
-    { symbol: 'IDXQ30', name: 'IDX Quality30' },
-    { symbol: 'IDXBUMN20', name: 'IDX BUMN20' },
-    { symbol: 'IDXINFRA', name: 'IDX Sector Infrastructures' },
-    { symbol: 'IDXFINANCE', name: 'IDX Sector Financials' },
-    { symbol: 'IDXV30', name: 'IDX Value 30' },
-    { symbol: 'IDXTRANS', name: 'IDX Transportation & Logistic' },
-    { symbol: 'IDXSHAGROW', name: 'IDX Sharia Growth' },
-    { symbol: 'IDXESGL', name: 'IDX ESG Leaders' },
-    { symbol: 'IDXENERGY', name: 'IDX Sector Energy' },
-    { symbol: 'IDXHEALTH', name: 'IDX Sector Healthcare' },
-    { symbol: 'IDXINDUST', name: 'IDX Sector Industrials' },
-    { symbol: 'IDXTECHNO', name: 'IDX Sector Technology' },
-    { symbol: 'IDXG30', name: 'IDX Growth 30' },
-    { symbol: 'IDXCICLIC', name: 'IDX Sector Consumer Cyclical' },
-    { symbol: 'IDXBASIC', name: 'IDX Sector Basic Materials' },
-    { symbol: 'IDXVESTA28', name: 'IDX Infovesta Multi-Factor 28' },
-    { symbol: 'IDXSMC-COM', name: 'IDX Small-Mid Cap Composite' },
-    { symbol: 'IDXNONCYC', name: 'IDX Sector Consumer Non-Cyclicals' },
-    { symbol: 'IDXSMC-LIQ', name: 'IDX Small-Mid Cap Liquid' },
-    { symbol: 'IDXPROPERT', name: 'IDX Sector Properties & Real Estate' },
-  ];
-
+  const [idxIndices, setIdxIndices] = useState<IdxSubsectorItem[]>([]); // State to store fetched indices
   const [indexData, setIndexData] = useState<Record<string, EmitenInfoResponse['data']>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,13 +17,25 @@ export default function IdxIndexListCard() {
       setLoading(true);
       setError(null);
       try {
-        const promises = idxIndices.map(async (index) => {
+        // Fetch subsectors from the new API route
+        const subsectorsResponse = await fetch('/api/idx-subsectors');
+        const subsectorsJson = await subsectorsResponse.json();
+
+        if (!subsectorsJson.success) {
+          throw new Error(subsectorsJson.error || 'Failed to fetch IDX subsectors');
+        }
+
+        const fetchedSubsectors: IdxSubsectorItem[] = subsectorsJson.data || [];
+        setIdxIndices(fetchedSubsectors); // Set the fetched subsectors as indices
+
+        // Now, for each fetched subsector, fetch its detailed info
+        const promises = fetchedSubsectors.map(async (index) => {
           try {
-            const response = await fetchIdxSectorInfo(index.symbol);
-            return { symbol: index.symbol, data: response.data };
+            const response = await fetchIdxSectorInfo(index.name); // Use index.name as symbol
+            return { symbol: index.name, data: response.data };
           } catch (err) {
-            console.error(`Failed to fetch data for ${index.symbol}:`, err);
-            return { symbol: index.symbol, data: null, error: err instanceof Error ? err.message : 'Unknown error' };
+            console.error(`Failed to fetch data for ${index.name}:`, err);
+            return { symbol: index.name, data: null, error: err instanceof Error ? err.message : 'Unknown error' };
           }
         });
 
@@ -114,19 +104,19 @@ export default function IdxIndexListCard() {
             </thead>
             <tbody>
               {idxIndices.map((index, i) => {
-                const data = indexData[index.symbol];
+                const data = indexData[index.name]; // Use index.name to lookup data
                 const isPositive = data && data.percentage >= 0;
                 const changeColor = isPositive ? 'var(--accent-success)' : 'var(--accent-warning)';
 
                 return (
-                  <tr key={index.symbol} style={{ borderBottom: i < idxIndices.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+                  <tr key={index.id} style={{ borderBottom: i < idxIndices.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
                     <td style={{ padding: '0.5rem 0.25rem', color: 'var(--text-muted)' }}>{i + 1}</td>
                     <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
-                      <Link href={`/idx-sector/${index.symbol}`} passHref style={{ textDecoration: 'none', color: 'inherit' }}>
-                        {index.symbol}
+                      <Link href={`/idx-sector/${index.name}`} passHref style={{ textDecoration: 'none', color: 'inherit' }}>
+                        {index.name}
                       </Link>
                     </td>
-                    <td style={{ padding: '0.5rem 0.25rem', color: 'var(--text-primary)' }}>{index.name}</td>
+                    <td style={{ padding: '0.5rem 0.25rem', color: 'var(--text-primary)' }}>{data?.name || index.name}</td> {/* Use data.name if available, else index.name */}
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: changeColor }}>
                       {data ? `${isPositive ? '+' : ''}${formatNumber(data.change, 2)}` : '-'}
                     </td>

@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse, IdxSectorCompanyResponse, IdxSectorCompanyItemRaw } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse, IdxSectorCompanyResponse, IdxSectorCompanyItemRaw, IdxSubsectorsResponse, IdxSubsectorItem } from './types';
 import { getSessionValue, upsertSession } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -27,6 +27,10 @@ const SECTOR_CACHE_DURATION = 3600000; // 1 hour
 // Cache for sectors list
 let sectorsListCache: { sectors: string[]; timestamp: number } | null = null; // Reverted to string[]
 const SECTORS_LIST_CACHE_DURATION = 86400000; // 24 hours
+
+// NEW: Cache for IDX subsectors
+let idxSubsectorsCache: { subsectors: IdxSubsectorItem[]; timestamp: number } | null = null;
+const IDX_SUBSECTORS_CACHE_DURATION = 86400000; // 24 hours
 
 /**
  * Get JWT token from database or environment
@@ -620,4 +624,37 @@ export async function fetchIdxSectorCompanyMembers(
   await handleApiResponse(response, `IDX Sector Company Members API (Sector: ${sectorId}, Subsector: ${subSectorId})`);
 
   return response.json();
+}
+
+/**
+ * NEW: Fetch list of IDX subsectors for a given main sector ID.
+ */
+export async function fetchIdxSubsectors(sectorId: string): Promise<IdxSubsectorsResponse> {
+  const now = Date.now();
+  
+  // Check cache first
+  if (idxSubsectorsCache && (now - idxSubsectorsCache.timestamp) < IDX_SUBSECTORS_CACHE_DURATION) {
+    return { data: idxSubsectorsCache.subsectors, message: 'Successfully retrieved list sub sector company (cached)' };
+  }
+
+  const url = new URL(`${STOCKBIT_EMITTEN_V3_URL}/sectors/${sectorId}/subsectors`);
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: await getHeaders(),
+  });
+
+  await handleApiResponse(response, `IDX Subsectors API (Sector: ${sectorId})`);
+
+  const json: IdxSubsectorsResponse = await response.json();
+  
+  // Cache the subsectors list
+  if (json.data) {
+    idxSubsectorsCache = {
+      subsectors: json.data,
+      timestamp: now,
+    };
+  }
+
+  return json;
 }
