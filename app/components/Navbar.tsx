@@ -24,7 +24,7 @@ const Navbar = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div className="navbar-content">
             <h1 className="navbar-title">RSY</h1>
-            <p className="navbar-subtitle">Analyze stock targets based on broker summary</p>
+            {/* Removed the subtitle as requested */}
           </div>
         </div>
 
