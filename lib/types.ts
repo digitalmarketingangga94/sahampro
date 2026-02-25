@@ -203,6 +203,12 @@ export interface EmitenInfoResponse {
     exchange?: string; // Added
     country?: string; // Added
     type_company?: string; // Added
+    // New fields from orderbook API for indices
+    fnet?: number; // Net foreign value
+    fbuy?: number; // Foreign buy value
+    fsell?: number; // Foreign sell value
+    domestic?: string; // Domestic percentage
+    foreign?: string; // Foreign percentage
   };
   message: string;
 }

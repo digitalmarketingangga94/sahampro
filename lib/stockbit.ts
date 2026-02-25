@@ -3,6 +3,7 @@ import { getSessionValue, upsertSession } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
 const STOCKBIT_FINDATA_VIEW_URL = 'https://exodus.stockbit.com/findata-view'; // New base URL for findata-view
+const STOCKBIT_ORDERBOOK_API_URL = 'https://exodus.stockbit.com/company-price-feed/v2/orderbook/companies'; // New base URL for orderbook API
 
 // Custom error for token expiry - allows UI to detect and show refresh prompt
 export class TokenExpiredError extends Error {
@@ -182,7 +183,8 @@ export async function fetchEmitenInfo(emiten: string): Promise<EmitenInfoRespons
  * Fetch detailed information for an IDX sector.
  */
 export async function fetchIdxSectorInfo(symbol: string): Promise<EmitenInfoResponse> {
-  const url = `${STOCKBIT_BASE_URL}/emitten/${symbol}/info`;
+  // Use the new orderbook API for IDX indices
+  const url = `${STOCKBIT_ORDERBOOK_API_URL}/${symbol}`;
 
   const response = await fetch(url, {
     method: 'GET',
@@ -191,7 +193,36 @@ export async function fetchIdxSectorInfo(symbol: string): Promise<EmitenInfoResp
 
   await handleApiResponse(response, `IDX Sector Info API (${symbol})`);
 
-  return response.json();
+  const json = await response.json();
+
+  // Map the new response structure to EmitenInfoResponse['data']
+  const data = json.data;
+  return {
+    data: {
+      sector: data.name || symbol, // Use name as sector for indices
+      sub_sector: '', // Not available in this API for indices
+      symbol: data.symbol || symbol,
+      name: data.name || symbol,
+      price: String(data.close),
+      change: String(data.change),
+      percentage: data.percentage_change,
+      volume: String(data.volume),
+      average: String(data.average),
+      // Followers, date, time are not directly available in this API, set to defaults
+      followers: 0, 
+      date: new Date().toISOString().split('T')[0], // Current date as fallback
+      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }), // Current time as fallback
+      exchange: data.exchange,
+      country: data.country,
+      type_company: data.company_type,
+      fnet: data.fnet,
+      fbuy: data.fbuy,
+      fsell: data.fsell,
+      domestic: data.domestic,
+      foreign: data.foreign,
+    },
+    message: json.message || 'Successfully retrieved company orderbook',
+  };
 }
 
 /**

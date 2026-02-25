@@ -23,7 +23,7 @@ const formatCompactNumber = (num: number | string | undefined): string => {
   if (absNum >= 1_000_000_000_000) return `${(n / 1_000_000_000_000).toFixed(1)}T`;
   if (absNum >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`;
   if (absNum >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (absNum >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  if (absNum >= 1_000) return `${(absNum / 1_000).toFixed(1)}K`;
   return n.toLocaleString('id-ID');
 };
 
@@ -82,6 +82,10 @@ export default function IdxIndexDetailCard({ symbol }: IdxIndexDetailCardProps) 
   const isPositive = indexData.percentage >= 0;
   const changeColor = isPositive ? 'var(--accent-success)' : 'var(--accent-warning)';
 
+  const netForeignValue = indexData.fnet;
+  const isNetForeignPositive = netForeignValue !== undefined && netForeignValue >= 0;
+  const netForeignColor = isNetForeignPositive ? 'var(--accent-success)' : 'var(--accent-warning)';
+
   return (
     <div className="glass-card-static" style={{ padding: '1.5rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
@@ -122,15 +126,15 @@ export default function IdxIndexDetailCard({ symbol }: IdxIndexDetailCardProps) 
           </div>
         </div>
 
-        {/* Followers */}
+        {/* Net Foreign */}
         <div style={{ background: 'rgba(255, 193, 7, 0.05)', border: '1px solid rgba(255, 193, 7, 0.1)', borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Followers</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '2.2rem', fontWeight: '700', color: 'var(--text-primary)', lineHeight: '1' }}>
-            <Users size={28} color="var(--text-secondary)" />
-            {formatNumber(indexData.followers)}
-          </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            Last Updated: {indexData.date} {indexData.time}
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Net Foreign</p>
+          <p style={{ fontSize: '2.2rem', fontWeight: '700', color: netForeignColor, lineHeight: '1' }}>
+            {netForeignValue !== undefined ? formatCompactNumber(netForeignValue) : '-'}
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Foreign: {indexData.foreign || '-'}%</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Domestic: {indexData.domestic || '-'}%</span>
           </div>
         </div>
       </div>
