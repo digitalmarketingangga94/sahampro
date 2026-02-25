@@ -3,17 +3,11 @@
 import { useSearchParams } from 'next/navigation';
 import IdxSectorCompaniesCard from '../../components/IdxSectorCompaniesCard';
 
-// Mendefinisikan tipe props secara eksplisit untuk komponen ini
-interface IdxSectorCompaniesPageProps {
-  params: {
-    sectorName: string;
-  };
-  // searchParams diakses melalui useSearchParams, bukan diteruskan sebagai props ke komponen klien
-}
-
-export default function IdxSectorCompaniesPage({ params }: IdxSectorCompaniesPageProps) {
+// The validator expects params to be a Promise, even for client components in this specific case.
+// We'll make the component async and await the params.
+export default async function IdxSectorCompaniesPage({ params }: { params: Promise<{ sectorName: string }> }) {
   const searchParams = useSearchParams();
-  const { sectorName } = params;
+  const { sectorName } = await params; // Await the promise to extract sectorName
   const sectorId = searchParams.get('sectorId');
   const subsectorId = searchParams.get('subsectorId');
 
