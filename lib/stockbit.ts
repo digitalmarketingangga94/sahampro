@@ -617,13 +617,14 @@ export async function fetchTopStocks(
  */
 export async function fetchTradersahamBrokerFlow(
   emiten: string,
-  lookbackDays: number
+  lookbackDays: number,
+  mode: 'accum' | 'distrib' = 'accum' // NEW: Added mode parameter with default 'accum'
 ): Promise<BrokerFlowResponse> {
   const url = new URL('https://api.tradersaham.com/api/market-insight/broker-intelligence');
   url.searchParams.set('limit', '100'); // Fetch enough activities
   url.searchParams.set('page', '1');
   url.searchParams.set('sort_by', 'consistency');
-  url.searchParams.set('mode', 'accum');
+  url.searchParams.set('mode', mode); // NEW: Use the dynamic mode parameter
   url.searchParams.set('lookback_days', lookbackDays.toString());
   url.searchParams.set('search', emiten.toLowerCase());
 
