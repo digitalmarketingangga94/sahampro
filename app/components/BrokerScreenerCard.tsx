@@ -35,7 +35,7 @@ interface SortConfig {
 
 export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const [nDays, setNDays] = useState<number>(4);
-  const [netBuy, setNetBuy] = useState<boolean>(true);
+  const [netBuy, setNetBuy] = useState<boolean>(true); // true for Net Buy, false for Net Sell
   const [selectedBrokerCodes, setSelectedBrokerCodes] = useState<string[]>(['AK', 'MG']); // Default brokers
   const [screenerResults, setScreenerResults] = useState<BrokerScreenerResultItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -112,7 +112,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
 
   const handleReset = () => {
     setNDays(4);
-    setNetBuy(true);
+    setNetBuy(true); // Default to Net Buy
     setSelectedBrokerCodes(['AK', 'MG']);
     setScreenerResults([]);
     setError(null);
@@ -217,12 +217,27 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
             />
           </div>
 
-          <div className="input-group compact-group" style={{ flex: '0 0 120px', marginBottom: 0 }}>
-            <label className="input-label compact-label">Net Buy</label>
-            <label className="switch">
-              <input type="checkbox" checked={netBuy} onChange={() => setNetBuy(!netBuy)} />
-              <span className="slider round"></span>
-            </label>
+          {/* Net Buy / Net Sell Buttons */}
+          <div className="input-group compact-group" style={{ flex: '0 0 180px', marginBottom: 0 }}>
+            <label className="input-label compact-label">Direction</label>
+            <div className="broker-flow-filters" style={{ padding: '2px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)' }}>
+              <button
+                type="button"
+                className={`broker-flow-filter-btn ${netBuy ? 'active' : ''}`}
+                onClick={() => setNetBuy(true)}
+                style={{ flex: 1, fontSize: '0.75rem', padding: '4px 10px' }}
+              >
+                Net Buy
+              </button>
+              <button
+                type="button"
+                className={`broker-flow-filter-btn ${!netBuy ? 'active' : ''}`}
+                onClick={() => setNetBuy(false)}
+                style={{ flex: 1, fontSize: '0.75rem', padding: '4px 10px' }}
+              >
+                Net Sell
+              </button>
+            </div>
           </div>
 
           {selectedBrokerCodes.map((brokerCode, index) => (
