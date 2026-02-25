@@ -24,13 +24,11 @@ const TOKEN_CACHE_DURATION = 60000; // 1 minute
 const sectorCache = new Map<string, { sector: string; name: string; timestamp: number }>();
 const SECTOR_CACHE_DURATION = 3600000; // 1 hour
 
-// Cache for sectors list
-let sectorsListCache: { sectors: string[]; timestamp: number } | null = null; // Reverted to string[]
-const SECTORS_LIST_CACHE_DURATION = 86400000; // 24 hours
-
-// Removed NEW: Cache for IDX subsectors
-// let idxSubsectorsCache: { subsectors: IdxSubsectorItem[]; timestamp: number } | null = null;
-// const IDX_SUBSECTORS_CACHE_DURATION = 86400000; // 24 hours
+// Static list of IDX sectors
+const STATIC_IDX_SECTORS: string[] = [
+  "IDXBASIC", "IDXCYCLIC", "IDXENERGY", "IDXFINANCE", "IDXHEALTH", "IDXINDUST", 
+  "IDXINFRA", "IDXNONCYC", "IDXPROPERT", "IDXTECHNO", "IDXTRANS", "Syariah"
+];
 
 /**
  * Get JWT token from database or environment
@@ -71,7 +69,7 @@ async function getHeaders(): Promise<HeadersInit> {
     'authorization': `Bearer ${await getAuthToken()}`,
     'origin': 'https://stockbit.com',
     'referer': 'https://stockbit.com/',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/533.36',
   };
 }
 
@@ -226,35 +224,10 @@ export async function fetchIdxSectorInfo(symbol: string): Promise<EmitenInfoResp
 }
 
 /**
- * Fetch all sectors list
+ * Fetch all sectors list (now returns static data)
  */
-export async function fetchSectors(): Promise<string[]> { // Reverted return type to string[]
-  const now = Date.now();
-  
-  // Check cache first
-  if (sectorsListCache && (now - sectorsListCache.timestamp) < SECTORS_LIST_CACHE_DURATION) {
-    return sectorsListCache.sectors;
-  }
-
-  const url = `${STOCKBIT_BASE_URL}/emitten/sectors`;
-
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: await getHeaders(),
-  });
-
-  await handleApiResponse(response, 'Sectors API');
-
-  const data = await response.json();
-  const sectors: string[] = (data.data || []).map((item: { name: string }) => item.name).filter(Boolean);
-  
-  // Cache the sectors list
-  sectorsListCache = {
-    sectors,
-    timestamp: now,
-  };
-
-  return sectors;
+export async function fetchSectors(): Promise<string[]> {
+  return STATIC_IDX_SECTORS;
 }
 
 /**
