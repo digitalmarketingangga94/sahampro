@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchBrokerActivityDetail, fetchEmitenInfo, fetchTradersahamBrokerFlow } from '@/lib/stockbit'; // Added fetchTradersahamBrokerFlow
+import { fetchBrokerActivityDetail, fetchEmitenInfo, fetchTradersahamBrokerFlow, fetchOrderbook } from '@/lib/stockbit'; // Added fetchOrderbook
 import { getDateNDaysAgo, getLatestTradingDate } from '@/lib/utils';
 import type { BrokerStockActivityPerBroker, BrokerScreenerResultItem, BrokerBuyItem, BrokerSellItem } from '@/lib/types';
 
@@ -9,8 +9,9 @@ export async function GET(request: NextRequest) {
     const brokerCodesParam = searchParams.get('brokerCodes');
     const nDays = parseInt(searchParams.get('nDays') || '1');
     const netBuy = searchParams.get('netBuy') === 'true';
-    const minPositiveDays = parseInt(searchParams.get('minPositiveDays') || '3'); // New param
-    const consistencyLookbackDays = parseInt(searchParams.get('consistencyLookbackDays') || '5'); // New param
+    const minPositiveDays = parseInt(searchParams.get('minPositiveDays') || '3');
+    const consistencyLookbackDays = parseInt(searchParams.get('consistencyLookbackDays') || '5');
+    const minPrice = parseInt(searchParams.get('minPrice') || '100'); // New param: minimum price
 
     if (!brokerCodesParam) {
       return NextResponse.json(
@@ -90,21 +91,27 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // --- Step 2: Fetch stock names in parallel ---
+    // --- Step 2: Fetch stock names and current prices in parallel ---
+    const stockInfoPromises = Array.from(uniqueStockCodes).map(async (code) => {
+      try {
+        const [emitenInfo, orderbookData] = await Promise.all([
+          fetchEmitenInfo(code).catch(() => null),
+          fetchOrderbook(code).catch(() => null),
+        ]);
+        const currentPrice = orderbookData?.data?.close || 0;
+        return { code, name: emitenInfo?.data?.name || code, currentPrice };
+      } catch (infoError) {
+        console.warn(`Failed to fetch info for ${code}:`, infoError);
+        return { code, name: code, currentPrice: 0 };
+      }
+    });
+    const stockInfos = await Promise.all(stockInfoPromises);
     const stockNameMap = new Map<string, string>();
-    if (uniqueStockCodes.size > 0) {
-      const namePromises = Array.from(uniqueStockCodes).map(async (code) => {
-        try {
-          const emitenInfo = await fetchEmitenInfo(code);
-          return { code, name: emitenInfo.data?.name || code };
-        } catch (nameError) {
-          console.warn(`Failed to fetch name for ${code}:`, nameError);
-          return { code, name: code };
-        }
-      });
-      const names = await Promise.all(namePromises);
-      names.forEach(item => stockNameMap.set(item.code, item.name));
-    }
+    const stockPriceMap = new Map<string, number>();
+    stockInfos.forEach(item => {
+      stockNameMap.set(item.code, item.name);
+      stockPriceMap.set(item.code, item.currentPrice);
+    });
 
     // --- Step 3: Filter stocks based on "AND" logic and prepare results ---
     const screenerResults: BrokerScreenerResultItem[] = [];
@@ -116,6 +123,12 @@ export async function GET(request: NextRequest) {
       let totalRelevantLot = 0;
       let dominantBrokerCode = '';
       let maxNetLot = 0;
+      const currentPrice = stockPriceMap.get(stockCode) || 0;
+
+      // Apply minimum price filter first
+      if (currentPrice < minPrice) {
+        continue; // Skip this stock if it doesn't meet the minimum price
+      }
 
       for (const brokerCode of brokerCodes) {
         const brokerStockMap = allBrokerActivitiesMap.get(brokerCode);
@@ -182,8 +195,6 @@ export async function GET(request: NextRequest) {
 
         } catch (consistencyError) {
           console.warn(`Failed to fetch broker flow for consistency check for ${stockCode}:`, consistencyError);
-          // If consistency check fails, we can either skip the stock or treat it as not meeting criteria
-          // For now, let's treat it as not meeting criteria if data can't be fetched
           allBrokersMatchCriteria = false; // Mark as not matching if consistency data can't be fetched
         }
 
@@ -197,8 +208,8 @@ export async function GET(request: NextRequest) {
             avg_price: avgPrice,
             dominant_broker: dominantBrokerCode,
             dominant_percent: isNaN(dominantPercent) ? 0 : dominantPercent,
-            consistency_positive_days: consistencyPositiveDays, // New field
-            consistency_total_days: consistencyTotalDays, // New field
+            consistency_positive_days: consistencyPositiveDays,
+            consistency_total_days: consistencyTotalDays,
           });
         }
       }
