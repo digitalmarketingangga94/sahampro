@@ -35,7 +35,7 @@ export default function StockHeatmapGrid({ stocks }: StockHeatmapGridProps) {
               )}
             </div>
             <div className="stock-change">
-              {stock.change_percentage.toFixed(2)}x
+              {stock.change_percentage.toFixed(2)}%
             </div>
           </div>
         </Link>
