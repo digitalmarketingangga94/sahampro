@@ -8,17 +8,26 @@ import { fetchIdxSectorInfo } from '@/lib/stockbit';
 
 export default function IdxIndexListCard() {
   const idxIndices = [
-    { symbol: 'IDXTRANS', name: 'IDX Transportation' },
-    { symbol: 'IDXBASIC', name: 'IDX Basic Materials' },
-    { symbol: 'IDXFINANCE', name: 'IDX Financials' },
-    { symbol: 'IDXNONCYC', name: 'IDX Non-Cyclicals' },
-    { symbol: 'IDXTECHNO', name: 'IDX Technology' },
-    { symbol: 'IDXENERGY', name: 'IDX Energy' },
-    { symbol: 'IDXHEALTH', name: 'IDX Healthcare' },
-    { symbol: 'IDXINDUST', name: 'IDX Industrials' },
-    { symbol: 'IDXPROPERT', name: 'IDX Properties & Real Estate' },
-    { symbol: 'IDXCICLIC', name: 'IDX Cyclicals' },
-    { symbol: 'IDXINFRA', name: 'IDX Infrastructure' },
+    { symbol: 'IDXQ30', name: 'IDX Quality30' },
+    { symbol: 'IDXBUMN20', name: 'IDX BUMN20' },
+    { symbol: 'IDXINFRA', name: 'IDX Sector Infrastructures' },
+    { symbol: 'IDXFINANCE', name: 'IDX Sector Financials' },
+    { symbol: 'IDXV30', name: 'IDX Value 30' },
+    { symbol: 'IDXTRANS', name: 'IDX Transportation & Logistic' },
+    { symbol: 'IDXSHAGROW', name: 'IDX Sharia Growth' },
+    { symbol: 'IDXESGL', name: 'IDX ESG Leaders' },
+    { symbol: 'IDXENERGY', name: 'IDX Sector Energy' },
+    { symbol: 'IDXHEALTH', name: 'IDX Sector Healthcare' },
+    { symbol: 'IDXINDUST', name: 'IDX Sector Industrials' },
+    { symbol: 'IDXTECHNO', name: 'IDX Sector Technology' },
+    { symbol: 'IDXG30', name: 'IDX Growth 30' },
+    { symbol: 'IDXCICLIC', name: 'IDX Sector Consumer Cyclical' },
+    { symbol: 'IDXBASIC', name: 'IDX Sector Basic Materials' },
+    { symbol: 'IDXVESTA28', name: 'IDX Infovesta Multi-Factor 28' },
+    { symbol: 'IDXSMC-COM', name: 'IDX Small-Mid Cap Composite' },
+    { symbol: 'IDXNONCYC', name: 'IDX Sector Consumer Non-Cyclicals' },
+    { symbol: 'IDXSMC-LIQ', name: 'IDX Small-Mid Cap Liquid' },
+    { symbol: 'IDXPROPERT', name: 'IDX Sector Properties & Real Estate' },
   ];
 
   const [indexData, setIndexData] = useState<Record<string, EmitenInfoResponse['data']>>({});
