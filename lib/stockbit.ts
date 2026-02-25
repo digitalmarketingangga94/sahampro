@@ -336,24 +336,6 @@ export function getTopBroker(marketDetectorData: MarketDetectorResponse): Broker
 }
 
 /**
- * Fetches the dominant buy broker for a given emiten and date range.
- */
-export async function getDominantBuyBroker(
-  emiten: string,
-  fromDate: string,
-  toDate: string
-): Promise<string | null> {
-  try {
-    const marketDetectorData = await fetchMarketDetector(emiten, fromDate, toDate);
-    const topBroker = getTopBroker(marketDetectorData);
-    return topBroker?.bandar || null;
-  } catch (error) {
-    console.warn(`Failed to fetch dominant buy broker for ${emiten}:`, error);
-    return null;
-  }
-}
-
-/**
  * Helper to parse lot string (e.g., "25,322,000" -> 25322000)
  */
 export function parseLot(lotStr: string): number {
