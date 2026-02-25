@@ -25,7 +25,7 @@ const formatPrice = (num: number | undefined): string => {
   return Math.round(num).toLocaleString('id-ID');
 };
 
-type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'avg_per_day' | 'avg_price' | 'dominant_broker' | 'dominant_percent';
+type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'avg_per_day' | 'avg_price' | 'dominant_broker' | 'dominant_percent' | 'consistency_positive_days';
 type SortDirection = 'asc' | 'desc';
 
 interface SortConfig {
@@ -36,6 +36,8 @@ interface SortConfig {
 export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const [nDays, setNDays] = useState<number>(4);
   const [netBuy, setNetBuy] = useState<boolean>(true); // true for Net Buy, false for Net Sell
+  const [minPositiveDays, setMinPositiveDays] = useState<number>(3); // NEW: for consistency rule
+  const [consistencyLookbackDays, setConsistencyLookbackDays] = useState<number>(5); // NEW: for consistency rule
   const [selectedBrokerCodes, setSelectedBrokerCodes] = useState<string[]>(['AK', 'MG']); // Default brokers
   const [screenerResults, setScreenerResults] = useState<BrokerScreenerResultItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -64,7 +66,11 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
       return;
     }
     if (nDays <= 0) {
-      setError('Number of days must be greater than 0.');
+      setError('Number of days for EOD must be greater than 0.');
+      return;
+    }
+    if (minPositiveDays <= 0 || consistencyLookbackDays <= 0 || minPositiveDays > consistencyLookbackDays) {
+      setError('Consistency days must be valid (min positive days > 0, lookback days > 0, min positive days <= lookback days).');
       return;
     }
 
@@ -75,7 +81,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
     try {
       const brokerCodesParam = selectedBrokerCodes.join(',');
       const response = await fetch(
-        `/api/broker-screener?brokerCodes=${brokerCodesParam}&nDays=${nDays}&netBuy=${netBuy}`
+        `/api/broker-screener?brokerCodes=${brokerCodesParam}&nDays=${nDays}&netBuy=${netBuy}&minPositiveDays=${minPositiveDays}&consistencyLookbackDays=${consistencyLookbackDays}`
       );
       const json = await response.json();
 
@@ -113,6 +119,8 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const handleReset = () => {
     setNDays(4);
     setNetBuy(true); // Default to Net Buy
+    setMinPositiveDays(3); // Reset consistency
+    setConsistencyLookbackDays(5); // Reset consistency
     setSelectedBrokerCodes(['AK', 'MG']);
     setScreenerResults([]);
     setError(null);
@@ -170,6 +178,10 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
         aValue = a.dominant_percent;
         bValue = b.dominant_percent;
         break;
+      case 'consistency_positive_days': // NEW sort column
+        aValue = a.consistency_positive_days || 0;
+        bValue = b.consistency_positive_days || 0;
+        break;
       default:
         return 0;
     }
@@ -196,7 +208,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
         BROKER SCREENER
       </h3>
       <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-        Mengidentifikasi saham yang aktif diperdagangkan oleh kombinasi broker pilihan di setiap hari dari EOD sampai N day.
+        Mengidentifikasi saham yang aktif diperdagangkan oleh kombinasi broker pilihan di setiap hari dari EOD sampai N day, dengan konsistensi Net Lot positif.
       </p>
 
       <div className="screener-controls">
@@ -238,6 +250,38 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                 Net Sell
               </button>
             </div>
+          </div>
+
+          {/* NEW: Consistency Rule Inputs */}
+          <div className="input-group compact-group" style={{ flex: '0 0 150px', marginBottom: 0 }}>
+            <label htmlFor="minPositiveDays" className="input-label compact-label">Min Pos Days</label>
+            <input
+              id="minPositiveDays"
+              type="number"
+              value={minPositiveDays}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                setMinPositiveDays(isNaN(value) ? 1 : value);
+              }}
+              className="input-field compact-input"
+              style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', height: '32px', textAlign: 'center' }}
+              min="1"
+            />
+          </div>
+          <div className="input-group compact-group" style={{ flex: '0 0 150px', marginBottom: 0 }}>
+            <label htmlFor="consistencyLookbackDays" className="input-label compact-label">Lookback Days</label>
+            <input
+              id="consistencyLookbackDays"
+              type="number"
+              value={consistencyLookbackDays}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                setConsistencyLookbackDays(isNaN(value) ? 1 : value);
+              }}
+              className="input-field compact-input"
+              style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', height: '32px', textAlign: 'center' }}
+              min="1"
+            />
           </div>
 
           {selectedBrokerCodes.map((brokerCode, index) => (
@@ -410,6 +454,12 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                   >
                     Dominant % {getSortIndicator('dominant_percent')}
                   </th>
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('consistency_positive_days')}
+                  >
+                    Consistency {getSortIndicator('consistency_positive_days')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -438,6 +488,13 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                             <div style={{ width: `${item.dominant_percent || 0}%`, height: '100%', background: 'var(--accent-success)', borderRadius: '4px' }}></div>
                           </div>
                         </div>
+                      </td>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
+                        {item.consistency_positive_days !== undefined && item.consistency_total_days !== undefined ? (
+                          <span style={{ color: item.consistency_positive_days >= minPositiveDays ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
+                            {item.consistency_positive_days}/{item.consistency_total_days}
+                          </span>
+                        ) : '-'}
                       </td>
                     </tr>
                   );

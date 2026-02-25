@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchBrokerActivityDetail, fetchEmitenInfo } from '@/lib/stockbit'; // Removed fetchMarketDetector, fetchTradersahamBrokerFlow
+import { fetchBrokerActivityDetail, fetchEmitenInfo, fetchTradersahamBrokerFlow } from '@/lib/stockbit'; // Added fetchTradersahamBrokerFlow
 import { getDateNDaysAgo, getLatestTradingDate } from '@/lib/utils';
 import type { BrokerStockActivityPerBroker, BrokerScreenerResultItem, BrokerBuyItem, BrokerSellItem } from '@/lib/types';
 
@@ -9,6 +9,8 @@ export async function GET(request: NextRequest) {
     const brokerCodesParam = searchParams.get('brokerCodes');
     const nDays = parseInt(searchParams.get('nDays') || '1');
     const netBuy = searchParams.get('netBuy') === 'true';
+    const minPositiveDays = parseInt(searchParams.get('minPositiveDays') || '3'); // New param
+    const consistencyLookbackDays = parseInt(searchParams.get('consistencyLookbackDays') || '5'); // New param
 
     if (!brokerCodesParam) {
       return NextResponse.json(
@@ -22,7 +24,6 @@ export async function GET(request: NextRequest) {
     const toDate = getLatestTradingDate();
     const fromDate = getDateNDaysAgo(nDays - 1, toDate); // nDays includes the 'toDate'
 
-    // Store all activities fetched, keyed by brokerCode then stockCode
     const allBrokerActivitiesMap = new Map<string, Map<string, BrokerStockActivityPerBroker>>();
     const uniqueStockCodes = new Set<string>();
 
@@ -32,7 +33,6 @@ export async function GET(request: NextRequest) {
       if (brokerActivity.data && brokerActivity.data.broker_summary) {
         const brokerStockMap = new Map<string, BrokerStockActivityPerBroker>();
 
-        // Combine buys and sells for the same stock by the same broker
         brokerActivity.data.broker_summary.brokers_buy.forEach((item: BrokerBuyItem) => {
           const stockCode = item.netbs_stock_code;
           uniqueStockCodes.add(stockCode);
@@ -154,20 +154,55 @@ export async function GET(request: NextRequest) {
         const dominantPercent = (Math.abs(maxNetLot) / (totalNetLot !== 0 ? Math.abs(totalNetLot) : 1)) * 100; // Avoid division by zero
         const avgPrice = totalRelevantLot > 0 ? totalWeightedPrice / totalRelevantLot : 0;
 
-        screenerResults.push({
-          symbol: stockCode,
-          stock_name: stockNameMap.get(stockCode),
-          net_direction: netBuy ? 'Net Buy' : 'Net Sell',
-          net_lot: totalNetLot,
-          avg_per_day: avgPerDay,
-          avg_price: avgPrice,
-          dominant_broker: dominantBrokerCode,
-          dominant_percent: isNaN(dominantPercent) ? 0 : dominantPercent,
-        });
+        // --- NEW: Consistency Check ---
+        let consistencyPositiveDays = 0;
+        let consistencyTotalDays = 0;
+
+        try {
+          const brokerFlowData = await fetchTradersahamBrokerFlow(stockCode, consistencyLookbackDays);
+          const relevantActivities = brokerFlowData.activities.filter(bfActivity => 
+            brokerCodes.includes(bfActivity.broker_code)
+          );
+
+          // Aggregate daily net values across selected brokers for this stock
+          const dailyAggregatedNetValues = new Map<string, number>(); // date -> total net value for selected brokers
+          for (const bfActivity of relevantActivities) {
+            for (const dailyItem of bfActivity.daily_data) {
+              dailyAggregatedNetValues.set(dailyItem.d, (dailyAggregatedNetValues.get(dailyItem.d) || 0) + dailyItem.n);
+            }
+          }
+
+          consistencyTotalDays = dailyAggregatedNetValues.size;
+          dailyAggregatedNetValues.forEach(netValue => {
+            if (netValue > 0) { // Check for positive net lot
+              consistencyPositiveDays++;
+            }
+          });
+
+        } catch (consistencyError) {
+          console.warn(`Failed to fetch broker flow for consistency check for ${stockCode}:`, consistencyError);
+          // If consistency check fails, we can either skip the stock or treat it as not meeting criteria
+          // For now, let's treat it as not meeting criteria if data can't be fetched
+          allBrokersMatchCriteria = false; // Mark as not matching if consistency data can't be fetched
+        }
+
+        if (allBrokersMatchCriteria && consistencyPositiveDays >= minPositiveDays) {
+          screenerResults.push({
+            symbol: stockCode,
+            stock_name: stockNameMap.get(stockCode),
+            net_direction: netBuy ? 'Net Buy' : 'Net Sell',
+            net_lot: totalNetLot,
+            avg_per_day: avgPerDay,
+            avg_price: avgPrice,
+            dominant_broker: dominantBrokerCode,
+            dominant_percent: isNaN(dominantPercent) ? 0 : dominantPercent,
+            consistency_positive_days: consistencyPositiveDays, // New field
+            consistency_total_days: consistencyTotalDays, // New field
+          });
+        }
       }
     }
 
-    // Sort results by net_lot descending by default
     screenerResults.sort((a, b) => b.net_lot - a.net_lot);
 
     return NextResponse.json({

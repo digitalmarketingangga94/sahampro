@@ -519,6 +519,8 @@ export interface BrokerScreenerResultItem {
   avg_price?: number; // Added avg_price
   dominant_broker: string;
   dominant_percent: number;
+  consistency_positive_days?: number; // NEW: Number of days with positive net lot
+  consistency_total_days?: number;    // NEW: Total days checked for consistency
 }
 
 // Top Stock Types
