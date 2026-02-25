@@ -204,7 +204,6 @@ export interface EmitenInfoResponse {
     exchange?: string; // Added
     country?: string; // Added
     type_company?: string; // Added
-    // New fields from orderbook API for indices
     fnet?: number; // Net foreign value
     fbuy?: number; // Foreign buy value
     fsell?: number; // Foreign sell value
@@ -520,12 +519,6 @@ export interface BrokerScreenerResultItem {
   avg_price?: number; // Added avg_price
   dominant_broker: string;
   dominant_percent: number;
-  // New fields for advanced formula
-  dominantBrokerScore?: number;
-  basicDominanceRatio?: number;
-  volumeControlRatio?: number;
-  directionalStrength?: number; // Will be -1, 0, or 1
-  persistenceScore?: number;
 }
 
 // Top Stock Types

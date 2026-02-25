@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchBrokerActivityDetail, fetchEmitenInfo, fetchMarketDetector, fetchTradersahamBrokerFlow } from '@/lib/stockbit';
+import { fetchBrokerActivityDetail, fetchEmitenInfo } from '@/lib/stockbit'; // Removed fetchMarketDetector, fetchTradersahamBrokerFlow
 import { getDateNDaysAgo, getLatestTradingDate } from '@/lib/utils';
 import type { BrokerStockActivityPerBroker, BrokerScreenerResultItem, BrokerBuyItem, BrokerSellItem } from '@/lib/types';
 
@@ -106,13 +106,16 @@ export async function GET(request: NextRequest) {
       names.forEach(item => stockNameMap.set(item.code, item.name));
     }
 
-    // --- Step 3: Filter stocks based on "AND" logic and prepare for advanced calculation ---
-    const candidateStockCodes = new Set<string>();
-    const preFilteredMatchingActivities = new Map<string, BrokerStockActivityPerBroker[]>(); // Store for later use
+    // --- Step 3: Filter stocks based on "AND" logic and prepare results ---
+    const screenerResults: BrokerScreenerResultItem[] = [];
 
     for (const stockCode of uniqueStockCodes) {
       let allBrokersMatchCriteria = true;
-      const currentStockMatchingActivities: BrokerStockActivityPerBroker[] = [];
+      let totalNetLot = 0;
+      let totalWeightedPrice = 0;
+      let totalRelevantLot = 0;
+      let dominantBrokerCode = '';
+      let maxNetLot = 0;
 
       for (const brokerCode of brokerCodes) {
         const brokerStockMap = allBrokerActivitiesMap.get(brokerCode);
@@ -130,112 +133,23 @@ export async function GET(request: NextRequest) {
           allBrokersMatchCriteria = false;
           break;
         }
-        currentStockMatchingActivities.push(activity);
-      }
 
-      if (allBrokersMatchCriteria && currentStockMatchingActivities.length === brokerCodes.length) {
-        candidateStockCodes.add(stockCode);
-        preFilteredMatchingActivities.set(stockCode, currentStockMatchingActivities);
-      }
-    }
-
-    const screenerResults: BrokerScreenerResultItem[] = [];
-
-    // --- Step 4: Fetch detailed data and calculate advanced dominance score for candidate stocks ---
-    await Promise.all(Array.from(candidateStockCodes).map(async (stockCode) => {
-      try {
-        // Retrieve the pre-filtered activities for this specific stockCode
-        const matchingBrokerActivitiesForStock = preFilteredMatchingActivities.get(stockCode) || [];
-
-        // Fetch overall market data for the stock
-        const marketDetectorData = await fetchMarketDetector(stockCode, fromDate, toDate);
-        const overallMarketVolume = marketDetectorData.data?.bandar_detector?.volume || 0;
-        const overallMarketNetValue = marketDetectorData.data?.bandar_detector?.value || 0;
-        const dailyMarketData = marketDetectorData.data?.bandar_detector?.daily_data || [];
-
-        // Get close price for the last day in the period and previous day
-        const latestClosePrice = dailyMarketData.find(d => d.d === toDate)?.c || 0;
-        const latestOpenPrice = dailyMarketData.find(d => d.d === toDate)?.o || 0;
-
-        // Initialize aggregation variables for the current stockCode
-        let totalNetLot = 0;
-        let combinedNetValue = 0;
-        let totalWeightedPrice = 0;
-        let totalRelevantLot = 0;
-        let dominantBrokerCode = '';
-        let maxNetLot = 0;
-
-        const brokerPersistenceScores: number[] = [];
-
-        // Aggregate data from matching brokers for this stock
-        for (const activity of matchingBrokerActivitiesForStock) {
-          totalNetLot += activity.net_lot;
-          combinedNetValue += activity.net_value;
-
-          if (Math.abs(activity.net_lot) > Math.abs(maxNetLot)) {
-            maxNetLot = activity.net_lot;
-            dominantBrokerCode = activity.broker_code;
-          }
-
-          if (netBuy) {
-            totalWeightedPrice += activity.buy_avg_price * activity.buy_lot;
-            totalRelevantLot += activity.buy_lot;
-          } else {
-            totalWeightedPrice += activity.sell_avg_price * activity.sell_lot;
-            totalRelevantLot += activity.sell_lot;
-          }
-
-          // Fetch daily broker flow for persistence score for THIS broker's activity
-          const brokerFlowResponse = await fetchTradersahamBrokerFlow(activity.stock_code, nDays);
-          const brokerFlowActivity = brokerFlowResponse.activities.find(act => act.broker_code === activity.broker_code);
-
-          if (brokerFlowActivity && brokerFlowActivity.daily_data) {
-            let consistentNetDays = 0;
-            brokerFlowActivity.daily_data.forEach(daily => {
-              if (netBuy && daily.n > 0) consistentNetDays++;
-              if (!netBuy && daily.n < 0) consistentNetDays++;
-            });
-            brokerPersistenceScores.push(consistentNetDays / nDays);
-          } else {
-            brokerPersistenceScores.push(0); // No daily data for persistence
-          }
+        totalNetLot += activity.net_lot;
+        if (Math.abs(activity.net_lot) > Math.abs(maxNetLot)) {
+          maxNetLot = activity.net_lot;
+          dominantBrokerCode = activity.broker_code;
         }
 
-        // Calculate components for Dominant Broker Score
-        const absCombinedNetValue = Math.abs(combinedNetValue);
-        const absOverallMarketNetValue = Math.abs(overallMarketNetValue);
-
-        const basicDominanceRatio = absOverallMarketNetValue > 0 ? absCombinedNetValue / absOverallMarketNetValue : 0;
-        
-        // FIX: Use combinedNetLot for Volume Control Ratio
-        const absTotalNetLot = Math.abs(totalNetLot); // Get absolute combined net lot
-        const volumeControlRatio = overallMarketVolume > 0 ? absTotalNetLot / overallMarketVolume : 0; // Compare lots to lots
-
-        let directionalStrength = 0; // Default to neutral if no valid price data
-        if (latestClosePrice > 0 && latestOpenPrice > 0) {
-          if (netBuy && latestClosePrice > latestOpenPrice) {
-            directionalStrength = 1;
-          } else if (!netBuy && latestClosePrice < latestOpenPrice) {
-            directionalStrength = 1;
-          } else {
-            directionalStrength = -1;
-          }
+        if (netBuy) {
+          totalWeightedPrice += activity.buy_avg_price * activity.buy_lot;
+          totalRelevantLot += activity.buy_lot;
+        } else {
+          totalWeightedPrice += activity.sell_avg_price * activity.sell_lot;
+          totalRelevantLot += activity.sell_lot;
         }
+      }
 
-        const averagePersistenceScore = brokerPersistenceScores.length > 0
-          ? brokerPersistenceScores.reduce((sum, score) => sum + score, 0) / brokerPersistenceScores.length
-          : 0;
-
-        let dominantBrokerScore =
-          (basicDominanceRatio * 0.4) +
-          (volumeControlRatio * 0.2) +
-          (averagePersistenceScore * 0.3) +
-          (directionalStrength * 0.1);
-        
-        // Cap the score at 1.0 (100%) before multiplying by 100
-        dominantBrokerScore = Math.min(dominantBrokerScore, 1.0);
-
-
+      if (allBrokersMatchCriteria) {
         const avgPerDay = totalNetLot / nDays;
         const dominantPercent = (Math.abs(maxNetLot) / (totalNetLot !== 0 ? Math.abs(totalNetLot) : 1)) * 100; // Avoid division by zero
         const avgPrice = totalRelevantLot > 0 ? totalWeightedPrice / totalRelevantLot : 0;
@@ -249,20 +163,12 @@ export async function GET(request: NextRequest) {
           avg_price: avgPrice,
           dominant_broker: dominantBrokerCode,
           dominant_percent: isNaN(dominantPercent) ? 0 : dominantPercent,
-          dominantBrokerScore: dominantBrokerScore * 100, // Convert to percentage for interpretation
-          basicDominanceRatio: basicDominanceRatio * 100,
-          volumeControlRatio: volumeControlRatio * 100,
-          directionalStrength: directionalStrength,
-          persistenceScore: averagePersistenceScore * 100,
         });
-      } catch (stockError) {
-        console.error(`Error processing stock ${stockCode}:`, stockError);
-        // Optionally add a result with error status
       }
-    }));
+    }
 
-    // Sort results by the new Dominant Broker Score descending
-    screenerResults.sort((a, b) => (b.dominantBrokerScore || 0) - (a.dominantBrokerScore || 0));
+    // Sort results by net_lot descending by default
+    screenerResults.sort((a, b) => b.net_lot - a.net_lot);
 
     return NextResponse.json({
       success: true,
@@ -272,7 +178,7 @@ export async function GET(request: NextRequest) {
       days: nDays,
       brokers_count: brokerCodes.length,
       must_net_buy: netBuy,
-      message: 'Successfully retrieved broker screener results with advanced dominance score',
+      message: 'Successfully retrieved broker screener results',
     });
   } catch (error) {
     console.error('Broker Screener API error:', error);

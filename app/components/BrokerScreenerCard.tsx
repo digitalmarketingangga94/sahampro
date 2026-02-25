@@ -25,22 +25,13 @@ const formatPrice = (num: number | undefined): string => {
   return Math.round(num).toLocaleString('id-ID');
 };
 
-type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'avg_per_day' | 'avg_price' | 'dominant_broker' | 'dominant_percent' | 'dominantBrokerScore';
+type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'avg_per_day' | 'avg_price' | 'dominant_broker' | 'dominant_percent';
 type SortDirection = 'asc' | 'desc';
 
 interface SortConfig {
   column: SortColumn | null;
   direction: SortDirection;
 }
-
-// Helper to get score interpretation
-const getScoreInterpretation = (score: number | undefined) => {
-  if (score === undefined || score === null) return { text: '-', color: 'var(--text-muted)' };
-  if (score > 80) return { text: 'Bandar Kontrol Kuat', color: 'var(--accent-success)' };
-  if (score >= 65) return { text: 'Akumulasi Valid', color: 'var(--accent-primary)' };
-  if (score >= 50) return { text: 'Potensi Rotasi', color: 'var(--accent-warning)' };
-  return { text: 'Noise / Tidak Dominan', color: 'var(--accent-destructive)' };
-};
 
 export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const [nDays, setNDays] = useState<number>(4);
@@ -52,7 +43,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const [showBrokerSelect, setShowBrokerSelect] = useState<number | null>(null); // Index of broker dropdown being shown
   const [searchTerm, setSearchTerm] = useState('');
   const brokerSelectRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'dominantBrokerScore', direction: 'desc' }); // Default sort by dominantBrokerScore desc
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'net_lot', direction: 'desc' }); // Default sort by net_lot desc
 
   const brokerOptions = Object.values(BROKERS ?? {}).sort((a, b) => a.code.localeCompare(b.code));
 
@@ -126,7 +117,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
     setScreenerResults([]);
     setError(null);
     setLoading(false);
-    setSortConfig({ column: 'dominantBrokerScore', direction: 'desc' }); // Reset sort config
+    setSortConfig({ column: 'net_lot', direction: 'desc' }); // Reset sort config
   };
 
   const handleSort = (column: SortColumn) => {
@@ -178,10 +169,6 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
       case 'dominant_percent':
         aValue = a.dominant_percent;
         bValue = b.dominant_percent;
-        break;
-      case 'dominantBrokerScore':
-        aValue = a.dominantBrokerScore;
-        bValue = b.dominantBrokerScore;
         break;
       default:
         return 0;
@@ -408,17 +395,10 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                   >
                     Dominant % {getSortIndicator('dominant_percent')}
                   </th>
-                  <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
-                    onClick={() => handleSort('dominantBrokerScore')}
-                  >
-                    Score {getSortIndicator('dominantBrokerScore')}
-                  </th>
                 </tr>
               </thead>
               <tbody>
                 {sortedResults.map((item, index) => {
-                  const scoreInterpretation = getScoreInterpretation(item.dominantBrokerScore);
                   return (
                     <tr key={item.symbol} style={{ borderBottom: index < sortedResults.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
                       <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)', textAlign: 'left' }}>
@@ -442,12 +422,6 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                           <div style={{ width: '80px', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px' }}>
                             <div style={{ width: `${item.dominant_percent || 0}%`, height: '100%', background: 'var(--accent-success)', borderRadius: '4px' }}></div>
                           </div>
-                        </div>
-                      </td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center', fontWeight: 600, color: scoreInterpretation.color }}>
-                        {item.dominantBrokerScore !== undefined ? item.dominantBrokerScore.toFixed(1) : '-'}%
-                        <div style={{ fontSize: '0.65rem', color: scoreInterpretation.color, marginTop: '2px' }}>
-                          {scoreInterpretation.text}
                         </div>
                       </td>
                     </tr>
