@@ -3,13 +3,13 @@
 import { useSearchParams } from 'next/navigation';
 import IdxSectorCompaniesCard from '../../components/IdxSectorCompaniesCard';
 
-// Removed IdxSectorCompaniesPageProps interface
-
-export default function IdxSectorCompaniesPage({ params }: { params: any }) {
+// The validator expects params to be a Promise, even for client components in this specific case.
+// We'll make the component async and await the params.
+export default async function IdxSectorCompaniesPage({ params }: { params: Promise<{ sectorName: string }> }) {
   const searchParams = useSearchParams();
+  const { sectorName } = await params; // Await the promise to extract sectorName
   const sectorId = searchParams.get('sectorId');
   const subsectorId = searchParams.get('subsectorId');
-  const { sectorName } = params;
 
   if (!sectorId || !subsectorId) {
     return (
