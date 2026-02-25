@@ -545,3 +545,14 @@ export interface TopStockResponse {
   };
   message: string;
 }
+
+// New type for IDX Sector Member Stocks
+export interface IdxSectorMemberStock {
+  symbol: string;
+  name: string;
+  last_price: number;
+  change_percentage: number;
+  change_point: number;
+  volume: number;
+  value: number;
+}
