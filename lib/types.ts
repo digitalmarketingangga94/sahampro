@@ -556,3 +556,58 @@ export interface IdxSectorMemberStock {
   volume: number;
   value: number;
 }
+
+// New types for the direct API response for sector companies
+export interface IdxSectorCompanyItemRaw {
+  avgvolume: string;
+  change: string; // Change point
+  company_id: string;
+  country: string;
+  followed: number;
+  followers: number;
+  isexist: number;
+  last: string; // Last price
+  marketcap: string;
+  name: string;
+  popularity: number;
+  symbol: string;
+  symbol_2: string; // Often the primary symbol to use
+  symbol_3: string;
+  tradeable: number;
+  type_company: string;
+  value: number; // Total value
+  valuema20: string;
+  volume: number; // Total volume
+  icon_url: string;
+  formatted_price: string;
+  percent: string; // Change percentage
+  is_exists: boolean;
+  day_trade_info: {
+    is_show_multiplier: boolean;
+    multiplier: string;
+  };
+  extra_attributes: {};
+  notations: any[];
+  company_status: string;
+  uma: boolean;
+  label_text: string;
+  trading_limit_info: {
+    is_trading_limit: boolean;
+    haircut_percentage: string;
+  };
+  effective_date: string;
+  grouping_by: {
+    type: string;
+    label: string;
+  };
+  margin_info: {
+    is_margin_trading: boolean;
+    percentage: string;
+    percentage_raw: number;
+  };
+}
+
+export interface IdxSectorCompanyResponse {
+  data: IdxSectorCompanyItemRaw[];
+  message: string;
+}

@@ -1,13 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as cheerio from 'cheerio';
 import type { IdxSectorMemberStock } from '@/lib/types';
+import { fetchIdxSectorCompanyMembers } from '@/lib/stockbit';
+
+// Temporary mapping for IDX symbols to their corresponding sector and subsector IDs.
+// This is a placeholder as there's no direct API to get these IDs from the IDX symbol.
+// For IDXTECHNO, using the example IDs provided by the user.
+const IDX_SYMBOL_TO_SECTOR_IDS: Record<string, { sectorId: string; subSectorId: string }> = {
+  'IDXTECHNO': { sectorId: '70', subSectorId: '1000003301' },
+  // Add more mappings here if needed for other IDX indices.
+  // Example: 'IDXENERGY': { sectorId: '...', subSectorId: '...' },
+};
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ symbol: string }> } // Mengubah tipe params menjadi Promise
+  { params }: { params: Promise<{ symbol: string }> }
 ) {
+  let symbol: string; // Declare symbol here to make it accessible in catch block
   try {
-    const { symbol } = await params; // Menambahkan 'await' untuk mendapatkan nilai dari Promise
+    const awaitedParams = await params;
+    symbol = awaitedParams.symbol; // Assign to the outer-scoped symbol
 
     if (!symbol) {
       return NextResponse.json(
@@ -16,57 +27,36 @@ export async function GET(
       );
     }
 
-    const url = `https://stockbit.com/catalog/indeks-sektoral/${symbol.toUpperCase()}`;
-    
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-        'Referer': 'https://stockbit.com/',
-      },
-      cache: 'no-store', // Ensure fresh data
-    });
+    const sectorIds = IDX_SYMBOL_TO_SECTOR_IDS[symbol.toUpperCase()];
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch HTML for ${symbol}: ${response.status} ${response.statusText}`);
+    if (!sectorIds) {
+      return NextResponse.json(
+        { success: false, error: `No sector/subsector IDs found for IDX symbol: ${symbol}. Please add a mapping.` },
+        { status: 404 }
+      );
     }
 
-    const html = await response.text();
-    const $ = cheerio.load(html);
+    const companyResponse = await fetchIdxSectorCompanyMembers(sectorIds.sectorId, sectorIds.subSectorId);
 
-    const stocks: IdxSectorMemberStock[] = [];
+    if (!companyResponse.data || companyResponse.data.length === 0) {
+      return NextResponse.json({
+        success: true,
+        data: [],
+        indexSymbol: symbol.toUpperCase(),
+        message: 'No company data found for this sector/subsector.',
+      });
+    }
 
-    // Find the table containing the stock list.
-    // Based on inspection, it's usually a table with class 'ant-table-tbody'
-    // We need to find the specific structure within the HTML.
-    // This selector might need adjustment if Stockbit's HTML structure changes.
-    $('table.ant-table-tbody tr').each((i, row) => {
-      const cells = $(row).find('td');
-      if (cells.length >= 6) { // Ensure enough columns are present
-        const symbolText = $(cells[0]).find('a').text().trim();
-        const nameText = $(cells[1]).text().trim();
-        const lastPriceText = $(cells[2]).text().trim().replace(/,/g, '');
-        const changeText = $(cells[3]).text().trim().replace(/,/g, '');
-        const changePercentageText = $(cells[4]).text().trim().replace(/%/g, '');
-        const volumeText = $(cells[5]).text().trim().replace(/,/g, '');
-        const valueText = $(cells[6]).text().trim().replace(/,/g, ''); // Assuming value is the 7th column
-
-        if (symbolText && !isNaN(parseFloat(lastPriceText))) {
-          stocks.push({
-            symbol: symbolText,
-            name: nameText,
-            last_price: parseFloat(lastPriceText),
-            change_point: parseFloat(changeText),
-            change_percentage: parseFloat(changePercentageText),
-            volume: parseFloat(volumeText),
-            value: parseFloat(valueText),
-          });
-        }
-      }
-    });
+    // Map the raw API response to the IdxSectorMemberStock interface
+    const stocks: IdxSectorMemberStock[] = companyResponse.data.map(item => ({
+      symbol: item.symbol_2 || item.symbol,
+      name: item.name,
+      last_price: parseFloat(item.last),
+      change_point: parseFloat(item.change),
+      change_percentage: parseFloat(item.percent),
+      volume: item.volume,
+      value: item.value,
+    }));
 
     return NextResponse.json({
       success: true,
@@ -74,7 +64,8 @@ export async function GET(
       indexSymbol: symbol.toUpperCase(),
     });
   } catch (error) {
-    console.error(`Error fetching IDX sector members for ${params.symbol}:`, error);
+    // Use the 'symbol' variable that was already awaited
+    console.error(`Error fetching IDX sector members for ${symbol}:`, error);
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : 'Failed to fetch IDX sector members' },
       { status: 500 }
