@@ -9,6 +9,14 @@ interface StockHeatmapGridProps {
   stocks: MarketMoverItem[];
 }
 
+// Helper to format large numbers (e.g., 1234567890 -> 1.23B)
+const formatCompactNumber = (num: number): string => {
+  if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(2) + 'B';
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(2) + 'M';
+  if (num >= 1_000) return (num / 1_000).toFixed(2) + 'K';
+  return num.toLocaleString();
+};
+
 export default function StockHeatmapGrid({ stocks }: StockHeatmapGridProps) {
   if (!stocks || stocks.length === 0) {
     return (
@@ -35,7 +43,11 @@ export default function StockHeatmapGrid({ stocks }: StockHeatmapGridProps) {
               )}
             </div>
             <div className="stock-change">
-              {stock.change_percentage.toFixed(2)}%
+              {stock.change_percentage >= 0 ? '+' : ''}{stock.change_percentage.toFixed(2)}%
+            </div>
+            <div className="stock-volume-freq">
+              <div className="stock-volume">Vol: {formatCompactNumber(stock.volume)}</div>
+              <div className="stock-frequency">Freq: {formatCompactNumber(stock.frequency)}</div>
             </div>
           </div>
         </Link>

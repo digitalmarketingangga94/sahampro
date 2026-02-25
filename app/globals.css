@@ -2470,15 +2470,15 @@ input:checked + .slider:before {
 /* Stock Heatmap Grid */
 .stock-heatmap-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* Adjust column width as needed */
-  gap: 8px; /* Gap between tiles */
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Increased min-width */
+  gap: 12px; /* Increased gap between tiles */
   width: 100%;
 }
 
 .stock-tile {
   background-color: #333; /* Default dark background */
   border-radius: 8px;
-  padding: 12px;
+  padding: 16px; /* Increased padding */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2511,17 +2511,31 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: 4px;
+  margin-bottom: 8px; /* Increased margin */
 }
 
 .stock-symbol {
-  font-size: 1.1rem;
+  font-size: 1.2rem; /* Slightly larger font */
   text-transform: uppercase;
 }
 
 .stock-change {
-  font-size: 0.9rem;
+  font-size: 1rem; /* Slightly larger font */
   opacity: 0.9;
+  margin-bottom: 8px; /* Added margin */
+}
+
+.stock-volume-freq {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem; /* Smaller font for volume/frequency */
+  color: rgba(255, 255, 255, 0.8); /* Slightly muted white */
+}
+
+.stock-volume,
+.stock-frequency {
+  white-space: nowrap;
 }
 
 .stock-tile svg {
