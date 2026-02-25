@@ -347,7 +347,7 @@ export interface BackgroundJobLog {
 
 // Stockbit Search Types
 export interface StockbitSearchCompanyItem {
-  symbol_2: string;
+  code: string; // Changed from symbol_2 to code for consistency
   name: string;
   icon_url: string;
   // Add other properties if needed from the search API response
@@ -513,7 +513,7 @@ export interface BrokerOverallActivitySummaryResponse {
 export interface BrokerScreenerResultItem {
   symbol: string;
   stock_name?: string;
-  net_direction: 'All Net Buy' | 'All Net Sell';
+  net_direction: 'Net Buy' | 'Net Sell'; // Changed from 'All Net Buy' | 'All Net Sell'
   net_lot: number;
   avg_per_day: number;
   avg_price?: number; // Added avg_price

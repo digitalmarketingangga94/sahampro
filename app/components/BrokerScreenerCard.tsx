@@ -376,7 +376,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                       )}
                     </td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
-                      <span style={{ color: item.net_direction === 'All Net Buy' ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
+                      <span style={{ color: item.net_direction === 'Net Buy' ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
                         • {item.net_direction}
                       </span>
                     </td>
