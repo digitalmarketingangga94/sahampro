@@ -102,7 +102,6 @@ export default function IdxIndexListCard() {
                 <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Harga</th>
                 <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Change</th>
                 <th style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>Change %</th>
-                <th style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -114,7 +113,11 @@ export default function IdxIndexListCard() {
                 return (
                   <tr key={index.symbol} style={{ borderBottom: i < idxIndices.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
                     <td style={{ padding: '0.5rem 0.25rem', color: 'var(--text-muted)' }}>{i + 1}</td>
-                    <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>{index.symbol}</td>
+                    <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                      <Link href={`/idx-sector/${index.symbol}`} passHref style={{ textDecoration: 'none', color: 'inherit' }}>
+                        {index.symbol}
+                      </Link>
+                    </td>
                     <td style={{ padding: '0.5rem 0.25rem', color: 'var(--text-primary)' }}>{index.name}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>{data ? formatNumber(data.price, 0) : '-'}</td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: changeColor }}>
@@ -122,16 +125,6 @@ export default function IdxIndexListCard() {
                     </td>
                     <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: changeColor }}>
                       {data ? `${isPositive ? '+' : ''}${formatNumber(data.percentage, 2)}%` : '-'}
-                    </td>
-                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
-                      <Link href={`/idx-sector/${index.symbol}`} passHref>
-                        <button 
-                          className="btn btn-primary compact-btn"
-                          style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', minWidth: 'unset' }}
-                        >
-                          <LineChart size={14} /> Detail
-                        </button>
-                      </Link>
                     </td>
                   </tr>
                 );
