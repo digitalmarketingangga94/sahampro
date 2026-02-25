@@ -29,34 +29,61 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    let allActivities: BrokerFlowActivity[] = [];
+    let activitiesToProcess: BrokerFlowActivity[] = [];
     let tradingDates: string[] = [];
 
     if (netDirection === 'net_buy') {
       const accumData = await fetchTradersahamBrokerFlow(emiten, parseInt(lookbackDays), 'accum');
-      allActivities = accumData.activities;
+      activitiesToProcess = accumData.activities;
       tradingDates = accumData.trading_dates;
     } else if (netDirection === 'net_sell') {
       const distribData = await fetchTradersahamBrokerFlow(emiten, parseInt(lookbackDays), 'distrib');
-      allActivities = distribData.activities;
+      activitiesToProcess = distribData.activities;
       tradingDates = distribData.trading_dates;
-    } else { // 'all' mode
+    } else { // 'all' mode - fetch both and aggregate
       const [accumData, distribData] = await Promise.all([
         fetchTradersahamBrokerFlow(emiten, parseInt(lookbackDays), 'accum'),
         fetchTradersahamBrokerFlow(emiten, parseInt(lookbackDays), 'distrib'),
       ]);
 
-      // Combine activities, ensuring unique broker-stock pairs if necessary
-      // For Tradersaham API, activities from 'accum' and 'distrib' modes are distinct by net_value sign,
-      // so a simple concatenation should work.
-      allActivities = [...accumData.activities, ...distribData.activities];
-      // Use trading dates from one of them, assuming they are consistent
-      tradingDates = accumData.trading_dates;
+      tradingDates = accumData.trading_dates; // Assume trading dates are consistent
+
+      const aggregatedActivities = new Map<string, BrokerFlowActivity>();
+
+      // Helper to add/update activity in the map
+      const addOrUpdateActivity = (activity: BrokerFlowActivity) => {
+        const key = `${activity.broker_code}-${activity.stock_code}`;
+        if (aggregatedActivities.has(key)) {
+          const existing = aggregatedActivities.get(key)!;
+          // Aggregate values
+          existing.net_value = String(parseFloat(existing.net_value) + parseFloat(activity.net_value));
+          existing.total_buy_value = String(parseFloat(existing.total_buy_value) + parseFloat(activity.total_buy_value));
+          existing.total_buy_volume = String(parseFloat(existing.total_buy_volume) + parseFloat(activity.total_buy_volume));
+          // Take max for days, or sum if appropriate (here, max is safer for 'active_days')
+          existing.buy_days = String(Math.max(parseFloat(existing.buy_days), parseFloat(activity.buy_days)));
+          existing.active_days = String(Math.max(parseFloat(existing.active_days), parseFloat(activity.active_days)));
+          // Consistency percentage might need recalculation or a more complex aggregation
+          // For now, we'll just keep the one from the first entry or a simple average if needed.
+          // For simplicity, let's just keep the first one's consistency_pct for now.
+          // If a broker has both buy and sell, its consistency might be complex.
+          // For now, we'll prioritize the 'accum' consistency if available, otherwise 'distrib'.
+          // Or, a more robust approach would be to recalculate consistency based on combined daily data.
+          // Given the current structure, let's just take the first one's consistency_pct.
+          // The `dominant_percentage` will be recalculated later based on the final `net_value`.
+        } else {
+          aggregatedActivities.set(key, { ...activity });
+        }
+      };
+
+      accumData.activities.forEach(addOrUpdateActivity);
+      distribData.activities.forEach(addOrUpdateActivity);
+
+      activitiesToProcess = Array.from(aggregatedActivities.values());
     }
 
-    if (allActivities) {
+    if (activitiesToProcess) {
       // First, map 'Whale' from external API response back to 'Foreign' for consistency
-      allActivities = allActivities.map(activity => {
+      let finalActivities = activitiesToProcess.map(activity => {
         const totalBuyValue = parseFloat(activity.total_buy_value);
         const totalBuyVolume = parseFloat(activity.total_buy_volume);
         let buyAvgPrice = 0;
@@ -77,16 +104,10 @@ export async function GET(request: NextRequest) {
         .map(mapStatusIdToBrokerType)
         .filter((type): type is BrokerType => type !== null);
 
-      let filteredActivities = allActivities.filter(activity => {
+      finalActivities = finalActivities.filter(activity => {
         const brokerInfo = getBrokerInfo(activity.broker_code);
         return selectedInternalBrokerTypes.includes(brokerInfo.type);
       });
-
-      // The netDirection filter is now handled by the mode parameter in fetchTradersahamBrokerFlow,
-      // so we don't need to re-filter by net_value here unless there's a specific reason.
-      // However, for 'all' mode, we might get both positive and negative net_value,
-      // so we should ensure the net_value is correctly signed.
-      // The Tradersaham API already provides net_value with the correct sign for 'accum' and 'distrib'.
 
       return NextResponse.json({
         success: true,
@@ -94,7 +115,7 @@ export async function GET(request: NextRequest) {
           trading_dates: tradingDates,
           total_trading_days: tradingDates.length,
           sort_by: 'consistency', // This is hardcoded in the API call
-          activities: filteredActivities,
+          activities: finalActivities,
         },
       });
     }
