@@ -38,7 +38,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const [netBuy, setNetBuy] = useState<boolean>(true); // true for Net Buy, false for Net Sell
   const [minPositiveDays, setMinPositiveDays] = useState<number>(3); // NEW: for consistency rule
   const [consistencyLookbackDays, setConsistencyLookbackDays] = useState<number>(5); // NEW: for consistency rule
-  const [minPrice, setMinPrice] = useState<number>(100); // NEW: Minimum price filter
+  // const [minPrice, setMinPrice] = useState<number>(100); // Removed minPrice state
   const [selectedBrokerCodes, setSelectedBrokerCodes] = useState<string[]>(['AK', 'MG']); // Default brokers
   const [screenerResults, setScreenerResults] = useState<BrokerScreenerResultItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -74,10 +74,10 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
       setError('Consistency days must be valid (min positive days > 0, lookback days > 0, min positive days <= lookback days).');
       return;
     }
-    if (minPrice < 1) {
-      setError('Minimum price must be at least 1.');
-      return;
-    }
+    // if (minPrice < 1) { // Removed minPrice validation
+    //   setError('Minimum price must be at least 1.');
+    //   return;
+    // }
 
     setLoading(true);
     setError(null);
@@ -86,7 +86,8 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
     try {
       const brokerCodesParam = selectedBrokerCodes.join(',');
       const response = await fetch(
-        `/api/broker-screener?brokerCodes=${brokerCodesParam}&nDays=${nDays}&netBuy=${netBuy}&minPositiveDays=${minPositiveDays}&consistencyLookbackDays=${consistencyLookbackDays}&minPrice=${minPrice}`
+        `/api/broker-screener?brokerCodes=${brokerCodesParam}&nDays=${nDays}&netBuy=${netBuy}&minPositiveDays=${minPositiveDays}&consistencyLookbackDays=${consistencyLookbackDays}`
+        // Removed minPrice from API call
       );
       const json = await response.json();
 
@@ -126,7 +127,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
     setNetBuy(true); // Default to Net Buy
     setMinPositiveDays(3); // Reset consistency
     setConsistencyLookbackDays(5); // Reset consistency
-    setMinPrice(100); // Reset min price
+    // setMinPrice(100); // Removed minPrice reset
     setSelectedBrokerCodes(['AK', 'MG']);
     setScreenerResults([]);
     setError(null);
@@ -290,8 +291,8 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
             />
           </div>
 
-          {/* NEW: Minimum Price Input */}
-          <div className="input-group compact-group" style={{ flex: '0 0 150px', marginBottom: 0 }}>
+          {/* Removed Minimum Price Input */}
+          {/* <div className="input-group compact-group" style={{ flex: '0 0 150px', marginBottom: 0 }}>
             <label htmlFor="minPrice" className="input-label compact-label">Min Price</label>
             <input
               id="minPrice"
@@ -305,7 +306,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
               style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', height: '32px', textAlign: 'center' }}
               min="1"
             />
-          </div>
+          </div> */}
 
           {selectedBrokerCodes.map((brokerCode, index) => (
             <div key={index} style={{ position: 'relative', flex: '1 1 200px', minWidth: '180px' }} ref={el => { brokerSelectRefs.current[index] = el; }}>
@@ -428,7 +429,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
           <h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
             Result Data
             <span style={{ marginLeft: '0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-              Screen Date: {screenDate} • Broksum EOD: {broksumEOD} • {sortedResults.length} saham ditemukan • Days: {nDays} • Broker: {selectedBrokerCodes.length} • Must Net Buy: {netBuy ? 'YES' : 'NO'} • Min Price: {minPrice}
+              Screen Date: {screenDate} • Broksum EOD: {broksumEOD} • {sortedResults.length} saham ditemukan • Days: {nDays} • Broker: {selectedBrokerCodes.length} • Must Net Buy: {netBuy ? 'YES' : 'NO'}
             </span>
           </h4>
           <div style={{ overflowX: 'auto' }}>
