@@ -25,7 +25,7 @@ const formatPrice = (num: number | undefined): string => {
   return Math.round(num).toLocaleString('id-ID');
 };
 
-type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'avg_per_day' | 'avg_price' | 'dominant_broker' | 'dominant_percent';
+type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'avg_per_day' | 'avg_price' | 'dominant_broker' | 'dominant_percent' | 'dominantBrokerScore';
 type SortDirection = 'asc' | 'desc';
 
 interface SortConfig {
@@ -36,14 +36,14 @@ interface SortConfig {
 export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const [nDays, setNDays] = useState<number>(4);
   const [netBuy, setNetBuy] = useState<boolean>(true);
-  const [selectedBrokerCodes, setSelectedBrokerCodes] = useState<string[]>(['AK', 'BK']); // Default brokers
+  const [selectedBrokerCodes, setSelectedBrokerCodes] = useState<string[]>(['AK', 'MG']); // Default brokers
   const [screenerResults, setScreenerResults] = useState<BrokerScreenerResultItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showBrokerSelect, setShowBrokerSelect] = useState<number | null>(null); // Index of broker dropdown being shown
   const [searchTerm, setSearchTerm] = useState('');
   const brokerSelectRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'dominant_percent', direction: 'desc' }); // Default sort by dominant_percent desc
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'dominantBrokerScore', direction: 'desc' }); // Default sort by dominantBrokerScore desc
 
   const brokerOptions = Object.values(BROKERS ?? {}).sort((a, b) => a.code.localeCompare(b.code));
 
@@ -113,11 +113,11 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const handleReset = () => {
     setNDays(4);
     setNetBuy(true);
-    setSelectedBrokerCodes(['AK', 'BK']);
+    setSelectedBrokerCodes(['AK', 'MG']);
     setScreenerResults([]);
     setError(null);
     setLoading(false);
-    setSortConfig({ column: 'dominant_percent', direction: 'desc' }); // Reset sort config
+    setSortConfig({ column: 'dominantBrokerScore', direction: 'desc' }); // Reset sort config
   };
 
   const handleSort = (column: SortColumn) => {
@@ -138,17 +138,52 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const sortedResults = [...screenerResults].sort((a, b) => {
     if (sortConfig.column === null) return 0;
 
-    const aValue = a[sortConfig.column];
-    const bValue = b[sortConfig.column];
+    let aValue: any;
+    let bValue: any;
 
-    let comparison = 0;
-    if (typeof aValue === 'number' && typeof bValue === 'number') {
-      comparison = aValue - bValue;
-    } else if (typeof aValue === 'string' && typeof bValue === 'string') {
-      comparison = aValue.localeCompare(bValue);
+    switch (sortConfig.column) {
+      case 'symbol':
+        aValue = a.symbol;
+        bValue = b.symbol;
+        break;
+      case 'net_direction':
+        aValue = a.net_direction;
+        bValue = b.net_direction;
+        break;
+      case 'net_lot':
+        aValue = a.net_lot;
+        bValue = b.net_lot;
+        break;
+      case 'avg_per_day':
+        aValue = a.avg_per_day;
+        bValue = b.avg_per_day;
+        break;
+      case 'avg_price':
+        aValue = a.avg_price;
+        bValue = b.avg_price;
+        break;
+      case 'dominant_broker':
+        aValue = a.dominant_broker;
+        bValue = b.dominant_broker;
+        break;
+      case 'dominant_percent':
+        aValue = a.dominant_percent;
+        bValue = b.dominant_percent;
+        break;
+      case 'dominantBrokerScore':
+        aValue = a.dominantBrokerScore;
+        bValue = b.dominantBrokerScore;
+        break;
+      default:
+        return 0;
     }
 
-    return sortConfig.direction === 'asc' ? comparison : -comparison;
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
+    } else if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortConfig.direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    }
+    return 0;
   });
 
   const filteredBrokerOptions = brokerOptions.filter(broker => 
@@ -364,6 +399,12 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                   >
                     Dominant % {getSortIndicator('dominant_percent')}
                   </th>
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('dominantBrokerScore')}
+                  >
+                    Score {getSortIndicator('dominantBrokerScore')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -391,6 +432,9 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                           <div style={{ width: `${item.dominant_percent}%`, height: '100%', background: 'var(--accent-success)', borderRadius: '4px' }}></div>
                         </div>
                       </div>
+                    </td>
+                    <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                      {item.dominantBrokerScore !== undefined ? item.dominantBrokerScore.toFixed(1) : '-'}%
                     </td>
                   </tr>
                 ))}

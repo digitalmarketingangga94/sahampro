@@ -33,6 +33,7 @@ export interface BrokerDetector {
   total_seller: number;
   value: number;
   volume: number;
+  daily_data?: { d: string; c: number; o: number; h: number; l: number; v: number; }[]; // Added daily_data for market detector
 }
 
 export interface BrokerBuyItem {
@@ -513,12 +514,18 @@ export interface BrokerOverallActivitySummaryResponse {
 export interface BrokerScreenerResultItem {
   symbol: string;
   stock_name?: string;
-  net_direction: 'Net Buy' | 'Net Sell'; // Changed from 'All Net Buy' | 'All Net Sell'
+  net_direction: 'Net Buy' | 'Net Sell';
   net_lot: number;
   avg_per_day: number;
   avg_price?: number; // Added avg_price
   dominant_broker: string;
   dominant_percent: number;
+  // New fields for advanced formula
+  dominantBrokerScore?: number;
+  basicDominanceRatio?: number;
+  volumeControlRatio?: number;
+  directionalStrength?: number; // Will be -1, 0, or 1
+  persistenceScore?: number;
 }
 
 // Top Stock Types

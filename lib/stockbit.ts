@@ -1,4 +1,4 @@
-import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse, IdxSector, IdxSectorCompaniesResponse } from './types';
+import type { MarketDetectorResponse, OrderbookResponse, BrokerData, WatchlistResponse, BrokerSummaryData, EmitenInfoResponse, KeyStatsResponse, KeyStatsData, KeyStatsItem, WatchlistGroup, MarketMoversResponse, MarketMoverType, MarketMoverItem, TradeBookTotal, TradeBookResponse, InsiderActivityResponse, ActionType, SourceType, BrokerOverallActivitySummaryResponse, StockbitSearchResponse, StockbitSearchCompanyItem, TopStockResponse, IdxSector, IdxSectorCompaniesResponse, BrokerFlowResponse } from './types';
 import { getSessionValue, upsertSession } from './supabase';
 
 const STOCKBIT_BASE_URL = 'https://exodus.stockbit.com';
@@ -366,6 +366,7 @@ export function getBrokerSummary(marketDetectorData: MarketDetectorResponse): Br
       total_seller: detector?.total_seller || 0,
       value: detector?.value || 0,
       volume: detector?.volume || 0,
+      daily_data: detector?.daily_data || [], // Ensure daily_data is included
     },
     topBuyers: brokerSummary?.brokers_buy?.slice(0, 4) || [],
         topSellers: brokerSummary?.brokers_sell?.slice(0, 4) || [],
@@ -608,4 +609,45 @@ export async function fetchTopStocks(
   await handleApiResponse(response, `Top Stock API`);
 
   return response.json();
+}
+
+/**
+ * Fetch Broker Flow data from Tradersaham API for a specific emiten and lookback days.
+ * This is a direct call to the external API, without internal filtering by broker type.
+ */
+export async function fetchTradersahamBrokerFlow(
+  emiten: string,
+  lookbackDays: number
+): Promise<BrokerFlowResponse> {
+  const url = new URL('https://api.tradersaham.com/api/market-insight/broker-intelligence');
+  url.searchParams.set('limit', '100'); // Fetch enough activities
+  url.searchParams.set('page', '1');
+  url.searchParams.set('sort_by', 'consistency');
+  url.searchParams.set('mode', 'accum');
+  url.searchParams.set('lookback_days', lookbackDays.toString());
+  url.searchParams.set('search', emiten.toLowerCase());
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+    },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Tradersaham Broker Flow API returned ${response.status}`);
+  }
+
+  const data: BrokerFlowResponse = await response.json();
+
+  // Map 'Whale' from external API response back to 'Foreign' for consistency
+  if (data && data.activities) {
+    data.activities = data.activities.map(activity => ({
+      ...activity,
+      broker_status: activity.broker_status === 'Whale' ? 'Foreign' : activity.broker_status,
+    }));
+  }
+
+  return data;
 }
