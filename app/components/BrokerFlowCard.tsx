@@ -334,13 +334,13 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
                     <th>BROKER</th>
                     <th>DAILY HEATMAP</th>
                     <th 
-                      style={{ textAlign: 'center', cursor: 'pointer' }}
+                      style={{ textAlign: 'center', cursor: 'pointer', color: 'var(--accent-primary)' }}
                       onClick={() => handleSort('total_buy_value')}
                     >
                       BUY VALUE {getSortIndicator('total_buy_value')}
                     </th>
                     <th 
-                      style={{ textAlign: 'center', cursor: 'pointer' }}
+                      style={{ textAlign: 'center', cursor: 'pointer', color: 'var(--accent-warning)' }}
                       onClick={() => handleSort('total_sell_value')}
                     >
                       SELL VALUE {getSortIndicator('total_sell_value')}
@@ -430,10 +430,10 @@ function BrokerFlowRow({
       <td className="heatmap-cell">
         <DailyHeatmap dailyData={activity.daily_data} tradingDates={tradingDates} />
       </td>
-      <td style={{ textAlign: 'center' }}>
+      <td style={{ textAlign: 'center', color: 'var(--accent-primary)' }}>
         {formatValue(activity.total_buy_value)}
       </td>
-      <td style={{ textAlign: 'center' }}>
+      <td style={{ textAlign: 'center', color: 'var(--accent-warning)' }}>
         {formatValue(totalSellValue)}
       </td>
       <td className={`net-value ${parseFloat(activity.net_value) >= 0 ? 'positive' : 'negative'}`} style={{ textAlign: 'center' }}>
