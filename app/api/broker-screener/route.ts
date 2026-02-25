@@ -133,8 +133,8 @@ export async function GET(request: NextRequest) {
         let totalNetLot = 0;
         let dominantBroker = '';
         let maxNetLot = 0;
-        let totalWeightedPrice = 0;
-        let totalRelevantLot = 0;
+        let totalWeightedPrice = 0; // For average price calculation
+        let totalRelevantLot = 0;   // For average price calculation
 
         for (const activity of matchingBrokerActivitiesForStock) {
           totalNetLot += activity.net_lot;
@@ -160,7 +160,8 @@ export async function GET(request: NextRequest) {
         screenerResults.push({
           symbol: stockCode,
           stock_name: stockNameMap.get(stockCode),
-          net_direction: netBuy ? 'Net Buy' : 'Net Sell', // Updated direction
+          // FIX: net_direction should reflect the actual totalNetLot, not just the filter
+          net_direction: totalNetLot > 0 ? 'Net Buy' : 'Net Sell',
           net_lot: totalNetLot,
           avg_per_day: avgPerDay,
           dominant_broker: dominantBroker,

@@ -544,7 +544,14 @@ export async function fetchBrokerActivityDetail(
 
   await handleApiResponse(response, `Broker Activity Detail API (${brokerCode})`);
 
-  return response.json();
+  const json: BrokerOverallActivitySummaryResponse = await response.json();
+
+  // Add logging for empty data
+  if (!json.data || !json.data.broker_summary || (!json.data.broker_summary.brokers_buy.length && !json.data.broker_summary.brokers_sell.length)) {
+    console.warn(`[Stockbit API] No broker activity data found for ${brokerCode} from ${fromDate} to ${toDate}`);
+  }
+
+  return json;
 }
 
 /**
@@ -579,7 +586,7 @@ export async function fetchTopStocks(
   startDate: string,
   endDate: string,
   investorType: string = 'INVESTOR_TYPE_ALL',
-  marketType: string = 'MARKET_TYPE_REGULER',
+  marketType: string = 'MARKET_BOARD_REGULER',
   valueType: string = 'VALUE_TYPE_NET',
   page: number = 1,
   limit: number = 100
