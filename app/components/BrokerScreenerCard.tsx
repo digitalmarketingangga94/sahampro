@@ -43,7 +43,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const [showBrokerSelect, setShowBrokerSelect] = useState<number | null>(null); // Index of broker dropdown being shown
   const [searchTerm, setSearchTerm] = useState('');
   const brokerSelectRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'net_lot', direction: 'desc' }); // Default sort by net_lot desc
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'dominant_percent', direction: 'desc' }); // Default sort by dominant_percent desc
 
   const brokerOptions = Object.values(BROKERS ?? {}).sort((a, b) => a.code.localeCompare(b.code));
 
@@ -117,7 +117,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
     setScreenerResults([]);
     setError(null);
     setLoading(false);
-    setSortConfig({ column: 'net_lot', direction: 'desc' }); // Reset sort config
+    setSortConfig({ column: 'dominant_percent', direction: 'desc' }); // Reset sort config to dominant_percent
   };
 
   const handleSort = (column: SortColumn) => {
