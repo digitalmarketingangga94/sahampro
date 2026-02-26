@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchMarketMovers, fetchBrokerActivityDetail, fetchEmitenInfo } from '@/lib/stockbit';
+import { fetchBrokerActivityDetail, fetchEmitenInfo } from '@/lib/stockbit';
 import { getDateNDaysAgo, getLatestTradingDate } from '@/lib/utils';
 import { BROKERS } from '@/lib/brokers';
-import type { BrokerForeignScreenerResultItem, BrokerBuyItem, BrokerSellItem, MarketMoverItem } from '@/lib/types';
+import type { BrokerForeignScreenerResultItem, BrokerBuyItem, BrokerSellItem } from '@/lib/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,116 +22,133 @@ export async function GET(request: NextRequest) {
     const smartMoneyBrokerCodes = smartMoneyBrokerCodesParam.split(',').map(code => code.trim().toUpperCase());
 
     const toDate = getLatestTradingDate();
-    const fromDate = getDateNDaysAgo(nDays - 1, toDate); // nDays still used for broker activity detail
+    const fromDate = getDateNDaysAgo(nDays - 1, toDate); // nDays includes the 'toDate'
 
     const screenerResults: BrokerForeignScreenerResultItem[] = [];
-    const uniqueStockCodes = new Set<string>();
+    
+    // Map to aggregate activity per stock across all selected smart money brokers
+    const aggregatedStockActivities = new Map<string, {
+      smartMoneyNetValue: number;
+      smartMoneyBuyValue: number;
+      smartMoneyBuyLot: number;
+      smartMoneySellValue: number;
+      smartMoneySellLot: number;
+      foreignNetValue: number; // Net value from foreign smart money brokers
+      involvedBrokers: Set<string>;
+      weightedBuyPriceSum: number;
+      weightedBuyLotSum: number;
+    }>();
 
-    // 1. Fetch Top Net Foreign Buy Stocks using fetchMarketMovers
-    // fetchMarketMovers does not take date range, it gets current movers.
-    const marketMoversLimit = 100; // Fetch a good number to ensure we cover potential matches
-    const netForeignMovers: MarketMoverItem[] = await fetchMarketMovers('net-foreign-buy', marketMoversLimit);
-
-    // Filter by minimum net foreign value
-    const filteredForeignStocks = netForeignMovers.filter(item =>
-      (item.net_foreign_buy || 0) >= minNetForeignValue
-    );
-
-    // Collect all unique stock codes from filtered foreign stocks
-    filteredForeignStocks.forEach(stock => uniqueStockCodes.add(stock.symbol));
-
-    // 2. For each unique stock, fetch combined broker activity for selected Smartmoney brokers
-    // This part still uses fromDate and toDate based on nDays
-    for (const stockCode of uniqueStockCodes) {
-      let smartMoneyNetValue = 0;
-      let smartMoneyTotalBuyValue = 0;
-      let smartMoneyTotalBuyLot = 0;
-      const brokersInvolved: string[] = [];
-
-      // Fetch broker activity for ALL selected smart money brokers for this stock
-      const brokerActivity = await fetchBrokerActivityDetail(
-        smartMoneyBrokerCodes.join(','), // Pass all selected brokers
-        fromDate,
-        toDate,
-        1, // page
-        50, // limit
-        'TRANSACTION_TYPE_NET',
-        'MARKET_BOARD_REGULER',
-        'INVESTOR_TYPE_ALL'
-      );
+    // 1. Fetch and aggregate broker activity for each selected Smart Money broker
+    for (const brokerCode of smartMoneyBrokerCodes) {
+      const brokerInfo = BROKERS[brokerCode] || { type: 'Unknown' };
+      const brokerActivity = await fetchBrokerActivityDetail(brokerCode, fromDate, toDate);
 
       if (brokerActivity.data && brokerActivity.data.broker_summary) {
-        const allBrokerStockActivities: { [key: string]: { net_value: number; buy_value: number; buy_lot: number; } } = {};
-
-        // Aggregate buys for the current stockCode
+        // Process buys
         brokerActivity.data.broker_summary.brokers_buy.forEach((item: BrokerBuyItem) => {
-          if (item.netbs_stock_code === stockCode) {
-            const broker = item.netbs_broker_code;
-            if (!allBrokerStockActivities[broker]) {
-              allBrokerStockActivities[broker] = { net_value: 0, buy_value: 0, buy_lot: 0 };
-            }
-            allBrokerStockActivities[broker].net_value += parseFloat(item.bval);
-            allBrokerStockActivities[broker].buy_value += parseFloat(item.bval);
-            allBrokerStockActivities[broker].buy_lot += parseFloat(item.blot);
+          const stockCode = item.netbs_stock_code;
+          const bval = parseFloat(item.bval);
+          const blot = parseFloat(item.blot);
+          const buyAvgPrice = parseFloat(item.netbs_buy_avg_price);
+
+          if (!aggregatedStockActivities.has(stockCode)) {
+            aggregatedStockActivities.set(stockCode, {
+              smartMoneyNetValue: 0,
+              smartMoneyBuyValue: 0,
+              smartMoneyBuyLot: 0,
+              smartMoneySellValue: 0,
+              smartMoneySellLot: 0,
+              foreignNetValue: 0,
+              involvedBrokers: new Set(),
+              weightedBuyPriceSum: 0,
+              weightedBuyLotSum: 0,
+            });
+          }
+          const stockAgg = aggregatedStockActivities.get(stockCode)!;
+          stockAgg.smartMoneyNetValue += bval;
+          stockAgg.smartMoneyBuyValue += bval;
+          stockAgg.smartMoneyBuyLot += blot;
+          stockAgg.involvedBrokers.add(brokerCode);
+          stockAgg.weightedBuyPriceSum += buyAvgPrice * blot;
+          stockAgg.weightedBuyLotSum += blot;
+
+          if (brokerInfo.type === 'Foreign') {
+            stockAgg.foreignNetValue += bval;
           }
         });
 
-        // Aggregate sells for the current stockCode
+        // Process sells
         brokerActivity.data.broker_summary.brokers_sell.forEach((item: BrokerSellItem) => {
-          if (item.netbs_stock_code === stockCode) {
-            const broker = item.netbs_broker_code;
-            if (!allBrokerStockActivities[broker]) {
-              allBrokerStockActivities[broker] = { net_value: 0, buy_value: 0, buy_lot: 0 };
-            }
-            allBrokerStockActivities[broker].net_value -= Math.abs(parseFloat(item.sval));
+          const stockCode = item.netbs_stock_code;
+          const sval = Math.abs(parseFloat(item.sval)); // Sell value is usually negative in API, use absolute
+          const slot = Math.abs(parseFloat(item.slot));
+          const sellAvgPrice = parseFloat(item.netbs_sell_avg_price);
+
+          if (!aggregatedStockActivities.has(stockCode)) {
+            aggregatedStockActivities.set(stockCode, {
+              smartMoneyNetValue: 0,
+              smartMoneyBuyValue: 0,
+              smartMoneyBuyLot: 0,
+              smartMoneySellValue: 0,
+              smartMoneySellLot: 0,
+              foreignNetValue: 0,
+              involvedBrokers: new Set(),
+              weightedBuyPriceSum: 0,
+              weightedBuyLotSum: 0,
+            });
+          }
+          const stockAgg = aggregatedStockActivities.get(stockCode)!;
+          stockAgg.smartMoneyNetValue -= sval;
+          stockAgg.smartMoneySellValue += sval;
+          stockAgg.smartMoneySellLot += slot;
+          stockAgg.involvedBrokers.add(brokerCode); // Still involved even if selling
+
+          if (brokerInfo.type === 'Foreign') {
+            stockAgg.foreignNetValue -= sval;
           }
         });
+      }
+    }
 
-        // Sum up for selected smart money brokers for the current stockCode
-        for (const brokerCode of smartMoneyBrokerCodes) {
-          if (allBrokerStockActivities[brokerCode]) {
-            smartMoneyNetValue += allBrokerStockActivities[brokerCode].net_value;
-            smartMoneyTotalBuyValue += allBrokerStockActivities[brokerCode].buy_value;
-            smartMoneyTotalBuyLot += allBrokerStockActivities[brokerCode].buy_lot;
-            if (allBrokerStockActivities[brokerCode].net_value > 0) { // Only add if they actually net bought
-              brokersInvolved.push(brokerCode);
-            }
-          }
-        }
+    // 2. Filter and enrich results
+    for (const [stockCode, aggregated] of aggregatedStockActivities.entries()) {
+      // Apply filters
+      if (aggregated.smartMoneyNetValue < minSmartMoneyNetValue) {
+        continue;
+      }
+      if (aggregated.foreignNetValue < minNetForeignValue) {
+        continue;
       }
 
-      // 3. Apply Smart Money Net Value filter
-      if (smartMoneyNetValue >= minSmartMoneyNetValue) {
-        const foreignStockData = filteredForeignStocks.find(s => s.symbol === stockCode);
-        if (foreignStockData) {
-          let avgPriceSmartMoney = 0;
-          if (smartMoneyTotalBuyLot > 0) {
-            avgPriceSmartMoney = smartMoneyTotalBuyValue / smartMoneyTotalBuyLot;
-          }
-
-          // Fetch current price and change for display
-          let lastPrice: number | undefined;
-          let changePercentage: number | undefined;
-          try {
-            const emitenInfo = await fetchEmitenInfo(stockCode);
-            lastPrice = parseFloat(emitenInfo.data?.price || '0');
-            changePercentage = emitenInfo.data?.percentage;
-          } catch (infoError) {
-            console.warn(`Failed to fetch emiten info for ${stockCode}:`, infoError);
-          }
-
-          screenerResults.push({
-            symbol: stockCode,
-            stock_name: foreignStockData.name,
-            net_foreign_buy_value: foreignStockData.net_foreign_buy || 0,
-            smart_money_net_value: smartMoneyNetValue,
-            smart_money_brokers_involved: Array.from(new Set(brokersInvolved)),
-            avg_price_smart_money: avgPriceSmartMoney,
-            last_price: lastPrice,
-            change_percentage: changePercentage,
-          });
-        }
+      // Fetch current price and change for display
+      let lastPrice: number | undefined;
+      let changePercentage: number | undefined;
+      let stockName: string | undefined;
+      try {
+        const emitenInfo = await fetchEmitenInfo(stockCode);
+        stockName = emitenInfo.data?.name || stockCode;
+        lastPrice = parseFloat(emitenInfo.data?.price || '0');
+        changePercentage = emitenInfo.data?.percentage;
+      } catch (infoError) {
+        console.warn(`Failed to fetch emiten info for ${stockCode}:`, infoError);
       }
+
+      let avgPriceSmartMoney = 0;
+      if (aggregated.weightedBuyLotSum > 0) {
+        avgPriceSmartMoney = aggregated.weightedBuyPriceSum / aggregated.weightedBuyLotSum;
+      }
+
+      screenerResults.push({
+        symbol: stockCode,
+        stock_name: stockName,
+        net_foreign_buy_value: aggregated.foreignNetValue, // Now represents net foreign buy by selected SM brokers
+        smart_money_net_value: aggregated.smartMoneyNetValue,
+        smart_money_brokers_involved: Array.from(aggregated.involvedBrokers),
+        avg_price_smart_money: avgPriceSmartMoney,
+        last_price: lastPrice,
+        change_percentage: changePercentage,
+      });
     }
 
     // Sort results by smart_money_net_value descending
