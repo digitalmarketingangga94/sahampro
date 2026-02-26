@@ -184,6 +184,8 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
     router.push(`/?symbol=${symbol}`); // Navigate to the main analysis page
   };
 
+  const showDominantColumns = selectedSmartMoneyBrokers.length > 1;
+
   return (
     <div className="glass-card-static" style={{ padding: '1rem' }}>
       <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal', marginBottom: '1rem' }}>
@@ -375,7 +377,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
                 width: '100%',
                 borderCollapse: 'collapse',
                 fontSize: '0.8rem',
-                minWidth: '1000px'
+                minWidth: showDominantColumns ? '1200px' : '800px' // Adjust minWidth based on columns
               }}
             >
               <thead>
@@ -410,24 +412,28 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
                   >
                     Smart Money Net Buy {getSortIndicator('smart_money_net_value')}
                   </th>
-                  <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)' }}
-                  >
-                    SM Brokers
-                  </th>
-                  <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
-                    onClick={() => handleSort('avg_price_smart_money')}
-                  >
-                    SM Avg Price {getSortIndicator('avg_price_smart_money')}
-                  </th>
+                  {showDominantColumns && (
+                    <>
+                      <th 
+                        style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)' }}
+                      >
+                        SM Brokers
+                      </th>
+                      <th 
+                        style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                        onClick={() => handleSort('avg_price_smart_money')}
+                      >
+                        SM Avg Price {getSortIndicator('avg_price_smart_money')}
+                      </th>
+                    </>
+                  )}
                 </tr>
               </thead>
 
               <tbody>
                 {sortedResults.length === 0 ? (
                   <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '1rem' }}>
+                    <td colSpan={showDominantColumns ? 7 : 5} style={{ textAlign: 'center', padding: '1rem' }}>
                       No Data
                     </td>
                   </tr>
@@ -477,12 +483,16 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
                       <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: (item.smart_money_net_value || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
                         {formatValueCompact(item.smart_money_net_value)}
                       </td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
-                        {item.smart_money_brokers_involved.join(', ') || '-'}
-                      </td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
-                        {formatPrice(item.avg_price_smart_money)}
-                      </td>
+                      {showDominantColumns && (
+                        <>
+                          <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
+                            {item.smart_money_brokers_involved.join(', ') || '-'}
+                          </td>
+                          <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
+                            {formatPrice(item.avg_price_smart_money)}
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))
                 )}
