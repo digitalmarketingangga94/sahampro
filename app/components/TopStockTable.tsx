@@ -35,10 +35,10 @@ export default function TopStockTable() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TopStockType>('top_buy');
   
-  // Set default dates to the previous day
-  const defaultPreviousDay = getDateNDaysAgo(1);
-  const [startDate, setStartDate] = useState(defaultPreviousDay);
-  const [endDate, setEndDate] = useState(defaultPreviousDay);
+  // Set default dates to the latest trading day
+  const defaultTradingDay = getLatestTradingDate();
+  const [startDate, setStartDate] = useState(defaultTradingDay);
+  const [endDate, setEndDate] = useState(defaultTradingDay);
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'value', direction: 'desc' });
   const router = useRouter();
