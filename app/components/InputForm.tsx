@@ -128,13 +128,14 @@ export default function InputForm({
           </div>
           <div className="quick-dates">
             <button type="button" onClick={() => setDateRange(1, 'days')} className="quick-date-btn">1D</button>
+            <button type="button" onClick={() => setDateRange(2, 'days')} className="quick-date-btn">2D</button>
+            <button type="button" onClick={() => setDateRange(3, 'days')} className="quick-date-btn">3D</button>
+            <button type="button" onClick={() => setDateRange(4, 'days')} className="quick-date-btn">4D</button>
+            <button type="button" onClick={() => setDateRange(5, 'days')} className="quick-date-btn">5D</button>
+            <button type="button" onClick={() => setDateRange(6, 'days')} className="quick-date-btn">6D</button>
             <button type="button" onClick={() => setDateRange(7, 'days')} className="quick-date-btn">7D</button>
             <button type="button" onClick={() => setDateRange(14, 'days')} className="quick-date-btn">14D</button>
             <button type="button" onClick={() => setDateRange(1, 'months')} className="quick-date-btn">1M</button>
-            <button type="button" onClick={() => setDateRange(2, 'months')} className="quick-date-btn">2M</button>
-            <button type="button" onClick={() => setDateRange(3, 'months')} className="quick-date-btn">3M</button>
-            <button type="button" onClick={() => setDateRange(6, 'months')} className="quick-date-btn">6M</button>
-            <button type="button" onClick={() => setDateRange(12, 'months')} className="quick-date-btn">1Y</button>
           </div>
         </div>
 
