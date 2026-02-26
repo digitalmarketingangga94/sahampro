@@ -112,8 +112,8 @@ export async function GET(request: NextRequest) {
     for (const stockCode of uniqueStockCodes) {
       let allBrokersMatchCriteria = true;
       let stockTotalNetLot = 0;
-      let stockTotalBuyValue = 0; // NEW: Accumulate total buy value
-      let stockTotalSellValue = 0; // NEW: Accumulate total sell value
+      let stockTotalBuyValue = 0;
+      let stockTotalSellValue = 0;
       let stockTotalWeightedBuyPrice = 0;
       let stockTotalBuyLot = 0;
       let stockTotalWeightedSellPrice = 0;
@@ -145,8 +145,8 @@ export async function GET(request: NextRequest) {
         }
 
         stockTotalNetLot += activity.net_lot;
-        stockTotalBuyValue += activity.buy_value; // Accumulate buy value
-        stockTotalSellValue += activity.sell_value; // Accumulate sell value
+        stockTotalBuyValue += activity.buy_value;
+        stockTotalSellValue += activity.sell_value;
 
         // Determine dominant broker based on the selected directionType
         if (directionType === 'net_buy' || directionType === 'net_sell') {
@@ -230,8 +230,6 @@ export async function GET(request: NextRequest) {
             stock_name: stockNameMap.get(stockCode),
             net_direction: directionType === 'net_buy' || directionType === 'buy_value' ? 'Net Buy' : 'Net Sell', // Display as Net Buy/Sell
             net_lot: stockTotalNetLot,
-            buy_value: stockTotalBuyValue, // NEW: Include buy_value
-            sell_value: stockTotalSellValue, // NEW: Include sell_value
             avg_per_day: avgPerDay,
             avg_price: avgPrice,
             dominant_broker: dominantBrokerCode,
