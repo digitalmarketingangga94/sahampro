@@ -70,7 +70,7 @@ export interface MarketDetectorResponse {
   data: {
     broker_summary: {
       brokers_buy: BrokerBuyItem[];
-      brokers_sell: BrokerSellItem[]; // Corrected type to BrokerSellItem[]
+      brokers_sell: BrokerSellItem[];
     };
     bandar_detector: BrokerDetector;
   };
@@ -515,6 +515,8 @@ export interface BrokerScreenerResultItem {
   stock_name?: string;
   net_direction: 'Net Buy' | 'Net Sell';
   net_lot: number;
+  buy_value: number; // NEW: Added buy_value
+  sell_value: number; // NEW: Added sell_value
   avg_per_day: number;
   avg_price?: number; // Added avg_price
   dominant_broker: string;
