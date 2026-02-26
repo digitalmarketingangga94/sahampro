@@ -428,8 +428,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
             </span>
           </h4>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', minWidth: '900px' }}> {/* Increased minWidth */}
-              <thead>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', minWidth: '900px' }}><thead>
                 <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <th 
                     style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer' }}
@@ -492,8 +491,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                     Consistency {getSortIndicator('consistency_positive_days')}
                   </th>
                 </tr>
-              </thead>
-              <tbody>
+              </thead><tbody>
                 {sortedResults.map((item, index) => {
                   return (
                     <tr key={item.symbol} style={{ borderBottom: index < sortedResults.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
@@ -532,11 +530,10 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                     </tr>
                   );
                 })}
-              </tbody>
-            </table>
+              </tbody></table>
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }
