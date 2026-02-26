@@ -24,7 +24,7 @@ const formatPrice = (num: number | undefined): string => {
   return Math.round(num).toLocaleString('id-ID');
 };
 
-type SortColumn = 'symbol' | 'net_foreign_buy_value' | 'smart_money_net_value' | 'avg_price_smart_money' | 'last_price' | 'change_percentage';
+type SortColumn = 'symbol' | 'net_foreign_buy_value' | 'smart_money_net_value' | 'avg_price_smart_money' | 'last_price' | 'change_percentage' | 'consistency_positive_days';
 type SortDirection = 'asc' | 'desc';
 
 interface SortConfig {
@@ -37,6 +37,8 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
   const [minNetForeignValue, setMinNetForeignValue] = useState<number>(1_000_000_000); // Default 1B
   const [minSmartMoneyNetValue, setMinSmartMoneyNetValue] = useState<number>(500_000_000); // Default 500M
   const [selectedSmartMoneyBrokers, setSelectedSmartMoneyBrokers] = useState<string[]>([]); // Changed default to empty array
+  const [minPositiveDays, setMinPositiveDays] = useState<number>(3); // NEW: for consistency rule
+  const [consistencyLookbackDays, setConsistencyLookbackDays] = useState<number>(5); // NEW: for consistency rule
   const [screenerResults, setScreenerResults] = useState<BrokerForeignScreenerResultItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +75,10 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
       setError('Minimum values cannot be negative.');
       return;
     }
+    if (minPositiveDays <= 0 || consistencyLookbackDays <= 0 || minPositiveDays > consistencyLookbackDays) {
+      setError('Consistency days must be valid (min positive days > 0, lookback days > 0, min positive days <= lookback days).');
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -81,7 +87,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
     try {
       const brokerCodesParam = selectedSmartMoneyBrokers.join(',');
       const response = await fetch(
-        `/api/broker-foreign-screener?nDays=${nDays}&minNetForeignValue=${minNetForeignValue}&minSmartMoneyNetValue=${minSmartMoneyNetValue}&smartMoneyBrokerCodes=${brokerCodesParam}`
+        `/api/broker-foreign-screener?nDays=${nDays}&minNetForeignValue=${minNetForeignValue}&minSmartMoneyNetValue=${minSmartMoneyNetValue}&smartMoneyBrokerCodes=${brokerCodesParam}&minPositiveDays=${minPositiveDays}&consistencyLookbackDays=${consistencyLookbackDays}`
       );
       const json = await response.json();
 
@@ -103,6 +109,8 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
     setMinNetForeignValue(1_000_000_000);
     setMinSmartMoneyNetValue(500_000_000);
     setSelectedSmartMoneyBrokers([]); // Changed reset default to empty array
+    setMinPositiveDays(3); // Reset consistency
+    setConsistencyLookbackDays(5); // Reset consistency
     setScreenerResults([]);
     setError(null);
     setLoading(false);
@@ -162,6 +170,10 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
       case 'change_percentage':
         aValue = a.change_percentage || 0;
         bValue = b.change_percentage || 0;
+        break;
+      case 'consistency_positive_days': // NEW sort case
+        aValue = a.consistency_positive_days || 0;
+        bValue = b.consistency_positive_days || 0;
         break;
       default:
         return 0;
@@ -240,6 +252,38 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
               className="input-field compact-input"
               style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', height: '32px', textAlign: 'right' }}
               min="0"
+            />
+          </div>
+
+          {/* NEW: Consistency Rule Inputs */}
+          <div className="input-group compact-group" style={{ flex: '0 0 150px', marginBottom: 0 }}>
+            <label htmlFor="minPositiveDays" className="input-label compact-label">Min Pos Days</label>
+            <input
+              id="minPositiveDays"
+              type="number"
+              value={minPositiveDays}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                setMinPositiveDays(isNaN(value) ? 1 : value);
+              }}
+              className="input-field compact-input"
+              style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', height: '32px', textAlign: 'center' }}
+              min="1"
+            />
+          </div>
+          <div className="input-group compact-group" style={{ flex: '0 0 150px', marginBottom: 0 }}>
+            <label htmlFor="consistencyLookbackDays" className="input-label compact-label">Lookback Days</label>
+            <input
+              id="consistencyLookbackDays"
+              type="number"
+              value={consistencyLookbackDays}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                setConsistencyLookbackDays(isNaN(value) ? 1 : value);
+              }}
+              className="input-field compact-input"
+              style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', height: '32px', textAlign: 'center' }}
+              min="1"
             />
           </div>
 
@@ -366,7 +410,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
           <h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
             Result Data ({sortedResults.length} stocks found)
             <span style={{ marginLeft: '0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-              Lookback: {nDays} days • Min Net Foreign: {formatValueCompact(minNetForeignValue)} • Min Smart Money: {formatValueCompact(minSmartMoneyNetValue)}
+              Lookback: {nDays} days • Min Net Foreign: {formatValueCompact(minNetForeignValue)} • Min Smart Money: {formatValueCompact(minSmartMoneyNetValue)} • Consistency: {minPositiveDays}/{consistencyLookbackDays} days
             </span>
           </h4>
           <div style={{ overflowX: 'auto' }}>
@@ -375,7 +419,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
                 width: '100%',
                 borderCollapse: 'collapse',
                 fontSize: '0.8rem',
-                minWidth: '1000px'
+                minWidth: '1200px' // Adjusted minWidth for the new column
               }}
             >
               <thead>
@@ -421,13 +465,19 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
                   >
                     SM Avg Price {getSortIndicator('avg_price_smart_money')}
                   </th>
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('consistency_positive_days')}
+                  >
+                    Consistency {getSortIndicator('consistency_positive_days')}
+                  </th>
                 </tr>
               </thead>
 
               <tbody>
                 {sortedResults.length === 0 ? (
                   <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '1rem' }}>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '1rem' }}>
                       No Data
                     </td>
                   </tr>
@@ -482,6 +532,24 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
                       </td>
                       <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
                         {formatPrice(item.avg_price_smart_money)}
+                      </td>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
+                        {item.consistency_positive_days !== undefined &&
+                        item.consistency_total_days !== undefined ? (
+                          <span
+                            style={{
+                              color:
+                                item.consistency_positive_days >= minPositiveDays
+                                  ? 'var(--accent-success)'
+                                  : 'var(--accent-warning)'
+                            }}
+                          >
+                            {item.consistency_positive_days}/
+                            {item.consistency_total_days}
+                          </span>
+                        ) : (
+                          '-'
+                        )}
                       </td>
                     </tr>
                   ))
