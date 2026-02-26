@@ -24,7 +24,7 @@ const formatPrice = (num: number | undefined): string => {
   return Math.round(num).toLocaleString('id-ID');
 };
 
-type SortColumn = 'symbol' | 'net_foreign_buy_value' | 'smart_money_net_value' | 'avg_price_smart_money' | 'last_price' | 'change_percentage';
+type SortColumn = 'symbol' | 'net_foreign_buy_value' | 'smart_money_net_value' | 'avg_price_smart_money' | 'last_price'; // Removed 'change_percentage'
 type SortDirection = 'asc' | 'desc';
 
 interface SortConfig {
@@ -158,10 +158,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
         aValue = a.last_price || 0;
         bValue = b.last_price || 0;
         break;
-      case 'change_percentage':
-        aValue = a.change_percentage || 0;
-        bValue = b.change_percentage || 0;
-        break;
+      // Removed 'change_percentage' case
       default:
         return 0;
     }
@@ -391,12 +388,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
                   >
                     Price {getSortIndicator('last_price')}
                   </th>
-                  <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
-                    onClick={() => handleSort('change_percentage')}
-                  >
-                    Change (%) {getSortIndicator('change_percentage')}
-                  </th>
+                  {/* Removed Change (%) column */}
                   <th 
                     style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('net_foreign_buy_value')}
@@ -426,7 +418,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
               <tbody>
                 {sortedResults.length === 0 ? (
                   <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '1rem' }}>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '1rem' }}> {/* Adjusted colSpan */}
                       No Data
                     </td>
                   </tr>
@@ -467,9 +459,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
                       <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>
                         {formatPrice(item.last_price)}
                       </td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: (item.change_percentage || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
-                        {item.change_percentage !== undefined ? `${item.change_percentage >= 0 ? '+' : ''}${item.change_percentage.toFixed(2)}%` : '-'}
-                      </td>
+                      {/* Removed Change (%) data cell */}
                       <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: (item.net_foreign_buy_value || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
                         {formatValueCompact(item.net_foreign_buy_value)}
                       </td>
