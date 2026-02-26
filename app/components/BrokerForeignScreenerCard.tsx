@@ -24,7 +24,7 @@ const formatPrice = (num: number | undefined): string => {
   return Math.round(num).toLocaleString('id-ID');
 };
 
-type SortColumn = 'symbol' | 'net_foreign_buy_value' | 'smart_money_net_value' | 'avg_price_smart_money' | 'last_price'; // Removed 'change_percentage'
+type SortColumn = 'symbol' | 'net_foreign_buy_value' | 'smart_money_net_value' | 'avg_price_smart_money' | 'last_price' | 'change_percentage';
 type SortDirection = 'asc' | 'desc';
 
 interface SortConfig {
@@ -36,7 +36,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
   const [nDays, setNDays] = useState<number>(5);
   const [minNetForeignValue, setMinNetForeignValue] = useState<number>(1_000_000_000); // Default 1B
   const [minSmartMoneyNetValue, setMinSmartMoneyNetValue] = useState<number>(500_000_000); // Default 500M
-  const [selectedSmartMoneyBrokers, setSelectedSmartMoneyBrokers] = useState<string[]>(['AK']); // Changed default to ['AK']
+  const [selectedSmartMoneyBrokers, setSelectedSmartMoneyBrokers] = useState<string[]>([]); // Changed default to empty array
   const [screenerResults, setScreenerResults] = useState<BrokerForeignScreenerResultItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,7 +101,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
     setNDays(5);
     setMinNetForeignValue(1_000_000_000);
     setMinSmartMoneyNetValue(500_000_000);
-    setSelectedSmartMoneyBrokers(['AK']); // Changed reset default to ['AK']
+    setSelectedSmartMoneyBrokers([]); // Changed reset default to empty array
     setScreenerResults([]);
     setError(null);
     setLoading(false);
@@ -158,7 +158,10 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
         aValue = a.last_price || 0;
         bValue = b.last_price || 0;
         break;
-      // Removed 'change_percentage' case
+      case 'change_percentage':
+        aValue = a.change_percentage || 0;
+        bValue = b.change_percentage || 0;
+        break;
       default:
         return 0;
     }
@@ -388,7 +391,12 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
                   >
                     Price {getSortIndicator('last_price')}
                   </th>
-                  {/* Removed Change (%) column */}
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('change_percentage')}
+                  >
+                    Change (%) {getSortIndicator('change_percentage')}
+                  </th>
                   <th 
                     style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('net_foreign_buy_value')}
@@ -418,7 +426,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
               <tbody>
                 {sortedResults.length === 0 ? (
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '1rem' }}> {/* Adjusted colSpan */}
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '1rem' }}>
                       No Data
                     </td>
                   </tr>
@@ -459,7 +467,9 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
                       <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>
                         {formatPrice(item.last_price)}
                       </td>
-                      {/* Removed Change (%) data cell */}
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: (item.change_percentage || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
+                        {item.change_percentage !== undefined ? `${item.change_percentage >= 0 ? '+' : ''}${item.change_percentage.toFixed(2)}%` : '-'}
+                      </td>
                       <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: (item.net_foreign_buy_value || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
                         {formatValueCompact(item.net_foreign_buy_value)}
                       </td>
