@@ -208,11 +208,14 @@ export default function BrokerFlowCard({ emiten }: BrokerFlowCardProps) {
 
   const filterOptions = [
     { label: '1D', value: 1 },
+    { label: '2D', value: 2 },
+    { label: '3D', value: 3 },
+    { label: '4D', value: 4 },
+    { label: '5D', value: 5 },
+    { label: '6D', value: 6 },
     { label: '7D', value: 7 },
     { label: '14D', value: 14 },
     { label: '1M', value: 30 }, // Approximate 1 month as 30 days
-    { label: '2M', value: 60 }, // Approximate 2 months as 60 days
-    { label: '3M', value: 90 }, // Approximate 3 months as 90 days
   ];
   const statusOptions = [
     { id: 'Bandar', label: 'Smart Money' },
