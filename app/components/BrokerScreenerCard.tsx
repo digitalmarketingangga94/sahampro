@@ -46,7 +46,7 @@ interface SortConfig {
 
 export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const [nDays, setNDays] = useState<number>(4);
-  const [directionType, setDirectionType] = useState<'net_buy' | 'net_sell' | 'buy_value' | 'sell_value'>('net_buy'); // Changed to directionType
+  const [directionType, setDirectionType] = useState<'net_buy' | 'net_sell'>('net_buy'); // Changed to only net_buy/net_sell
   const [minPositiveDays, setMinPositiveDays] = useState<number>(3); // NEW: for consistency rule
   const [consistencyLookbackDays, setConsistencyLookbackDays] = useState<number>(5); // NEW: for consistency rule
   const [selectedBrokerCodes, setSelectedBrokerCodes] = useState<string[]>(['AK', 'MG']); // Default brokers
@@ -249,7 +249,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
           </div>
 
           {/* Direction Buttons */}
-          <div className="input-group compact-group" style={{ flex: '0 0 280px', marginBottom: 0 }}> {/* Increased width */}
+          <div className="input-group compact-group" style={{ flex: '0 0 200px', marginBottom: 0 }}> {/* Adjusted width */}
             <label className="input-label compact-label">Direction</label>
             <div className="broker-flow-filters" style={{ padding: '2px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)' }}>
               <button
@@ -267,22 +267,6 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                 style={{ flex: 1, fontSize: '0.75rem', padding: '4px 10px' }}
               >
                 Net Sell
-              </button>
-              <button
-                type="button"
-                className={`broker-flow-filter-btn ${directionType === 'buy_value' ? 'active' : ''}`}
-                onClick={() => setDirectionType('buy_value')}
-                style={{ flex: 1, fontSize: '0.75rem', padding: '4px 10px' }}
-              >
-                Buy Value
-              </button>
-              <button
-                type="button"
-                className={`broker-flow-filter-btn ${directionType === 'sell_value' ? 'active' : ''}`}
-                onClick={() => setDirectionType('sell_value')}
-                style={{ flex: 1, fontSize: '0.75rem', padding: '4px 10px' }}
-              >
-                Sell Value
               </button>
             </div>
           </div>

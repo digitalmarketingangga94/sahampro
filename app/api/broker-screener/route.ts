@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const brokerCodesParam = searchParams.get('brokerCodes');
     const nDays = parseInt(searchParams.get('nDays') || '1');
-    const directionType = (searchParams.get('directionType') || 'net_buy') as 'net_buy' | 'net_sell' | 'buy_value' | 'sell_value'; // New directionType
+    const directionType = (searchParams.get('directionType') || 'net_buy') as 'net_buy' | 'net_sell'; // Changed type
     const minPositiveDays = parseInt(searchParams.get('minPositiveDays') || '3');
     const consistencyLookbackDays = parseInt(searchParams.get('consistencyLookbackDays') || '5');
 
@@ -120,9 +120,6 @@ export async function GET(request: NextRequest) {
       let stockTotalSellLot = 0;
       let dominantBrokerCode = '';
       let maxNetLot = 0; // Used for dominant broker based on net lot
-      let maxBuyValue = 0; // Used for dominant broker based on buy value
-      let maxSellValue = 0; // Used for dominant broker based on sell value
-
 
       for (const brokerCode of brokerCodes) {
         const brokerStockMap = allBrokerActivitiesMap.get(brokerCode);
@@ -136,8 +133,7 @@ export async function GET(request: NextRequest) {
         let isMatch = false;
         if (directionType === 'net_buy' && activity.net_lot > 0) isMatch = true;
         else if (directionType === 'net_sell' && activity.net_lot < 0) isMatch = true;
-        else if (directionType === 'buy_value' && activity.buy_value > 0) isMatch = true;
-        else if (directionType === 'sell_value' && activity.sell_value > 0) isMatch = true;
+        // Removed buy_value and sell_value checks from here
 
         if (!isMatch) {
           allBrokersMatchCriteria = false;
@@ -148,22 +144,10 @@ export async function GET(request: NextRequest) {
         stockTotalBuyValue += activity.buy_value; // Accumulate buy value
         stockTotalSellValue += activity.sell_value; // Accumulate sell value
 
-        // Determine dominant broker based on the selected directionType
-        if (directionType === 'net_buy' || directionType === 'net_sell') {
-          if (Math.abs(activity.net_lot) > Math.abs(maxNetLot)) {
-            maxNetLot = activity.net_lot;
-            dominantBrokerCode = activity.broker_code;
-          }
-        } else if (directionType === 'buy_value') {
-          if (activity.buy_value > maxBuyValue) {
-            maxBuyValue = activity.buy_value;
-            dominantBrokerCode = activity.broker_code;
-          }
-        } else if (directionType === 'sell_value') {
-          if (activity.sell_value > maxSellValue) {
-            maxSellValue = activity.sell_value;
-            dominantBrokerCode = activity.broker_code;
-          }
+        // Determine dominant broker based on net_lot (since directionType is now only net_buy/net_sell)
+        if (Math.abs(activity.net_lot) > Math.abs(maxNetLot)) {
+          maxNetLot = activity.net_lot;
+          dominantBrokerCode = activity.broker_code;
         }
 
         stockTotalWeightedBuyPrice += activity.buy_avg_price * activity.buy_lot;
@@ -176,18 +160,13 @@ export async function GET(request: NextRequest) {
         const avgPerDay = stockTotalNetLot / nDays;
         
         let dominantPercent = 0;
-        if (directionType === 'net_buy' || directionType === 'net_sell') {
-          dominantPercent = (Math.abs(maxNetLot) / (stockTotalNetLot !== 0 ? Math.abs(stockTotalNetLot) : 1)) * 100;
-        } else if (directionType === 'buy_value') {
-          dominantPercent = (maxBuyValue / (stockTotalBuyValue !== 0 ? stockTotalBuyValue : 1)) * 100;
-        } else if (directionType === 'sell_value') {
-          dominantPercent = (maxSellValue / (stockTotalSellValue !== 0 ? stockTotalSellValue : 1)) * 100;
-        }
+        // Dominant percent is now always based on net_lot
+        dominantPercent = (Math.abs(maxNetLot) / (stockTotalNetLot !== 0 ? Math.abs(stockTotalNetLot) : 1)) * 100;
         
         let avgPrice = 0;
-        if (directionType === 'net_buy' || directionType === 'buy_value') {
+        if (directionType === 'net_buy') { // Only net_buy
           avgPrice = stockTotalBuyLot > 0 ? stockTotalWeightedBuyPrice / stockTotalBuyLot : 0;
-        } else if (directionType === 'net_sell' || directionType === 'sell_value') {
+        } else if (directionType === 'net_sell') { // Only net_sell
           avgPrice = stockTotalSellLot > 0 ? stockTotalWeightedSellPrice / stockTotalSellLot : 0;
         }
 
@@ -212,8 +191,7 @@ export async function GET(request: NextRequest) {
           consistencyTotalDays = dailyAggregatedNetValues.size;
           dailyAggregatedNetValues.forEach(netValue => {
             // Check for positive net lot if netBuy is true, or negative if netBuy is false
-            if ((directionType === 'net_buy' && netValue > 0) || (directionType === 'net_sell' && netValue < 0) ||
-                (directionType === 'buy_value' && netValue > 0) || (directionType === 'sell_value' && netValue < 0)) { // For buy/sell value, we still check net value direction
+            if ((directionType === 'net_buy' && netValue > 0) || (directionType === 'net_sell' && netValue < 0)) {
               consistencyPositiveDays++;
             }
           });
@@ -228,7 +206,7 @@ export async function GET(request: NextRequest) {
           screenerResults.push({
             symbol: stockCode,
             stock_name: stockNameMap.get(stockCode),
-            net_direction: directionType === 'net_buy' || directionType === 'buy_value' ? 'Net Buy' : 'Net Sell', // Display as Net Buy/Sell
+            net_direction: directionType === 'net_buy' ? 'Net Buy' : 'Net Sell', // Display as Net Buy/Sell
             net_lot: stockTotalNetLot,
             buy_value: stockTotalBuyValue, // NEW: Include buy_value
             sell_value: stockTotalSellValue, // NEW: Include sell_value
