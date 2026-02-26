@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { BROKERS, BrokerInfo } from '@/lib/brokers';
 import { getLatestTradingDate, getDateNDaysAgo } from '@/lib/utils';
 import type { BrokerForeignScreenerResultItem } from '@/lib/types';
-import { Search, ChevronDown, Play, RotateCcw } from 'lucide-react';
+import { Search, ChevronDown, Play, RotateCcw, Check } from 'lucide-react'; // Added Check icon
 import { useRouter } from 'next/navigation';
 
 interface BrokerForeignScreenerCardProps {}
@@ -260,7 +260,11 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
                 cursor: 'pointer'
               }}
             >
-              <span>{selectedSmartMoneyBrokers.length > 0 ? selectedSmartMoneyBrokers.join(', ') : 'Select Brokers'}</span>
+              <span>
+                {selectedSmartMoneyBrokers.length > 0 
+                  ? selectedSmartMoneyBrokers.map(code => BROKERS[code]?.name || code).join(', ') 
+                  : 'Select Brokers'}
+              </span>
               <ChevronDown size={14} />
             </button>
             {showBrokerSelect && (
