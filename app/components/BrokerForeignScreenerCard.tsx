@@ -46,7 +46,8 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
   const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'smart_money_net_value', direction: 'desc' });
   const router = useRouter();
 
-  const smartMoneyBrokerOptions = Object.values(BROKERS).filter(b => b.type === 'Smartmoney').sort((a, b) => a.code.localeCompare(b.code));
+  // Modified to include both 'Smartmoney' and 'Foreign' broker types
+  const smartMoneyBrokerOptions = Object.values(BROKERS).filter(b => b.type === 'Smartmoney' || b.type === 'Foreign').sort((a, b) => a.code.localeCompare(b.code));
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -61,7 +62,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
 
   const handleRunScreener = async () => {
     if (selectedSmartMoneyBrokers.length === 0) {
-      setError('Please select at least one Smart Money broker.');
+      setError('Please select at least one Smart Money or Foreign broker.');
       return;
     }
     if (nDays <= 0) {
@@ -244,7 +245,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
 
           {/* Multi-select Broker Dropdown */}
           <div style={{ position: 'relative', flex: '1 1 250px', minWidth: '200px' }} ref={brokerSelectRef}>
-            <label className="input-label compact-label">Smart Money Brokers</label>
+            <label className="input-label compact-label">Smart Money & Foreign Brokers</label>
             <button
               type="button"
               className="input-field compact-input"
