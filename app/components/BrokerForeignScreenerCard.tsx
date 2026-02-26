@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { BROKERS, BrokerInfo } from '@/lib/brokers';
 import { getLatestTradingDate, getDateNDaysAgo } from '@/lib/utils';
 import type { BrokerForeignScreenerResultItem } from '@/lib/types';
-import { Search, ChevronDown, Play, RotateCcw, Check } from 'lucide-react'; // Added Check icon
+import { Search, ChevronDown, Play, RotateCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface BrokerForeignScreenerCardProps {}
@@ -36,7 +36,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
   const [nDays, setNDays] = useState<number>(5);
   const [minNetForeignValue, setMinNetForeignValue] = useState<number>(1_000_000_000); // Default 1B
   const [minSmartMoneyNetValue, setMinSmartMoneyNetValue] = useState<number>(500_000_000); // Default 500M
-  const [selectedSmartMoneyBrokers, setSelectedSmartMoneyBrokers] = useState<string[]>(['AK', 'MG', 'NI', 'OD', 'SQ', 'XA', 'YP']); // Example Smartmoney brokers
+  const [selectedSmartMoneyBrokers, setSelectedSmartMoneyBrokers] = useState<string[]>(['AK']); // Changed default to ['AK']
   const [screenerResults, setScreenerResults] = useState<BrokerForeignScreenerResultItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,7 +101,7 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
     setNDays(5);
     setMinNetForeignValue(1_000_000_000);
     setMinSmartMoneyNetValue(500_000_000);
-    setSelectedSmartMoneyBrokers(['AK', 'MG', 'NI', 'OD', 'SQ', 'XA', 'YP']);
+    setSelectedSmartMoneyBrokers(['AK']); // Changed reset default to ['AK']
     setScreenerResults([]);
     setError(null);
     setLoading(false);
