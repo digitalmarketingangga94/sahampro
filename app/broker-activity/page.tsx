@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import BrokerActivityDetailCard from '../components/BrokerActivityDetailCard';
-import BrokerScreenerCard from '../components/BrokerScreenerCard'; // Import the new screener card
+import BrokerScreenerCard from '../components/BrokerScreenerCard';
+import BrokerForeignScreenerCard from '../components/BrokerForeignScreenerCard'; // Import the new component
 
-type BrokerActivityView = 'screener' | 'summary'; // Changed order
+type BrokerActivityView = 'screener' | 'summary' | 'foreign-screener'; // Added 'foreign-screener'
 
 export default function BrokerActivityPage() {
-  const [activeView, setActiveView] = useState<BrokerActivityView>('screener'); // Set default to 'screener'
+  const [activeView, setActiveView] = useState<BrokerActivityView>('screener');
 
   return (
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
@@ -25,6 +26,12 @@ export default function BrokerActivityPage() {
           Screener
         </button>
         <button
+          className={`tab-button ${activeView === 'foreign-screener' ? 'active' : ''}`}
+          onClick={() => setActiveView('foreign-screener')}
+        >
+          Net Foreign Accumulation
+        </button>
+        <button
           className={`tab-button ${activeView === 'summary' ? 'active' : ''}`}
           onClick={() => setActiveView('summary')}
         >
@@ -34,6 +41,7 @@ export default function BrokerActivityPage() {
 
       {/* Content based on active tab */}
       {activeView === 'screener' && <BrokerScreenerCard />}
+      {activeView === 'foreign-screener' && <BrokerForeignScreenerCard />}
       {activeView === 'summary' && <BrokerActivityDetailCard />}
     </div>
   );

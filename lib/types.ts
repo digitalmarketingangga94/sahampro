@@ -525,6 +525,18 @@ export interface BrokerScreenerResultItem {
   consistency_total_days?: number;    // NEW: Total days checked for consistency
 }
 
+// NEW: Broker Foreign Screener Result Item
+export interface BrokerForeignScreenerResultItem {
+  symbol: string;
+  stock_name?: string;
+  net_foreign_buy_value: number;
+  smart_money_net_value: number;
+  smart_money_brokers_involved: string[];
+  avg_price_smart_money?: number;
+  last_price?: number; // Current price of the stock
+  change_percentage?: number; // Daily change percentage
+}
+
 // Top Stock Types
 export interface TopStockValue {
   raw: string;
