@@ -428,7 +428,15 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
             </span>
           </h4>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', minWidth: '900px' }}><thead>
+            <table
+              style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                fontSize: '0.8rem',
+                minWidth: '900px'
+              }}
+            >
+              <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <th 
                     style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer' }}
@@ -491,49 +499,150 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                     Consistency {getSortIndicator('consistency_positive_days')}
                   </th>
                 </tr>
-              </thead><tbody>
-                {sortedResults.map((item, index) => {
-                  return (
-                    <tr key={item.symbol} style={{ borderBottom: index < sortedResults.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
-                      <td style={{ padding: '0.5rem 0.25rem', fontWeight: 600, color: 'var(--accent-primary)', textAlign: 'left' }}>
+              </thead>
+
+              <tbody>
+                {sortedResults.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={10}
+                      style={{ textAlign: 'center', padding: '1rem' }}
+                    >
+                      No Data
+                    </td>
+                  </tr>
+                ) : (
+                  sortedResults.map((item, index) => (
+                    <tr
+                      key={item.symbol}
+                      style={{
+                        borderBottom:
+                          index < sortedResults.length - 1
+                            ? '1px solid rgba(255,255,255,0.03)'
+                            : 'none'
+                      }}
+                    >
+                      <td
+                        style={{
+                          padding: '0.5rem 0.25rem',
+                          fontWeight: 600,
+                          color: 'var(--accent-primary)',
+                          textAlign: 'left'
+                        }}
+                      >
                         {item.symbol}
-                        {item.stock_name && item.stock_name !== item.symbol && (
-                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{item.stock_name}</div>
-                        )}
+                        {item.stock_name &&
+                          item.stock_name !== item.symbol && (
+                            <div
+                              style={{
+                                fontSize: '0.65rem',
+                                color: 'var(--text-muted)'
+                              }}
+                            >
+                              {item.stock_name}
+                            </div>
+                          )}
                       </td>
+
                       <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
-                        <span style={{ color: item.net_direction === 'Net Buy' ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
+                        <span
+                          style={{
+                            color:
+                              item.net_direction === 'Net Buy'
+                                ? 'var(--accent-success)'
+                                : 'var(--accent-warning)'
+                          }}
+                        >
                           • {item.net_direction}
                         </span>
                       </td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatNumber(item.net_lot)}</td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatCompactValue(item.buy_value)}</td> {/* NEW: Buy Value */}
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatCompactValue(item.sell_value)}</td> {/* NEW: Sell Value */}
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatAvgPerDay(item.avg_per_day)}</td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatPrice(item.avg_price)}</td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{item.dominant_broker}</td>
+
                       <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                          <span>{item.dominant_percent !== undefined ? item.dominant_percent.toFixed(2) : '-'}%</span>
-                          <div style={{ width: '80px', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px' }}>
-                            <div style={{ width: `${item.dominant_percent || 0}%`, height: '100%', background: 'var(--accent-success)', borderRadius: '4px' }}></div>
+                        {formatNumber(item.net_lot)}
+                      </td>
+
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
+                        {formatCompactValue(item.buy_value)}
+                      </td>
+
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
+                        {formatCompactValue(item.sell_value)}
+                      </td>
+
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
+                        {formatAvgPerDay(item.avg_per_day)}
+                      </td>
+
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
+                        {formatPrice(item.avg_price)}
+                      </td>
+
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
+                        {item.dominant_broker}
+                      </td>
+
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem'
+                          }}
+                        >
+                          <span>
+                            {item.dominant_percent !== undefined
+                              ? item.dominant_percent.toFixed(2)
+                              : '-'}
+                            %
+                          </span>
+
+                          <div
+                            style={{
+                              width: '80px',
+                              height: '8px',
+                              background: 'rgba(255,255,255,0.1)',
+                              borderRadius: '4px'
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${item.dominant_percent ?? 0}%`,
+                                height: '100%',
+                                background: 'var(--accent-success)',
+                                borderRadius: '4px'
+                              }}
+                            />
                           </div>
                         </div>
                       </td>
+
                       <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
-                        {item.consistency_positive_days !== undefined && item.consistency_total_days !== undefined ? (
-                          <span style={{ color: item.consistency_positive_days >= minPositiveDays ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
-                            {item.consistency_positive_days}/{item.consistency_total_days}
+                        {item.consistency_positive_days !== undefined &&
+                        item.consistency_total_days !== undefined ? (
+                          <span
+                            style={{
+                              color:
+                                item.consistency_positive_days >= minPositiveDays
+                                  ? 'var(--accent-success)'
+                                  : 'var(--accent-warning)'
+                            }}
+                          >
+                            {item.consistency_positive_days}/
+                            {item.consistency_total_days}
                           </span>
-                        ) : '-'}
+                        ) : (
+                          '-'
+                        )}
                       </td>
                     </tr>
-                  );
-                })}
-              </tbody></table>
-            </div>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }
