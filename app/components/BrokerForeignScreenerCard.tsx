@@ -387,36 +387,36 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
                     Symbol {getSortIndicator('symbol')}
                   </th>
                   <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('last_price')}
                   >
                     Price {getSortIndicator('last_price')}
                   </th>
                   <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('change_percentage')}
                   >
                     Change (%) {getSortIndicator('change_percentage')}
                   </th>
                   <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('net_foreign_buy_value')}
                   >
                     Net Foreign Buy {getSortIndicator('net_foreign_buy_value')}
                   </th>
                   <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('smart_money_net_value')}
                   >
                     Smart Money Net Buy {getSortIndicator('smart_money_net_value')}
                   </th>
                   <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'left', color: 'var(--text-secondary)' }}
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)' }}
                   >
                     SM Brokers
                   </th>
                   <th 
-                    style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     onClick={() => handleSort('avg_price_smart_money')}
                   >
                     SM Avg Price {getSortIndicator('avg_price_smart_money')}
@@ -465,22 +465,22 @@ export default function BrokerForeignScreenerCard({}: BrokerForeignScreenerCardP
                             </div>
                           )}
                       </td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
                         {formatPrice(item.last_price)}
                       </td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: (item.change_percentage || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: (item.change_percentage || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
                         {item.change_percentage !== undefined ? `${item.change_percentage >= 0 ? '+' : ''}${item.change_percentage.toFixed(2)}%` : '-'}
                       </td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: (item.net_foreign_buy_value || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: (item.net_foreign_buy_value || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
                         {formatValueCompact(item.net_foreign_buy_value)}
                       </td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right', color: (item.smart_money_net_value || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: (item.smart_money_net_value || 0) >= 0 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
                         {formatValueCompact(item.smart_money_net_value)}
                       </td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'left' }}>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
                         {item.smart_money_brokers_involved.join(', ') || '-'}
                       </td>
-                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'right' }}>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>
                         {formatPrice(item.avg_price_smart_money)}
                       </td>
                     </tr>
