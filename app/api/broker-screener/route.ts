@@ -8,10 +8,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const brokerCodesParam = searchParams.get('brokerCodes');
     const nDays = parseInt(searchParams.get('nDays') || '1');
-    const netBuy = searchParams.get('netBuy') === 'true';
+    const directionType = (searchParams.get('directionType') || 'net_buy') as 'net_buy' | 'net_sell' | 'buy_value' | 'sell_value'; // New directionType
     const minPositiveDays = parseInt(searchParams.get('minPositiveDays') || '3');
     const consistencyLookbackDays = parseInt(searchParams.get('consistencyLookbackDays') || '5');
-    // const minPrice = parseInt(searchParams.get('minPrice') || '100'); // Removed minPrice param
 
     if (!brokerCodesParam) {
       return NextResponse.json(
@@ -91,9 +90,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // --- Step 2: Fetch stock names and current prices in parallel ---
+    // --- Step 2: Fetch stock names in parallel ---
     const stockNameMap = new Map<string, string>();
-    // No need to fetch currentPrice if minPrice filter is removed
     if (uniqueStockCodes.size > 0) {
       const namePromises = Array.from(uniqueStockCodes).map(async (code) => {
         try {
@@ -113,17 +111,13 @@ export async function GET(request: NextRequest) {
 
     for (const stockCode of uniqueStockCodes) {
       let allBrokersMatchCriteria = true;
-      let totalNetLot = 0;
-      let totalWeightedPrice = 0;
-      let totalRelevantLot = 0;
+      let stockTotalNetLot = 0;
+      let stockTotalWeightedBuyPrice = 0;
+      let stockTotalBuyLot = 0;
+      let stockTotalWeightedSellPrice = 0;
+      let stockTotalSellLot = 0;
       let dominantBrokerCode = '';
       let maxNetLot = 0;
-      // const currentPrice = stockPriceMap.get(stockCode) || 0; // Removed currentPrice usage
-
-      // Apply minimum price filter first (REMOVED)
-      // if (currentPrice < minPrice) {
-      //   continue;
-      // }
 
       for (const brokerCode of brokerCodes) {
         const brokerStockMap = allBrokerActivitiesMap.get(brokerCode);
@@ -134,33 +128,39 @@ export async function GET(request: NextRequest) {
           break;
         }
 
-        const isNetBuyMatch = netBuy && activity.net_lot > 0;
-        const isNetSellMatch = !netBuy && activity.net_lot < 0;
+        let isMatch = false;
+        if (directionType === 'net_buy' && activity.net_lot > 0) isMatch = true;
+        else if (directionType === 'net_sell' && activity.net_lot < 0) isMatch = true;
+        else if (directionType === 'buy_value' && activity.buy_value > 0) isMatch = true;
+        else if (directionType === 'sell_value' && activity.sell_value > 0) isMatch = true;
 
-        if (!isNetBuyMatch && !isNetSellMatch) {
+        if (!isMatch) {
           allBrokersMatchCriteria = false;
           break;
         }
 
-        totalNetLot += activity.net_lot;
+        stockTotalNetLot += activity.net_lot;
         if (Math.abs(activity.net_lot) > Math.abs(maxNetLot)) {
           maxNetLot = activity.net_lot;
           dominantBrokerCode = activity.broker_code;
         }
 
-        if (netBuy) {
-          totalWeightedPrice += activity.buy_avg_price * activity.buy_lot;
-          totalRelevantLot += activity.buy_lot;
-        } else {
-          totalWeightedPrice += activity.sell_avg_price * activity.sell_lot;
-          totalRelevantLot += activity.sell_lot;
-        }
+        stockTotalWeightedBuyPrice += activity.buy_avg_price * activity.buy_lot;
+        stockTotalBuyLot += activity.buy_lot;
+        stockTotalWeightedSellPrice += activity.sell_avg_price * activity.sell_lot;
+        stockTotalSellLot += activity.sell_lot;
       }
 
       if (allBrokersMatchCriteria) {
-        const avgPerDay = totalNetLot / nDays;
-        const dominantPercent = (Math.abs(maxNetLot) / (totalNetLot !== 0 ? Math.abs(totalNetLot) : 1)) * 100; // Avoid division by zero
-        const avgPrice = totalRelevantLot > 0 ? totalWeightedPrice / totalRelevantLot : 0;
+        const avgPerDay = stockTotalNetLot / nDays;
+        const dominantPercent = (Math.abs(maxNetLot) / (stockTotalNetLot !== 0 ? Math.abs(stockTotalNetLot) : 1)) * 100; // Avoid division by zero
+        
+        let avgPrice = 0;
+        if (directionType === 'net_buy' || directionType === 'buy_value') {
+          avgPrice = stockTotalBuyLot > 0 ? stockTotalWeightedBuyPrice / stockTotalBuyLot : 0;
+        } else if (directionType === 'net_sell' || directionType === 'sell_value') {
+          avgPrice = stockTotalSellLot > 0 ? stockTotalWeightedSellPrice / stockTotalSellLot : 0;
+        }
 
         // --- NEW: Consistency Check ---
         let consistencyPositiveDays = 0;
@@ -183,22 +183,24 @@ export async function GET(request: NextRequest) {
           consistencyTotalDays = dailyAggregatedNetValues.size;
           dailyAggregatedNetValues.forEach(netValue => {
             // Check for positive net lot if netBuy is true, or negative if netBuy is false
-            if ((netBuy && netValue > 0) || (!netBuy && netValue < 0)) {
+            if ((directionType === 'net_buy' && netValue > 0) || (directionType === 'net_sell' && netValue < 0) ||
+                (directionType === 'buy_value' && netValue > 0) || (directionType === 'sell_value' && netValue < 0)) { // For buy/sell value, we still check net value direction
               consistencyPositiveDays++;
             }
           });
 
         } catch (consistencyError) {
           console.warn(`Failed to fetch broker flow for consistency check for ${stockCode}:`, consistencyError);
-          allBrokersMatchCriteria = false; // Mark as not matching if consistency data can't be fetched
+          // Do not set allBrokersMatchCriteria to false here, as consistency check is a secondary filter.
+          // If consistency data can't be fetched, it just means consistency_positive_days will be 0.
         }
 
         if (allBrokersMatchCriteria && consistencyPositiveDays >= minPositiveDays) {
           screenerResults.push({
             symbol: stockCode,
             stock_name: stockNameMap.get(stockCode),
-            net_direction: netBuy ? 'Net Buy' : 'Net Sell',
-            net_lot: totalNetLot,
+            net_direction: directionType === 'net_buy' || directionType === 'buy_value' ? 'Net Buy' : 'Net Sell', // Display as Net Buy/Sell
+            net_lot: stockTotalNetLot,
             avg_per_day: avgPerDay,
             avg_price: avgPrice,
             dominant_broker: dominantBrokerCode,
@@ -219,7 +221,7 @@ export async function GET(request: NextRequest) {
       broksum_eod: toDate,
       days: nDays,
       brokers_count: brokerCodes.length,
-      must_net_buy: netBuy,
+      direction_type: directionType, // Return the direction type used
       message: 'Successfully retrieved broker screener results',
     });
   } catch (error) {

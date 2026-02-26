@@ -35,10 +35,9 @@ interface SortConfig {
 
 export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
   const [nDays, setNDays] = useState<number>(4);
-  const [netBuy, setNetBuy] = useState<boolean>(true); // true for Net Buy, false for Net Sell
+  const [directionType, setDirectionType] = useState<'net_buy' | 'net_sell' | 'buy_value' | 'sell_value'>('net_buy'); // Changed to directionType
   const [minPositiveDays, setMinPositiveDays] = useState<number>(3); // NEW: for consistency rule
   const [consistencyLookbackDays, setConsistencyLookbackDays] = useState<number>(5); // NEW: for consistency rule
-  // const [minPrice, setMinPrice] = useState<number>(100); // Removed minPrice state
   const [selectedBrokerCodes, setSelectedBrokerCodes] = useState<string[]>(['AK', 'MG']); // Default brokers
   const [screenerResults, setScreenerResults] = useState<BrokerScreenerResultItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -74,10 +73,6 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
       setError('Consistency days must be valid (min positive days > 0, lookback days > 0, min positive days <= lookback days).');
       return;
     }
-    // if (minPrice < 1) { // Removed minPrice validation
-    //   setError('Minimum price must be at least 1.');
-    //   return;
-    // }
 
     setLoading(true);
     setError(null);
@@ -86,8 +81,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
     try {
       const brokerCodesParam = selectedBrokerCodes.join(',');
       const response = await fetch(
-        `/api/broker-screener?brokerCodes=${brokerCodesParam}&nDays=${nDays}&netBuy=${netBuy}&minPositiveDays=${minPositiveDays}&consistencyLookbackDays=${consistencyLookbackDays}`
-        // Removed minPrice from API call
+        `/api/broker-screener?brokerCodes=${brokerCodesParam}&nDays=${nDays}&directionType=${directionType}&minPositiveDays=${minPositiveDays}&consistencyLookbackDays=${consistencyLookbackDays}`
       );
       const json = await response.json();
 
@@ -124,10 +118,9 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
 
   const handleReset = () => {
     setNDays(4);
-    setNetBuy(true); // Default to Net Buy
+    setDirectionType('net_buy'); // Reset to Net Buy
     setMinPositiveDays(3); // Reset consistency
     setConsistencyLookbackDays(5); // Reset consistency
-    // setMinPrice(100); // Removed minPrice reset
     setSelectedBrokerCodes(['AK', 'MG']);
     setScreenerResults([]);
     setError(null);
@@ -236,25 +229,41 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
             />
           </div>
 
-          {/* Net Buy / Net Sell Buttons */}
-          <div className="input-group compact-group" style={{ flex: '0 0 180px', marginBottom: 0 }}>
+          {/* Direction Buttons */}
+          <div className="input-group compact-group" style={{ flex: '0 0 280px', marginBottom: 0 }}> {/* Increased width */}
             <label className="input-label compact-label">Direction</label>
             <div className="broker-flow-filters" style={{ padding: '2px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)' }}>
               <button
                 type="button"
-                className={`broker-flow-filter-btn ${netBuy ? 'active' : ''}`}
-                onClick={() => setNetBuy(true)}
+                className={`broker-flow-filter-btn ${directionType === 'net_buy' ? 'active' : ''}`}
+                onClick={() => setDirectionType('net_buy')}
                 style={{ flex: 1, fontSize: '0.75rem', padding: '4px 10px' }}
               >
                 Net Buy
               </button>
               <button
                 type="button"
-                className={`broker-flow-filter-btn ${!netBuy ? 'active' : ''}`}
-                onClick={() => setNetBuy(false)}
+                className={`broker-flow-filter-btn ${directionType === 'net_sell' ? 'active' : ''}`}
+                onClick={() => setDirectionType('net_sell')}
                 style={{ flex: 1, fontSize: '0.75rem', padding: '4px 10px' }}
               >
                 Net Sell
+              </button>
+              <button
+                type="button"
+                className={`broker-flow-filter-btn ${directionType === 'buy_value' ? 'active' : ''}`}
+                onClick={() => setDirectionType('buy_value')}
+                style={{ flex: 1, fontSize: '0.75rem', padding: '4px 10px' }}
+              >
+                Buy Value
+              </button>
+              <button
+                type="button"
+                className={`broker-flow-filter-btn ${directionType === 'sell_value' ? 'active' : ''}`}
+                onClick={() => setDirectionType('sell_value')}
+                style={{ flex: 1, fontSize: '0.75rem', padding: '4px 10px' }}
+              >
+                Sell Value
               </button>
             </div>
           </div>
@@ -290,23 +299,6 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
               min="1"
             />
           </div>
-
-          {/* Removed Minimum Price Input */}
-          {/* <div className="input-group compact-group" style={{ flex: '0 0 150px', marginBottom: 0 }}>
-            <label htmlFor="minPrice" className="input-label compact-label">Min Price</label>
-            <input
-              id="minPrice"
-              type="number"
-              value={minPrice}
-              onChange={(e) => {
-                const value = parseInt(e.target.value);
-                setMinPrice(isNaN(value) ? 1 : value);
-              }}
-              className="input-field compact-input"
-              style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', height: '32px', textAlign: 'center' }}
-              min="1"
-            />
-          </div> */}
 
           {selectedBrokerCodes.map((brokerCode, index) => (
             <div key={index} style={{ position: 'relative', flex: '1 1 200px', minWidth: '180px' }} ref={el => { brokerSelectRefs.current[index] = el; }}>
@@ -429,7 +421,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
           <h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
             Result Data
             <span style={{ marginLeft: '0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-              Screen Date: {screenDate} • Broksum EOD: {broksumEOD} • {sortedResults.length} saham ditemukan • Days: {nDays} • Broker: {selectedBrokerCodes.length} • Must Net Buy: {netBuy ? 'YES' : 'NO'}
+              Screen Date: {screenDate} • Broksum EOD: {broksumEOD} • {sortedResults.length} saham ditemukan • Days: {nDays} • Broker: {selectedBrokerCodes.length} • Direction: {directionType.replace('_', ' ').toUpperCase()}
             </span>
           </h4>
           <div style={{ overflowX: 'auto' }}>
