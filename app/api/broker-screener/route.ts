@@ -112,12 +112,17 @@ export async function GET(request: NextRequest) {
     for (const stockCode of uniqueStockCodes) {
       let allBrokersMatchCriteria = true;
       let stockTotalNetLot = 0;
+      let stockTotalBuyValue = 0; // NEW: Accumulate total buy value
+      let stockTotalSellValue = 0; // NEW: Accumulate total sell value
       let stockTotalWeightedBuyPrice = 0;
       let stockTotalBuyLot = 0;
       let stockTotalWeightedSellPrice = 0;
       let stockTotalSellLot = 0;
       let dominantBrokerCode = '';
-      let maxNetLot = 0;
+      let maxNetLot = 0; // Used for dominant broker based on net lot
+      let maxBuyValue = 0; // Used for dominant broker based on buy value
+      let maxSellValue = 0; // Used for dominant broker based on sell value
+
 
       for (const brokerCode of brokerCodes) {
         const brokerStockMap = allBrokerActivitiesMap.get(brokerCode);
@@ -140,9 +145,25 @@ export async function GET(request: NextRequest) {
         }
 
         stockTotalNetLot += activity.net_lot;
-        if (Math.abs(activity.net_lot) > Math.abs(maxNetLot)) {
-          maxNetLot = activity.net_lot;
-          dominantBrokerCode = activity.broker_code;
+        stockTotalBuyValue += activity.buy_value; // Accumulate buy value
+        stockTotalSellValue += activity.sell_value; // Accumulate sell value
+
+        // Determine dominant broker based on the selected directionType
+        if (directionType === 'net_buy' || directionType === 'net_sell') {
+          if (Math.abs(activity.net_lot) > Math.abs(maxNetLot)) {
+            maxNetLot = activity.net_lot;
+            dominantBrokerCode = activity.broker_code;
+          }
+        } else if (directionType === 'buy_value') {
+          if (activity.buy_value > maxBuyValue) {
+            maxBuyValue = activity.buy_value;
+            dominantBrokerCode = activity.broker_code;
+          }
+        } else if (directionType === 'sell_value') {
+          if (activity.sell_value > maxSellValue) {
+            maxSellValue = activity.sell_value;
+            dominantBrokerCode = activity.broker_code;
+          }
         }
 
         stockTotalWeightedBuyPrice += activity.buy_avg_price * activity.buy_lot;
@@ -153,7 +174,15 @@ export async function GET(request: NextRequest) {
 
       if (allBrokersMatchCriteria) {
         const avgPerDay = stockTotalNetLot / nDays;
-        const dominantPercent = (Math.abs(maxNetLot) / (stockTotalNetLot !== 0 ? Math.abs(stockTotalNetLot) : 1)) * 100; // Avoid division by zero
+        
+        let dominantPercent = 0;
+        if (directionType === 'net_buy' || directionType === 'net_sell') {
+          dominantPercent = (Math.abs(maxNetLot) / (stockTotalNetLot !== 0 ? Math.abs(stockTotalNetLot) : 1)) * 100;
+        } else if (directionType === 'buy_value') {
+          dominantPercent = (maxBuyValue / (stockTotalBuyValue !== 0 ? stockTotalBuyValue : 1)) * 100;
+        } else if (directionType === 'sell_value') {
+          dominantPercent = (maxSellValue / (stockTotalSellValue !== 0 ? stockTotalSellValue : 1)) * 100;
+        }
         
         let avgPrice = 0;
         if (directionType === 'net_buy' || directionType === 'buy_value') {
@@ -201,6 +230,8 @@ export async function GET(request: NextRequest) {
             stock_name: stockNameMap.get(stockCode),
             net_direction: directionType === 'net_buy' || directionType === 'buy_value' ? 'Net Buy' : 'Net Sell', // Display as Net Buy/Sell
             net_lot: stockTotalNetLot,
+            buy_value: stockTotalBuyValue, // NEW: Include buy_value
+            sell_value: stockTotalSellValue, // NEW: Include sell_value
             avg_per_day: avgPerDay,
             avg_price: avgPrice,
             dominant_broker: dominantBrokerCode,

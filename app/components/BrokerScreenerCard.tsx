@@ -25,7 +25,18 @@ const formatPrice = (num: number | undefined): string => {
   return Math.round(num).toLocaleString('id-ID');
 };
 
-type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'avg_per_day' | 'avg_price' | 'dominant_broker' | 'dominant_percent' | 'consistency_positive_days';
+// NEW: Helper to format large values compactly (e.g., 1.23B, 45.6M)
+const formatCompactValue = (value: number | undefined): string => {
+  if (value === undefined || value === null) return '-';
+  const absValue = Math.abs(value);
+  const sign = value < 0 ? '-' : '';
+  if (absValue >= 1_000_000_000) return `${sign}${(absValue / 1_000_000_000).toFixed(1)}B`;
+  if (absValue >= 1_000_000) return `${sign}${(absValue / 1_000_000).toFixed(1)}M`;
+  if (absValue >= 1_000) return `${sign}${(absValue / 1_000).toFixed(1)}K`;
+  return `${sign}${absValue.toLocaleString('id-ID')}`;
+};
+
+type SortColumn = 'symbol' | 'net_direction' | 'net_lot' | 'buy_value' | 'sell_value' | 'avg_per_day' | 'avg_price' | 'dominant_broker' | 'dominant_percent' | 'consistency_positive_days';
 type SortDirection = 'asc' | 'desc';
 
 interface SortConfig {
@@ -161,6 +172,14 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
       case 'net_lot':
         aValue = a.net_lot;
         bValue = b.net_lot;
+        break;
+      case 'buy_value': // NEW sort case
+        aValue = a.buy_value;
+        bValue = b.buy_value;
+        break;
+      case 'sell_value': // NEW sort case
+        aValue = a.sell_value;
+        bValue = b.sell_value;
         break;
       case 'avg_per_day':
         aValue = a.avg_per_day;
@@ -425,7 +444,7 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
             </span>
           </h4>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', minWidth: '700px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', minWidth: '900px' }}> {/* Increased minWidth */}
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <th 
@@ -445,6 +464,18 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                     onClick={() => handleSort('net_lot')}
                   >
                     Net Lot {getSortIndicator('net_lot')}
+                  </th>
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('buy_value')}
+                  >
+                    Buy Value {getSortIndicator('buy_value')}
+                  </th>
+                  <th 
+                    style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    onClick={() => handleSort('sell_value')}
+                  >
+                    Sell Value {getSortIndicator('sell_value')}
                   </th>
                   <th 
                     style={{ padding: '0.5rem 0.25rem', textAlign: 'center', color: 'var(--text-secondary)', cursor: 'pointer' }}
@@ -494,6 +525,8 @@ export default function BrokerScreenerCard({}: BrokerScreenerCardProps) {
                         </span>
                       </td>
                       <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatNumber(item.net_lot)}</td>
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatCompactValue(item.buy_value)}</td> {/* NEW: Buy Value */}
+                      <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatCompactValue(item.sell_value)}</td> {/* NEW: Sell Value */}
                       <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatAvgPerDay(item.avg_per_day)}</td>
                       <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{formatPrice(item.avg_price)}</td>
                       <td style={{ padding: '0.5rem 0.25rem', textAlign: 'center' }}>{item.dominant_broker}</td>
