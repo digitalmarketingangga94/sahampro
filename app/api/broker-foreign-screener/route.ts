@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchTopStocks, fetchBrokerActivityDetail, fetchEmitenInfo } from '@/lib/stockbit';
+import { fetchMarketMovers, fetchBrokerActivityDetail, fetchEmitenInfo } from '@/lib/stockbit';
 import { getDateNDaysAgo, getLatestTradingDate } from '@/lib/utils';
 import { BROKERS } from '@/lib/brokers';
-import type { BrokerForeignScreenerResultItem, BrokerBuyItem, BrokerSellItem } from '@/lib/types';
+import type { BrokerForeignScreenerResultItem, BrokerBuyItem, BrokerSellItem, MarketMoverItem } from '@/lib/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,24 +22,26 @@ export async function GET(request: NextRequest) {
     const smartMoneyBrokerCodes = smartMoneyBrokerCodesParam.split(',').map(code => code.trim().toUpperCase());
 
     const toDate = getLatestTradingDate();
-    const fromDate = getDateNDaysAgo(nDays - 1, toDate); // nDays includes the 'toDate'
+    const fromDate = getDateNDaysAgo(nDays - 1, toDate); // nDays still used for broker activity detail
 
     const screenerResults: BrokerForeignScreenerResultItem[] = [];
     const uniqueStockCodes = new Set<string>();
 
-    // 1. Fetch Top Net Foreign Buy Stocks
-    const topForeignStocksResponse = await fetchTopStocks(fromDate, toDate, 'INVESTOR_TYPE_FOREIGN', 'MARKET_BOARD_REGULER', 'VALUE_TYPE_NET');
-    const topForeignStocks = topForeignStocksResponse.data.top_buy || [];
+    // 1. Fetch Top Net Foreign Buy Stocks using fetchMarketMovers
+    // fetchMarketMovers does not take date range, it gets current movers.
+    const marketMoversLimit = 100; // Fetch a good number to ensure we cover potential matches
+    const netForeignMovers: MarketMoverItem[] = await fetchMarketMovers('net-foreign-buy', marketMoversLimit);
 
     // Filter by minimum net foreign value
-    const filteredForeignStocks = topForeignStocks.filter(stock =>
-      parseFloat(stock.foreign_value.raw) >= minNetForeignValue
+    const filteredForeignStocks = netForeignMovers.filter(item =>
+      (item.net_foreign_buy || 0) >= minNetForeignValue
     );
 
     // Collect all unique stock codes from filtered foreign stocks
-    filteredForeignStocks.forEach(stock => uniqueStockCodes.add(stock.code));
+    filteredForeignStocks.forEach(stock => uniqueStockCodes.add(stock.symbol));
 
     // 2. For each unique stock, fetch combined broker activity for selected Smartmoney brokers
+    // This part still uses fromDate and toDate based on nDays
     for (const stockCode of uniqueStockCodes) {
       let smartMoneyNetValue = 0;
       let smartMoneyTotalBuyValue = 0;
@@ -61,7 +63,7 @@ export async function GET(request: NextRequest) {
       if (brokerActivity.data && brokerActivity.data.broker_summary) {
         const allBrokerStockActivities: { [key: string]: { net_value: number; buy_value: number; buy_lot: number; } } = {};
 
-        // Aggregate buys
+        // Aggregate buys for the current stockCode
         brokerActivity.data.broker_summary.brokers_buy.forEach((item: BrokerBuyItem) => {
           if (item.netbs_stock_code === stockCode) {
             const broker = item.netbs_broker_code;
@@ -74,7 +76,7 @@ export async function GET(request: NextRequest) {
           }
         });
 
-        // Aggregate sells
+        // Aggregate sells for the current stockCode
         brokerActivity.data.broker_summary.brokers_sell.forEach((item: BrokerSellItem) => {
           if (item.netbs_stock_code === stockCode) {
             const broker = item.netbs_broker_code;
@@ -85,7 +87,7 @@ export async function GET(request: NextRequest) {
           }
         });
 
-        // Sum up for selected smart money brokers
+        // Sum up for selected smart money brokers for the current stockCode
         for (const brokerCode of smartMoneyBrokerCodes) {
           if (allBrokerStockActivities[brokerCode]) {
             smartMoneyNetValue += allBrokerStockActivities[brokerCode].net_value;
@@ -100,7 +102,7 @@ export async function GET(request: NextRequest) {
 
       // 3. Apply Smart Money Net Value filter
       if (smartMoneyNetValue >= minSmartMoneyNetValue) {
-        const foreignStockData = filteredForeignStocks.find(s => s.code === stockCode);
+        const foreignStockData = filteredForeignStocks.find(s => s.symbol === stockCode);
         if (foreignStockData) {
           let avgPriceSmartMoney = 0;
           if (smartMoneyTotalBuyLot > 0) {
@@ -121,9 +123,9 @@ export async function GET(request: NextRequest) {
           screenerResults.push({
             symbol: stockCode,
             stock_name: foreignStockData.name,
-            net_foreign_buy_value: parseFloat(foreignStockData.foreign_value.raw),
+            net_foreign_buy_value: foreignStockData.net_foreign_buy || 0,
             smart_money_net_value: smartMoneyNetValue,
-            smart_money_brokers_involved: Array.from(new Set(brokersInvolved)), // Ensure unique brokers
+            smart_money_brokers_involved: Array.from(new Set(brokersInvolved)),
             avg_price_smart_money: avgPriceSmartMoney,
             last_price: lastPrice,
             change_percentage: changePercentage,
